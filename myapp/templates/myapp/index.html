@@ -1,0 +1,594 @@
+{% extends "myapp/base.html" %}
+
+{% block content %}
+<!-- ================= SLIDING ADVERTISEMENT BANNER ================= -->
+<section class="ad-band" aria-label="Announcements">
+  <div class="wrap">
+    <div class="ad-card" id="adCard">
+      <div class="ad-track" id="adTrack">
+
+        <article class="ad-slide is-active">
+          <p class="ad-kicker">Admissions open</p>
+          <h2 class="ad-title">Sliding Advertisement Banner</h2>
+          <p class="ad-sub">New batch for SSC, Railway &amp; Banking starts 12 August.</p>
+          <a class="btn btn-primary" href="#popular-courses">See the batch plan</a>
+        </article>
+
+        <article class="ad-slide">
+          <p class="ad-kicker">Free this week</p>
+          <h2 class="ad-title">10 Years of PYQs, Solved</h2>
+          <p class="ad-sub">Download chapter-wise papers with video solutions — no fee, no login wall.</p>
+          <a class="btn btn-primary" href="#results">Download papers</a>
+        </article>
+
+        <article class="ad-slide">
+          <p class="ad-kicker">Test series</p>
+          <h2 class="ad-title">Mock Test Every Sunday</h2>
+          <p class="ad-sub">Real exam timing, All-India rank, and a doubt session the same evening.</p>
+          <a class="btn btn-primary" href="#contact">Book a free mock</a>
+        </article>
+
+      </div>
+
+      <div class="ad-controls">
+        <button class="ad-arrow" id="adPrev" aria-label="Previous announcement">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="ad-dots" id="adDots" role="tablist" aria-label="Choose announcement"></div>
+        <button class="ad-arrow" id="adNext" aria-label="Next announcement">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="wrap hero-grid">
+
+    <div class="hero-copy">
+      <p class="pill">New batches starting <span class="dot">•</span> Enroll free</p>
+      <h1>Crack Any<br><em>Govt Exam</em> with confidence</h1>
+      <p class="lede">Live classes, free PYQs, mock tests, expert guidance, doubt solving, and a focused roadmap for serious exam aspirants.</p>
+      <div class="hero-btns">
+        <a class="btn btn-primary btn-lg" href="#admission">Start learning free</a>
+        <a class="btn btn-ghost btn-lg" href="#popular-courses">Browse courses</a>
+      </div>
+      <ul class="hero-stats">
+        <li><strong>12,400+</strong><span>Students taught</span></li>
+        <li><strong>820</strong><span>Final selections</span></li>
+        <li><strong>1,100+</strong><span>Free video lessons</span></li>
+      </ul>
+    </div>
+
+    <div class="hero-visual">
+      <div class="visual-card">
+        <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Student studying with a laptop">
+          <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
+          <circle cx="120" cy="150" r="118" fill="#F0D9C4" opacity=".7"/>
+          <!-- right side text block -->
+          <text x="352" y="150" class="il-word">C</text>
+          <text x="330" y="196" class="il-word2">EDUCATION</text>
+          <rect x="336" y="288" width="150" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="306" width="126" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="324" width="140" height="7" rx="3.5" fill="#D9BFA6"/>
+          <!-- plant -->
+          <path d="M262 320c-22-8-34-30-30-54 22 6 36 28 30 54Z" fill="#4CA36A"/>
+          <path d="M270 322c14-14 16-38 4-56-16 12-20 38-4 56Z" fill="#3E8C59"/>
+          <path d="M240 318h48l-6 44a10 10 0 0 1-10 9h-16a10 10 0 0 1-10-9Z" fill="#E4864E"/>
+          <!-- desk -->
+          <rect x="60" y="366" width="330" height="14" rx="7" fill="#C9A98C"/>
+          <!-- person -->
+          <path d="M150 366c-6-52 10-86 46-86s52 34 46 86Z" fill="#5B5BD6"/>
+          <path d="M196 214c22 0 34 14 34 32 0 22-14 36-34 36s-34-14-34-36c0-18 12-32 34-32Z" fill="#3B2B26"/>
+          <path d="M172 240c6-10 16-16 26-16s20 5 24 14c-6 4-14 6-24 6s-20-1-26-4Z" fill="#2A1D1A"/>
+          <circle cx="184" cy="256" r="5" fill="#151515"/><circle cx="208" cy="256" r="5" fill="#151515"/>
+          <path d="M188 270c5 4 11 4 16 0" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- laptop -->
+          <path d="M150 356l24-62h84l24 62Z" fill="#7B7BE8"/>
+          <rect x="168" y="300" width="96" height="50" rx="5" fill="#C9C9F7"/>
+          <rect x="140" y="356" width="176" height="12" rx="6" fill="#5B5BD6"/>
+          <!-- arm -->
+          <path d="M236 300c22 6 34 20 34 40" stroke="#E9B08C" stroke-width="16" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="float-card float-success">
+        <span class="badge-round">98%</span>
+        <span class="float-text"><strong>Success Rate</strong>Govt exam selections</span>
+      </div>
+
+      <div class="float-card float-access">
+        <span class="badge-square">AI</span>
+        <span class="float-text"><strong>Free Access</strong>Mock tests &amp; guidance</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= DAILY UPDATES ================= -->
+<section class="daily-band">
+  <div class="wrap">
+    <p class="daily-eyebrow">Daily Updates</p>
+    <div class="daily-grid">
+
+      <article class="daily-card daily-current">
+        <div class="daily-card-top">
+          <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading on a couch">
+            <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+            <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+            <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+            <rect x="185" y="100" width="130" height="70" rx="16" fill="#8FB86B"/>
+            <rect x="185" y="92" width="130" height="24" rx="12" fill="#7CA857"/>
+            <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
+            <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+            <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
+            <rect x="238" y="140" width="28" height="30" rx="6" fill="#2E6DA4"/>
+            <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
+            <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
+            <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
+          </svg>
+        </div>
+        <div class="daily-card-body">
+          <h3>Current<br>Affairs</h3>
+          <a class="btn-daily btn-daily-red" href="#results">Continue Reading</a>
+        </div>
+      </article>
+      <p class="daily-caption">Brief updates on all the recent happening</p>
+
+      <article class="daily-card daily-kbc">
+        <div class="daily-card-top">
+          <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person playing a quiz game on a laptop">
+            <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+            <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+            <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+            <rect x="185" y="100" width="130" height="70" rx="16" fill="#5B5BD6"/>
+            <rect x="185" y="92" width="130" height="24" rx="12" fill="#4A49C4"/>
+            <circle cx="252" cy="118" r="24" fill="#7A3B22"/>
+            <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+            <path d="M231 108c2-12 12-18 21-18s19 6 21 18c-4 6-38 6-42 0Z" fill="#5A3420"/>
+            <rect x="238" y="140" width="28" height="30" rx="6" fill="#E7C36B"/>
+            <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
+            <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
+            <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
+          </svg>
+        </div>
+        <div class="daily-card-body">
+          <h3 class="kbc-title"><span>KBC</span>GAME</h3>
+          <a class="btn-daily btn-daily-red" href="#test-series">Play</a>
+        </div>
+      </article>
+      <p class="daily-caption">Daily nuggets of news for you to ponder on</p>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= POPULAR COURSES ================= -->
+<section class="section" id="popular-courses">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">&lt;/&gt; Exam Categories</p>
+    <h2 class="section-title center-title">Our Popular <span class="text-orange">Courses</span></h2>
+    <p class="section-sub">Comprehensive courses for all major government exams with expert guidance and complete study material.</p>
+
+    <div class="pc-grid">
+      <article class="pc-card">
+        <div class="pc-top">
+          <span class="pc-icon pc-icon-grey">🏛</span>
+          <span class="pc-rating">★ 4.9</span>
+        </div>
+        <h3>Unified Syllabus Course</h3>
+        <p>Complete access to all exam courses – Banking, SSC, Railway, AFCAT &amp; CDS</p>
+        <div class="pc-tags"><span>All Subjects Included</span></div>
+        <div class="pc-meta"><span>👥 21,230</span><span>🕐 Lifetime Access</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact">Enroll Now →</a>
+      </article>
+
+      <article class="pc-card">
+        <div class="pc-top">
+          <span class="pc-icon pc-icon-gold">⚜</span>
+          <span class="pc-rating">★ 4.9</span>
+        </div>
+        <h3>CDS Exam</h3>
+        <p>Combined Defence Services preparation for Indian Army, &amp; Navy</p>
+        <div class="pc-tags"><span>Mathematics</span><span>English</span><span>GK</span></div>
+        <div class="pc-meta"><span>👥 14,670</span><span>🕐 Full Course</span></div>
+        <a class="btn-pc btn-pc-navy" href="#contact">Enroll Now →</a>
+      </article>
+
+      <article class="pc-card">
+        <div class="pc-top">
+          <span class="pc-icon pc-icon-gold">🛡</span>
+          <span class="pc-rating">★ 4.8</span>
+        </div>
+        <h3>AFCAT Exam</h3>
+        <p>Air Force Common Admission Test preparation for Flying, Technical &amp; Ground Duty</p>
+        <div class="pc-tags"><span>Mathematics</span><span>Reasoning</span><span>GK</span></div>
+        <div class="pc-meta"><span>👥 12,540</span><span>🕐 Full Course</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact">Enroll Now →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TEST SERIES ================= -->
+<section class="section section-tint" id="test-series">
+  <div class="wrap">
+    <h2 class="section-title center-title">Explore All <span class="text-orange">Test Series</span></h2>
+
+    <div class="ts-panel">
+      <p class="ts-panel-title">Test Series</p>
+
+      <div class="ts-tabs">
+        <button class="ts-tab is-active">
+          <span class="ts-tab-ico">🚨</span>Defence &amp; Police
+        </button>
+        <button class="ts-tab"><span class="ts-tab-ico">👧</span>SSC</button>
+        <button class="ts-tab"><span class="ts-tab-ico">🚆</span>Railway</button>
+        <button class="ts-tab"><span class="ts-tab-ico">🏛</span>Government Exams</button>
+        <button class="ts-tab"><span class="ts-tab-ico">✓</span>CUET</button>
+        <button class="ts-tab"><span class="ts-tab-ico">👤</span>Civil Services</button>
+      </div>
+
+      <div class="ts-body">
+        <aside class="ts-sidebar">
+          <ul>
+            <li class="is-active">Indian Army</li>
+            <li>UPSC NDA</li>
+            <li>UPSC CDS</li>
+            <li>Territorial Army</li>
+            <li>Coast Guard</li>
+            <li>Sashastra Seema Bal (SSB)</li>
+            <li>Intelligence Bureau</li>
+            <li>Ind. Maritime - IMU CET (UG)</li>
+            <li>Central Industrial Security Force (CISF)</li>
+            <li>Central Reserve Police Force (CRPF)</li>
+            <li>Central Armed Police Forces CAPF (AC)</li>
+            <li>Border Security Force</li>
+            <li>Indian Air Force (IAF)</li>
+            <li>Indian Navy</li>
+            <li>UP Police (UPP)</li>
+            <li>Bihar Police</li>
+            <li>Delhi Police</li>
+            <li>Jharkhand Police</li>
+            <li>Puducherry Police</li>
+            <li>HP Police</li>
+            <li>Madhya Pradesh Police</li>
+            <li>Ladakh Police</li>
+            <li>Assam Police</li>
+          </ul>
+        </aside>
+
+        <div class="ts-grid">
+          <article class="ts-card">
+            <span class="ts-badge">⚔</span>
+            <h4>Border Roads Organisation (BRO)</h4>
+            <span class="ts-count">📖 5 Tests</span>
+            <a class="btn-ts" href="#contact">Explore</a>
+          </article>
+          <article class="ts-card">
+            <span class="ts-badge">⚔</span>
+            <h4>Military Nursing Services (MNS)</h4>
+            <span class="ts-count">📖 96 Tests</span>
+            <a class="btn-ts" href="#contact">Explore</a>
+          </article>
+          <article class="ts-card">
+            <span class="ts-badge">⚔</span>
+            <h4>BRO Driver Mechanical</h4>
+            <span class="ts-count">📖 3 Tests</span>
+            <a class="btn-ts" href="#contact">Explore</a>
+          </article>
+          <article class="ts-card">
+            <span class="ts-badge">⚔</span>
+            <h4>Indian Army Sepoy Pharma</h4>
+            <span class="ts-count">📖 10 Tests</span>
+            <a class="btn-ts" href="#contact">Explore</a>
+          </article>
+          <article class="ts-card">
+            <span class="ts-badge ts-badge-dark">☠</span>
+            <h4>Agniveer Army</h4>
+            <span class="ts-count">📖 283 Tests</span>
+            <a class="btn-ts" href="#contact">Explore</a>
+          </article>
+          <article class="ts-card">
+            <span class="ts-badge">⚔</span>
+            <h4>Havildar (Surveyor Automated Cartographer)</h4>
+            <span class="ts-count">📖 20 Tests</span>
+            <a class="btn-ts" href="#contact">Explore</a>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VIDEO COURSES ================= -->
+<section class="section section-tint" id="video-courses">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">📹 Video Course</p>
+    <h2 class="section-title center-title">Learn At Your Own <span class="text-orange">Pace</span></h2>
+    <p class="section-sub">Recorded, chapter-wise video courses you can watch anytime, any number of times.</p>
+    <div class="pc-grid">
+      <article class="pc-card">
+        <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span><span class="pc-rating">4h 20m</span></div>
+        <h3>Quantitative Aptitude Masterclass</h3>
+        <p>Shortcut techniques and 120 solved examples for SSC &amp; Banking exams.</p>
+        <div class="pc-tags"><span>Hindi + English</span></div>
+        <div class="pc-meta"><span>🎬 68 videos</span><span>Free</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">Watch Free →</a>
+      </article>
+      <article class="pc-card">
+        <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span><span class="pc-rating">6h 05m</span></div>
+        <h3>Reasoning: Puzzles &amp; Seating</h3>
+        <p>Every puzzle type asked in the last 5 years, solved step by step.</p>
+        <div class="pc-tags"><span>Hindi + English</span></div>
+        <div class="pc-meta"><span>🎬 90 videos</span><span>Free</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">Watch Free →</a>
+      </article>
+      <article class="pc-card">
+        <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span><span class="pc-rating">3h 40m</span></div>
+        <h3>NEET Biology: Human Physiology</h3>
+        <p>NCERT-mapped video lessons with diagram-based revision notes.</p>
+        <div class="pc-tags"><span>Hindi + English</span></div>
+        <div class="pc-meta"><span>🎬 52 videos</span><span>Free</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">Watch Free →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ / KBC-STYLE GAME ================= -->
+<section class="section" id="quiz">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">🎮 Play &amp; Learn</p>
+    <h2 class="section-title center-title">Quiz Zone</h2>
+    <p class="section-sub">Two ways to test yourself — quick topic quizzes, or the full KBC-style challenge.</p>
+
+    <div class="quiz-grid">
+      <article class="kbc-portal">
+        <div class="kbc-portal-top">
+          <span class="kbc-portal-tag">Champion's Chair</span>
+          <h3>Padho Aur Jeeto</h3>
+          <p>Our own Kaun Banega Crorepati–style quiz — climb the money ladder one question at a time, with lifelines and our own original music.</p>
+        </div>
+        <ul class="kbc-ladder">
+          <li><span>Q15</span><strong>₹25,00,000</strong></li>
+          <li><span>Q10</span><strong>₹1,00,000</strong></li>
+          <li><span>Q5</span><strong>₹10,000</strong></li>
+          <li class="is-current"><span>Q1</span><strong>₹1,000</strong></li>
+        </ul>
+        <div class="kbc-lifelines">
+          <span>50-50</span><span>Audience Poll</span><span>Phone a Friend</span>
+        </div>
+        <a class="btn btn-primary btn-lg" href="#contact-us">▶ Play Now</a>
+      </article>
+
+      <div class="quiz-topics">
+        <article class="quiz-card"><span class="quiz-ico">📘</span><h4>Daily GK Quiz</h4><p>10 questions, 5 minutes, new set every morning.</p></article>
+        <article class="quiz-card"><span class="quiz-ico">🧮</span><h4>Maths Speed Round</h4><p>Beat the clock on 15 rapid-fire calculation questions.</p></article>
+        <article class="quiz-card"><span class="quiz-ico">🌏</span><h4>Current Affairs Quiz</h4><p>This week's news, turned into a 20-question quiz.</p></article>
+        <article class="quiz-card"><span class="quiz-ico">🧠</span><h4>Reasoning Challenge</h4><p>Puzzles and seating-arrangement questions, timed.</p></article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ACADEMIC EXCELLENCE / RESULTS ================= -->
+<section class="section" id="results">
+  <div class="wrap">
+    <h2 class="section-title center-title ae-title"><span class="text-orange">Academic Excellence</span> : Results</h2>
+    <p class="section-sub ae-sub">Giving wings to a millions dreams, a million more to go</p>
+
+    <div class="ae-fan">
+      <figure class="ae-card ae-c1"><img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Health</figcaption></figure>
+      <figure class="ae-card ae-c2"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Management</figcaption></figure>
+      <figure class="ae-card ae-c3"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Pre-University</figcaption></figure>
+      <figure class="ae-card ae-c4"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Agriculture</figcaption></figure>
+      <figure class="ae-card ae-c5 ae-featured"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=440&h=560&q=70" alt=""><figcaption>KLE School</figcaption></figure>
+      <figure class="ae-card ae-c6"><img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Law College</figcaption></figure>
+      <figure class="ae-card ae-c7"><img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Collegiate</figcaption></figure>
+      <figure class="ae-card ae-c8"><img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Foundation</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GALLERY ================= -->
+<section class="section section-tint" id="gallery">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">📸 Gallery</p>
+    <h2 class="section-title center-title">Life At <span class="text-orange">Manjunath Academy</span></h2>
+    <p class="section-sub">Classrooms, felicitations, and the moments in between.</p>
+    <div class="gal-grid">
+      <figure class="gal-item gal-big"><img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&h=500&q=70" alt="Classroom session"></figure>
+      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=400&h=300&q=70" alt="Students writing a test"></figure>
+      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&h=300&q=70" alt="Study group"></figure>
+      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&h=300&q=70" alt="Award ceremony"></figure>
+      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&h=300&q=70" alt="Library"></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT US ================= -->
+<section class="section section-tint" id="about">
+  <div class="wrap about-us-grid">
+
+    <div class="au-media">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night">
+      <div class="au-badge"><span class="au-badge-ico">🎓</span><div><strong>Trusted by</strong><span>50,000+ Students</span></div></div>
+    </div>
+
+    <div class="au-copy">
+      <p class="eyebrow eyebrow-pill">About Us</p>
+      <h2 class="section-title">India's Most Trusted <span class="text-orange">Free</span> Exam Prep Platform</h2>
+      <p class="body-copy">Online Kaksha was built with one belief — every Indian aspirant deserves world-class government exam preparation without paying a rupee. We provide meticulously crafted PYQs, daily quizzes, and study notes covering Banking, SSC, Railway, CDS, and AFCAT.</p>
+      <p class="body-copy au-muted">Founded by educators who cleared competitive exams themselves, we understand the grind. Our platform is designed to save your time, sharpen your knowledge, and maximise your selection chances.</p>
+
+      <ul class="au-checks">
+        <li><span class="au-check-ico">✓</span>100% free access to PYQs and daily quizzes</li>
+        <li><span class="au-check-ico">✓</span>Curated study notes for every major govt exam</li>
+        <li><span class="au-check-ico">✓</span>Expert faculty with years of exam experience</li>
+        <li><span class="au-check-ico">✓</span>Mobile-friendly platform — study anywhere, anytime</li>
+        <li><span class="au-check-ico">✓</span>Regular updates aligned with latest exam patterns</li>
+        <li><span class="au-check-ico">✓</span>Dedicated doubt-solving and community support</li>
+      </ul>
+
+      <a class="btn btn-primary" href="#about">🎓 Know Your Faculty</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= ELIGIBILITY CHECK ================= -->
+<section class="section section-tint" id="eligibility">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">🎯 Eligibility Check</p>
+    <h2 class="section-title center-title">Which Exams Are You <span class="text-orange">Eligible For?</span></h2>
+    <p class="section-sub">Enter your details once — see every government exam you currently qualify for, the way the Join Indian Army portal does it.</p>
+
+    <form class="elig-form" id="eligForm">
+      <div class="elig-grid">
+        <label>Education<select required><option value="">Select</option><option>10th Pass</option><option>12th Pass</option><option>Graduate</option><option>Post Graduate</option></select></label>
+        <label>Gender<select required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+        <label>Date of Birth<input type="date" required></label>
+        <label>Height (cm)<input type="number" min="120" max="220" placeholder="e.g. 168" required></label>
+        <label>State<select required><option value="">Select</option><option>Uttar Pradesh</option><option>Bihar</option><option>Madhya Pradesh</option><option>Uttarakhand</option><option>Delhi</option><option>Other</option></select></label>
+        <label>Marital Status<select><option>Unmarried</option><option>Married</option></select></label>
+      </div>
+      <button class="btn btn-primary btn-lg" type="submit">Check My Eligibility →</button>
+    </form>
+
+    <div class="elig-result" id="eligResult" hidden>
+      <p class="elig-result-title">Based on what you entered, you may be eligible for:</p>
+      <ul class="elig-result-list" id="eligResultList"></ul>
+      <p class="elig-note">This is an indicative check for demo purposes — always confirm exact criteria on the official exam notification before applying.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= E-LIBRARY ================= -->
+<section class="section" id="e-library">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">📚 E-Library</p>
+    <h2 class="section-title center-title">Everything To <span class="text-orange">Read &amp; Revise</span></h2>
+    <div class="feature-grid">
+      <article class="card"><span class="ico ico-orange">📖</span><h3>NCERT digitised notes</h3><p>Class 6–12, chapter-wise, downloadable as PDF.</p></article>
+      <article class="card"><span class="ico ico-green">📰</span><h3>Current affairs archive</h3><p>Every monthly digest since 2019, searchable by topic.</p></article>
+      <article class="card"><span class="ico ico-blue">📑</span><h3>Previous year papers</h3><p>10 years of PYQs for every major exam, with solutions.</p></article>
+      <article class="card"><span class="ico ico-purple">🗂</span><h3>Toppers' handwritten notes</h3><p>Shared by past selections, organised by subject.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= E-STORE ================= -->
+<section class="section section-tint" id="e-store">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">🛒 E-Store</p>
+    <h2 class="section-title center-title">Notes, Books &amp; <span class="text-orange">Merchandise</span></h2>
+    <p class="section-sub">Printed notes, guidebooks and academy merch — the same idea as Allen's e-store, built for our students.</p>
+    <div class="pc-grid">
+      <article class="pc-card">
+        <div class="pc-top"><span class="pc-icon pc-icon-grey">📓</span><span class="pc-rating">★ 4.7</span></div>
+        <h3>SSC CGL Complete Notes Set</h3>
+        <p>Printed, spiral-bound notes covering the full syllabus.</p>
+        <div class="pc-tags"><span>Printed</span><span>Ships in 3 days</span></div>
+        <div class="pc-meta"><span>₹499</span><span>4.2k sold</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">Buy Now</a>
+      </article>
+      <article class="pc-card">
+        <div class="pc-top"><span class="pc-icon pc-icon-grey">📘</span><span class="pc-rating">★ 4.8</span></div>
+        <h3>Banking Reasoning Guidebook</h3>
+        <p>320 pages, 1,000+ practice questions with solutions.</p>
+        <div class="pc-tags"><span>Printed</span><span>Ships in 3 days</span></div>
+        <div class="pc-meta"><span>₹349</span><span>2.9k sold</span></div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">Buy Now</a>
+      </article>
+      <article class="pc-card">
+        <div class="pc-top"><span class="pc-icon pc-icon-grey">👕</span><span class="pc-rating">★ 4.9</span></div>
+        <h3>Academy T-Shirt</h3>
+        <p>Cotton, unisex sizes S–XXL. Wear it to the offline centre.</p>
+        <div class="pc-tags"><span>S–XXL</span><span>Ships in 5 days</span></div>
+        <div class="pc-meta"><span>₹399</span><span>860 sold</span></div>
+        <a class="btn-pc btn-pc-navy" href="#contact-us">Buy Now</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CAREERS ================= -->
+<section class="section" id="careers">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">💼 Careers</p>
+    <h2 class="section-title center-title">Work With <span class="text-orange">Us</span></h2>
+    <div class="career-grid">
+      <article class="career-card">
+        <div><h4>Faculty — Reasoning &amp; General Studies</h4><p>Lucknow centre · Full-time · 3+ years teaching experience</p></div>
+        <a class="link-arrow" href="#contact-us">Apply →</a>
+      </article>
+      <article class="career-card">
+        <div><h4>Content Writer — Current Affairs</h4><p>Remote · Full-time · Strong writing in English &amp; Hindi</p></div>
+        <a class="link-arrow" href="#contact-us">Apply →</a>
+      </article>
+      <article class="career-card">
+        <div><h4>Video Editor</h4><p>Lucknow centre · Full-time · Experience editing lecture videos</p></div>
+        <a class="link-arrow" href="#contact-us">Apply →</a>
+      </article>
+      <article class="career-card">
+        <div><h4>Telecaller — Admissions</h4><p>Lucknow centre · Full-time · Fluent Hindi &amp; English</p></div>
+        <a class="link-arrow" href="#contact-us">Apply →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ADMISSION FORM (OFFLINE) ================= -->
+<section class="section section-tint" id="admission">
+  <div class="wrap admission-grid">
+    <div>
+      <p class="eyebrow eyebrow-pill">🏫 Offline Admission</p>
+      <h2 class="section-title">Register For An <span class="text-orange">Offline Batch</span></h2>
+      <p class="body-copy">Fill this once and our admissions team calls you within 24 hours to confirm your seat at the Lucknow centre.</p>
+      <ul class="au-checks">
+        <li><span class="au-check-ico">✓</span>Small batches, capped at 60 students</li>
+        <li><span class="au-check-ico">✓</span>Library &amp; study hall, 7 am – 9 pm</li>
+        <li><span class="au-check-ico">✓</span>Weekly tests with a report you can act on</li>
+      </ul>
+    </div>
+    <form class="admission-form" id="admissionForm">
+      <label>Full name<input type="text" required placeholder="Your name"></label>
+      <label>Phone number<input type="tel" required placeholder="10-digit mobile number"></label>
+      <label>Course<select required><option value="">Select a course</option><option>SSC &amp; Railways</option><option>Banking &amp; Insurance</option><option>NEET &amp; JEE foundation</option></select></label>
+      <label>Preferred batch<select><option>Morning</option><option>Afternoon</option><option>Evening</option></select></label>
+      <button class="btn btn-primary btn-lg" type="submit">Submit Registration</button>
+      <p class="form-success" id="admissionSuccess" hidden>Thanks — our admissions team will call you within 24 hours.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ================= CONTACT US ================= -->
+<section class="section" id="contact-us">
+  <div class="wrap contact-grid">
+    <div>
+      <p class="eyebrow eyebrow-pill">📞 Contact Us</p>
+      <h2 class="section-title">Talk To A <span class="text-orange">Counsellor</span></h2>
+      <p class="body-copy">Questions about a course, a batch timing, or which exam fits you best — ask us directly.</p>
+      <ul class="contact-info">
+        <li><span>📍</span>Hazratganj, Lucknow, Uttar Pradesh</li>
+        <li><span>📞</span><a href="tel:+915220000000">+91 522 000 0000</a></li>
+        <li><span>✉️</span><a href="mailto:hello@manjunathacademy.in">hello@manjunathacademy.in</a></li>
+        <li><span>🕐</span>Mon–Sat, 8 am – 8 pm</li>
+      </ul>
+      <a class="call-now" href="tel:+915220000000">📞 Call Now</a>
+    </div>
+    <form class="admission-form" id="contactForm">
+      <label>Name<input type="text" required placeholder="Your name"></label>
+      <label>Email<input type="email" required placeholder="you@example.com"></label>
+      <label>Phone<input type="tel" placeholder="10-digit mobile number"></label>
+      <label>Message<textarea rows="4" required placeholder="How can we help?"></textarea></label>
+      <button class="btn btn-primary btn-lg" type="submit">Send Message</button>
+      <p class="form-success" id="contactSuccess" hidden>Thanks — we'll get back to you shortly.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

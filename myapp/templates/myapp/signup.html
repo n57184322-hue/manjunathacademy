@@ -1,0 +1,95 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Sign Up — Manjunath Academy{% endblock %}
+{% block meta_description %}Create your free Manjunath Academy account to access live classes, PYQs and mock tests.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:64px 0 90px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
+.auth-card{
+  max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:24px;
+  padding:36px 34px;box-shadow:var(--shadow-md);
+}
+.auth-card h1{font-size:clamp(24px,3vw,30px);font-weight:800;margin:0 0 6px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 28px}
+.auth-form{display:flex;flex-direction:column;gap:16px}
+.auth-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.auth-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:#374151}
+.auth-form .req{color:var(--orange)}
+.auth-form input,.auth-form select{
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  font-size:14px;font-family:inherit;color:var(--ink);
+}
+.auth-form input:focus,.auth-form select:focus{outline:2px solid var(--orange);outline-offset:1px}
+.auth-errors{color:#DC2626;font-size:12.5px;margin:2px 0 0;padding:0;list-style:none}
+.auth-footer{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted)}
+.auth-footer a{color:var(--orange);font-weight:700}
+@media (max-width:560px){.auth-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap">
+    <div class="auth-card">
+      <p class="eyebrow eyebrow-pill">🎓 Join for free</p>
+      <h1>Create your account</h1>
+      <p class="auth-sub">Join Manjunath Academy for live classes, free PYQs and mock tests.</p>
+
+      <form class="auth-form" method="post" novalidate>
+        {% csrf_token %}
+
+        <label>Name <span class="req">*</span>
+          {{ form.name }}
+          {% if form.name.errors %}<ul class="auth-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+
+        <div class="auth-row">
+          <label>Email <span class="req">*</span>
+            {{ form.email }}
+            {% if form.email.errors %}<ul class="auth-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+          <label>Phone number <span class="req">*</span>
+            {{ form.number }}
+            {% if form.number.errors %}<ul class="auth-errors">{% for e in form.number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+        </div>
+
+        <div class="auth-row">
+          <label>Age
+            {{ form.age }}
+          </label>
+          <label>Gender
+            {{ form.gender }}
+          </label>
+        </div>
+
+        <div class="auth-row">
+          <label>State
+            {{ form.state }}
+          </label>
+          <label>City
+            {{ form.city }}
+          </label>
+        </div>
+
+        <label>Password <span class="req">*</span>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<ul class="auth-errors">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+
+        <label>Confirm password <span class="req">*</span>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<ul class="auth-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+
+        {% if form.non_field_errors %}
+          <ul class="auth-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary btn-lg">Sign up</button>
+      </form>
+
+      <p class="auth-footer">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}
