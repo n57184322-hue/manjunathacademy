@@ -435,16 +435,26 @@ class Course(models.Model):
         ('previous_year_paper', 'Previous Year Paper'),
     ]
 
+    VALIDITY_DAYS = 'days'
+    VALIDITY_MONTHS = 'months'
+    VALIDITY_UNIT_CHOICES = [
+        (VALIDITY_DAYS, 'Days'),
+        (VALIDITY_MONTHS, 'Months'),
+    ]
+
     course_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
     name = models.CharField(max_length=200, verbose_name='Course name')
     test_type = models.CharField(max_length=20, choices=TEST_TYPE_CHOICES, blank=True, help_text='Used for Test Series only — e.g. Mock Test, Practice Test.')
     original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     current_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    enable_folders = models.BooleanField(default=False, help_text='Turn on if this course is organized into folders/chapters')
     enable_validity = models.BooleanField(default=False, help_text='Turn on if access to this course expires after a validity period')
+    validity_value = models.PositiveIntegerField(null=True, blank=True, help_text='Length of access, e.g. 6')
+    validity_unit = models.CharField(max_length=10, choices=VALIDITY_UNIT_CHOICES, default=VALIDITY_MONTHS, blank=True)
     about = models.TextField(blank=True, verbose_name='About course')
     thumbnail = models.ImageField(upload_to='courses/', blank=True, null=True, help_text='Recommended size: 400×240px (16:10).')
+    pdf_file = models.FileField(upload_to='elibrary_pdfs/', blank=True, null=True, help_text='Used for E-Library only. Upload the book/notes as a PDF.')
+    video_file = models.FileField(upload_to='course_videos/', blank=True, null=True, help_text='Used for Video Courses only. Upload the course video (MP4 recommended).')
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -454,3 +464,75 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CourseEnrollment(models.Model):
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'course')
+        ordering = ['-enrolled_at']
+
+    def save(self, *args, **kwargs):
+        if self.pk is None and self.expires_at is None and self.course.enable_validity and self.course.validity_value:
+            from datetime import timedelta
+
+            from django.utils import timezone as dj_timezone
+
+            if self.course.validity_unit == self.course.VALIDITY_DAYS:
+                days = self.course.validity_value
+            else:
+                days = self.course.validity_value * 30
+            self.expires_at = dj_timezone.now() + timedelta(days=days)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone as dj_timezone
+
+        return self.expires_at is not None and self.expires_at < dj_timezone.now()
+
+    @property
+    def has_access(self):
+        return not self.is_expired
+
+    def __str__(self):
+        return f'{self.user} — {self.course}'
+
+
+class Question(models.Model):
+    SINGLE = 'single'
+    MULTIPLE = 'multiple'
+    NUMERIC = 'numeric'
+    TRUE_FALSE = 'true_false'
+    FILL_BLANK = 'fill_blank'
+    TYPE_CHOICES = [
+        (SINGLE, 'Single Correct Answer'),
+        (MULTIPLE, 'Multiple Correct Answers'),
+        (NUMERIC, 'Numeric Answer'),
+        (TRUE_FALSE, 'True / False'),
+        (FILL_BLANK, 'Fill in the Blank'),
+    ]
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='questions', limit_choices_to={'course_type': 'test_series'})
+    question_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=SINGLE)
+    text = models.TextField(verbose_name='Question')
+    option_a = models.CharField(max_length=300, blank=True)
+    option_b = models.CharField(max_length=300, blank=True)
+    option_c = models.CharField(max_length=300, blank=True)
+    option_d = models.CharField(max_length=300, blank=True)
+    correct_answer = models.CharField(
+        max_length=300, blank=True,
+        help_text='Single/True-False: e.g. A or True. Multiple: comma-separated, e.g. A,C. Numeric/Fill-in-the-blank: the exact value.',
+    )
+    marks = models.PositiveIntegerField(default=1)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.text[:60]

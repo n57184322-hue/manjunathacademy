@@ -15,6 +15,7 @@ from .models import (
     HeroSection,
     Notification,
     PWASettings,
+    Question,
     SiteSettings,
 )
 
@@ -277,14 +278,34 @@ class CourseForm(forms.ModelForm):
         model = Course
         fields = (
             'category', 'name', 'test_type', 'original_price', 'current_price',
-            'enable_folders', 'enable_validity', 'about', 'thumbnail',
+            'enable_validity', 'validity_value', 'validity_unit',
+            'about', 'thumbnail', 'pdf_file', 'video_file',
             'order', 'is_active',
         )
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL Complete Test Series'}),
             'about': forms.Textarea(attrs={'rows': 5, 'placeholder': 'What this course covers'}),
             'order': forms.NumberInput(attrs={'min': 0}),
+            'validity_value': forms.NumberInput(attrs={'min': 1, 'placeholder': 'e.g. 6'}),
         }
         help_texts = {
             'order': 'Lower numbers show first.',
+        }
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = (
+            'question_type', 'text', 'option_a', 'option_b', 'option_c', 'option_d',
+            'correct_answer', 'marks', 'order',
+        )
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Type the question here'}),
+            'option_a': forms.TextInput(attrs={'placeholder': 'Option A'}),
+            'option_b': forms.TextInput(attrs={'placeholder': 'Option B'}),
+            'option_c': forms.TextInput(attrs={'placeholder': 'Option C'}),
+            'option_d': forms.TextInput(attrs={'placeholder': 'Option D'}),
+            'marks': forms.NumberInput(attrs={'min': 1}),
+            'order': forms.NumberInput(attrs={'min': 0}),
         }

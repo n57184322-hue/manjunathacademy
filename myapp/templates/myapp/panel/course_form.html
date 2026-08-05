@@ -11,6 +11,8 @@
 .course-preview-label{font-size:12.5px;color:var(--muted)}
 .custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
 .panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+#validityFields{display:none}
+#validityFields.is-visible{display:grid}
 @media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -55,9 +57,16 @@
       </label>
     </div>
 
-    <div class="panel-form-row course-form-row">
-      <label class="panel-form-check">{{ form.enable_folders }} Enable folders</label>
-      <label class="panel-form-check">{{ form.enable_validity }} Enable validity</label>
+    <label class="panel-form-check">{{ form.enable_validity }} Enable validity</label>
+
+    <div id="validityFields" class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Validity length</span>
+        {{ form.validity_value }}
+        {% if form.validity_value.errors %}<ul class="panel-errors">{% for e in form.validity_value.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Unit</span>
+        {{ form.validity_unit }}
+      </label>
     </div>
 
     <label><span class="panel-label-text">About course</span>
@@ -76,6 +85,24 @@
         <img src="{{ course.thumbnail.url }}" alt="Current thumbnail">
         <span class="course-preview-label">Current thumbnail</span>
       </div>
+    {% endif %}
+
+    {% if course_type == 'elibrary' %}
+    <label><span class="panel-label-text">PDF file</span>
+      {{ form.pdf_file }}
+      <p class="custom-help">{{ form.pdf_file.help_text }}</p>
+      {% if form.pdf_file.errors %}<ul class="panel-errors">{% for e in form.pdf_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      {% if course.pdf_file %}<p class="custom-help">Current file: {{ course.pdf_file.name }}</p>{% endif %}
+    </label>
+    {% endif %}
+
+    {% if course_type == 'video_course' %}
+    <label><span class="panel-label-text">Video file</span>
+      {{ form.video_file }}
+      <p class="custom-help">{{ form.video_file.help_text }}</p>
+      {% if form.video_file.errors %}<ul class="panel-errors">{% for e in form.video_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      {% if course.video_file %}<p class="custom-help">Current file: {{ course.video_file.name }}</p>{% endif %}
+    </label>
     {% endif %}
 
     <div class="panel-form-row course-form-row">
@@ -98,4 +125,16 @@
     </div>
   </form>
 </div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var enableValidity = document.getElementById('id_enable_validity');
+  var validityFields = document.getElementById('validityFields');
+  if (!enableValidity || !validityFields) return;
+
+  function sync() { validityFields.classList.toggle('is-visible', enableValidity.checked); }
+  enableValidity.addEventListener('change', sync);
+  sync();
+})();
 {% endblock %}

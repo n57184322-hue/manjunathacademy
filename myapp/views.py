@@ -23,6 +23,7 @@ from .forms import (
     NavbarCustomizationForm,
     NotificationForm,
     PWASettingsForm,
+    QuestionForm,
     SignupForm,
 )
 from .models import (
@@ -32,6 +33,7 @@ from .models import (
     ChatbotQuestion,
     ChatbotSettings,
     Course,
+    CourseEnrollment,
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
@@ -39,6 +41,7 @@ from .models import (
     HeroSection,
     Notification,
     PWASettings,
+    Question,
     SiteSettings,
 )
 
@@ -174,7 +177,15 @@ class AccountPasswordChangeView(PasswordChangeView):
 
 @login_required(login_url='login')
 def account_purchases(request):
-    return render(request, 'myapp/account/purchases.html')
+    enrollments = request.user.enrollments.select_related('course', 'course__category')
+    return render(request, 'myapp/account/purchases.html', {'enrollments': enrollments})
+
+
+@login_required(login_url='login')
+def course_detail(request, pk):
+    course = get_object_or_404(Course, pk=pk, is_active=True)
+    enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+    return render(request, 'myapp/course_detail.html', {'course': course, 'enrollment': enrollment})
 
 
 def _is_staff(user):
@@ -680,6 +691,61 @@ def panel_course_delete(request, course_type, pk):
         course.delete()
         messages.success(request, 'Course deleted.')
     return redirect('panel_course_list', course_type=course_type)
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_question_list(request, course_pk):
+    course = get_object_or_404(Course, pk=course_pk, course_type=Course.TEST_SERIES)
+    questions = course.questions.all()
+    return render(request, 'myapp/panel/question_list.html', {'course': course, 'questions': questions})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_question_add(request, course_pk):
+    course = get_object_or_404(Course, pk=course_pk, course_type=Course.TEST_SERIES)
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(commit=False)
+            question.course = course
+            question.save()
+            messages.success(request, 'Question added.')
+            return redirect('panel_question_list', course_pk=course.pk)
+    else:
+        form = QuestionForm(initial={'order': course.questions.count()})
+
+    return render(request, 'myapp/panel/question_form.html', {'form': form, 'is_new': True, 'course': course})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_question_edit(request, course_pk, pk):
+    course = get_object_or_404(Course, pk=course_pk, course_type=Course.TEST_SERIES)
+    question = get_object_or_404(Question, pk=pk, course=course)
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question updated.')
+            return redirect('panel_question_list', course_pk=course.pk)
+    else:
+        form = QuestionForm(instance=question)
+
+    return render(request, 'myapp/panel/question_form.html', {'form': form, 'is_new': False, 'course': course, 'question': question})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_question_delete(request, course_pk, pk):
+    course = get_object_or_404(Course, pk=course_pk, course_type=Course.TEST_SERIES)
+    question = get_object_or_404(Question, pk=pk, course=course)
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, 'Question deleted.')
+    return redirect('panel_question_list', course_pk=course.pk)
 
 
 

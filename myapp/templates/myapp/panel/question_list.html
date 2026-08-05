@@ -1,0 +1,70 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Questions — {{ course.name }}{% endblock %}
+{% block page_title %}Questions{% endblock %}
+{% block page_sub %}{{ course.name }}{% endblock %}
+{% block nav_test_series %}is-active{% endblock %}
+
+{% block extra_style %}
+.question-cell{max-width:420px;white-space:normal}
+.question-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{{ course.name }}</h2>
+      <p>{{ questions|length }} question{{ questions|length|pluralize }}</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a class="btn btn-ghost" href="{% url 'panel_course_list' 'test_series' %}">← Back to Test Series</a>
+      <a class="btn btn-primary" href="{% url 'panel_question_add' course.pk %}">+ Add question</a>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if questions %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Question</th>
+            <th>Type</th>
+            <th>Marks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for question in questions %}
+          <tr>
+            <td>{{ question.order }}</td>
+            <td class="question-cell">{{ question.text|truncatechars:100 }}</td>
+            <td>{{ question.get_question_type_display }}</td>
+            <td>{{ question.marks }}</td>
+            <td>
+              <div class="question-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_question_edit' course.pk question.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_question_delete' course.pk question.pk %}" onsubmit="return confirm('Delete this question?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">❓</span>No questions added yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

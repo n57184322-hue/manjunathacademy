@@ -477,7 +477,7 @@
           <span>₹{{ course.current_price }}</span>
           {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
         </div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">View Course →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}">View Course →</a>
       </article>
       {% empty %}
       <p class="panel-empty">No video courses added yet — check back soon.</p>
@@ -507,7 +507,7 @@
           <span>₹{{ item.current_price }}</span>
           {% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}
         </div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">View Book →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' item.pk %}">View Book →</a>
       </article>
       {% empty %}
       <p class="panel-empty">No e-library items added yet — check back soon.</p>

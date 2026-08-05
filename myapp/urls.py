@@ -12,6 +12,7 @@ urlpatterns = [
     path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
     path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
     path('gallery/', views.gallery_page, name='gallery_page'),
+    path('course/<int:pk>/', views.course_detail, name='course_detail'),
     path('admission/register/', views.admission_register, name='admission_register'),
     path('manifest.json', views.pwa_manifest, name='pwa_manifest'),
     path('sw.js', views.service_worker, name='service_worker'),
@@ -50,4 +51,8 @@ urlpatterns = [
     path('panel/courses/<str:course_type>/add/', views.panel_course_add, name='panel_course_add'),
     path('panel/courses/<str:course_type>/<int:pk>/edit/', views.panel_course_edit, name='panel_course_edit'),
     path('panel/courses/<str:course_type>/<int:pk>/delete/', views.panel_course_delete, name='panel_course_delete'),
+    path('panel/courses/test_series/<int:course_pk>/questions/', views.panel_question_list, name='panel_question_list'),
+    path('panel/courses/test_series/<int:course_pk>/questions/add/', views.panel_question_add, name='panel_question_add'),
+    path('panel/courses/test_series/<int:course_pk>/questions/<int:pk>/edit/', views.panel_question_edit, name='panel_question_edit'),
+    path('panel/courses/test_series/<int:course_pk>/questions/<int:pk>/delete/', views.panel_question_delete, name='panel_question_delete'),
 ]

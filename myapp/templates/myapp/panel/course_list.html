@@ -65,6 +65,9 @@
             <td>{% if course.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
             <td>
               <div class="course-actions">
+                {% if course_type == 'test_series' %}
+                  <a class="btn btn-ghost btn-sm" href="{% url 'panel_question_list' course.pk %}">Questions ({{ course.questions.count }})</a>
+                {% endif %}
                 <a class="btn btn-ghost btn-sm" href="{% url 'panel_course_edit' course_type course.pk %}">Edit</a>
                 <form method="post" action="{% url 'panel_course_delete' course_type course.pk %}" onsubmit="return confirm('Delete this course?');">
                   {% csrf_token %}
