@@ -1,11 +1,12 @@
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 
-from .forms import EmailAuthenticationForm, SignupForm
+from .forms import AccountUpdateForm, EmailAuthenticationForm, SignupForm
 from .models import CustomUser
 
 
@@ -43,6 +44,35 @@ class CustomLoginView(LoginView):
 def logout_view(request):
     auth_logout(request)
     return redirect('index')
+
+
+@login_required(login_url='login')
+def account_edit(request):
+    if request.method == 'POST':
+        form = AccountUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your account details have been updated.')
+            return redirect('account_edit')
+    else:
+        form = AccountUpdateForm(instance=request.user)
+
+    return render(request, 'myapp/account/edit.html', {'form': form})
+
+
+class AccountPasswordChangeView(PasswordChangeView):
+    template_name = 'myapp/account/password_change.html'
+    success_url = reverse_lazy('account_password')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, 'Your password has been changed.')
+        return response
+
+
+@login_required(login_url='login')
+def account_purchases(request):
+    return render(request, 'myapp/account/purchases.html')
 
 
 def _is_staff(user):

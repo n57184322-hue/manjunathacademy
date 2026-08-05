@@ -192,7 +192,32 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .chip:hover{transform:translateY(-1px)}
 .chip-yt{background:#FDECEC;color:#1a1a1a}
 .chip-wa{background:#E9F9EF;color:#1a1a1a}
-.nav-user{font-size:13.5px;font-weight:700;color:#374151;padding:8px 6px;white-space:nowrap}
+.nav-user-menu{position:relative;flex:0 0 auto}
+.nav-user-trigger{
+  display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+  padding:6px 12px 6px 6px;border-radius:var(--r-pill);font-size:13.5px;font-weight:700;color:var(--ink);
+  cursor:pointer;transition:.15s ease;font-family:inherit;white-space:nowrap;
+}
+.nav-user-trigger:hover{border-color:rgba(249,115,22,.4)}
+.nav-user-avatar{
+  width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-deep));
+  color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex:0 0 auto;
+}
+.nav-user-caret{transition:transform .15s ease;flex:0 0 auto}
+.nav-user-menu.is-open .nav-user-caret{transform:rotate(180deg)}
+.nav-user-dropdown{
+  position:absolute;right:0;top:calc(100% + 10px);min-width:230px;background:#fff;border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--shadow-lg);padding:8px;display:none;flex-direction:column;gap:2px;z-index:70;
+}
+.nav-user-menu.is-open .nav-user-dropdown{display:flex}
+.nav-user-dropdown a{
+  padding:9px 12px;border-radius:9px;font-size:13.5px;font-weight:600;color:#374151;
+  display:flex;align-items:center;gap:9px;transition:.12s ease;
+}
+.nav-user-dropdown a:hover{background:#F6F6F7;color:var(--ink)}
+.nav-user-dropdown hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
+.nav-user-logout{color:#DC2626 !important}
+.nav-user-logout:hover{background:#FEF2F2 !important}
 
 .menu-toggle{
   display:none;margin-left:auto;width:44px;height:44px;border:1px solid var(--line);
@@ -802,6 +827,8 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .chip span.chip-label{display:none}
   .chip{padding:8px 11px}
   .primary-nav > ul a{padding:7px 8px;font-size:12.5px}
+  .nav-user-trigger-text{display:none}
+  .nav-user-trigger{padding:6px}
 }
 @media (max-width:1080px){
   .float-success{right:0}
@@ -820,8 +847,10 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .primary-nav > ul{flex-direction:column;align-items:stretch;margin:0}
   .primary-nav > ul a{padding:12px 14px;font-size:14.5px}
   .chip span.chip-label{display:inline}
+  .nav-user-trigger-text{display:inline}
   .header-actions{flex-wrap:wrap}
   .header-actions .btn{flex:1}
+  .nav-user-dropdown{right:auto;left:0}
   .site-header{position:relative}
 
   .hero-grid,.about-grid{grid-template-columns:1fr;gap:52px}
@@ -987,8 +1016,24 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
           <span class="chip-label">WhatsApp</span>
         </a>
         {% if user.is_authenticated %}
-          <span class="nav-user">Hi, {{ user.name|default:user.email }}</span>
-          <a class="btn btn-ghost btn-sm" href="{% url 'logout' %}">Logout</a>
+          <div class="nav-user-menu" id="navUserMenu">
+            <button type="button" class="nav-user-trigger" id="navUserTrigger" aria-haspopup="true" aria-expanded="false">
+              <span class="nav-user-avatar">{{ user.name|default:user.email|first|upper }}</span>
+              <span class="nav-user-trigger-text">Hi, {{ user.name|default:user.email }}</span>
+              <svg class="nav-user-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="nav-user-dropdown" id="navUserDropdown">
+              {% if user.is_staff %}
+                <a href="{% url 'panel_signups' %}">🛠️ Admin panel</a>
+                <hr>
+              {% endif %}
+              <a href="{% url 'account_edit' %}">✏️ Update account details</a>
+              <a href="{% url 'account_password' %}">🔒 Edit password</a>
+              <a href="{% url 'account_purchases' %}">🛍️ My purchases</a>
+              <hr>
+              <a href="{% url 'logout' %}" class="nav-user-logout">🚪 Logout</a>
+            </div>
+          </div>
         {% else %}
           <a class="btn btn-ghost btn-sm" href="{% url 'login' %}">Login</a>
           <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Join for Free</a>
@@ -1166,6 +1211,32 @@ document.addEventListener('DOMContentLoaded', function () {
       if (e.target.closest('a') && window.innerWidth <= 940) {
         nav.classList.remove('is-open');
         toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  /* ---------- 2b. Logged-in user dropdown ---------- */
+  const userMenu = document.getElementById('navUserMenu');
+  const userTrigger = document.getElementById('navUserTrigger');
+
+  if (userMenu && userTrigger) {
+    userTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = userMenu.classList.toggle('is-open');
+      userTrigger.setAttribute('aria-expanded', String(open));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userMenu.contains(e.target)) {
+        userMenu.classList.remove('is-open');
+        userTrigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        userMenu.classList.remove('is-open');
+        userTrigger.setAttribute('aria-expanded', 'false');
       }
     });
   }

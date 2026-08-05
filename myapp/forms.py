@@ -60,3 +60,25 @@ class EmailAuthenticationForm(AuthenticationForm):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'placeholder': 'you@example.com', 'autofocus': True})
         self.fields['password'].widget.attrs['placeholder'] = 'Your password'
+
+
+class AccountUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ('name', 'number', 'age', 'gender', 'state', 'city')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Your full name'}),
+            'number': forms.TextInput(attrs={'placeholder': '10-digit mobile number'}),
+            'age': forms.NumberInput(attrs={'placeholder': 'e.g. 21', 'min': 10, 'max': 100}),
+            'state': forms.Select(choices=STATE_CHOICES),
+            'city': forms.Select(choices=CITY_CHOICES),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].required = True
+        self.fields['number'].required = True
+        self.fields['age'].required = False
+        self.fields['gender'].required = False
+        self.fields['state'].required = False
+        self.fields['city'].required = False
