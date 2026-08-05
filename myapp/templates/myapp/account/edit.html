@@ -42,6 +42,17 @@
   background:#ECFDF3;color:#15803D;border-radius:12px;padding:12px 16px;font-size:13.5px;font-weight:700;
   margin-bottom:18px;
 }
+.profile-pic-row{display:flex;align-items:center;gap:16px;margin-bottom:4px}
+.profile-pic-preview{
+  width:72px;height:72px;border-radius:50%;object-fit:cover;flex:0 0 auto;
+  border:1px solid var(--line);background:var(--orange-soft);
+}
+.profile-pic-placeholder{
+  width:72px;height:72px;border-radius:50%;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--orange),var(--orange-deep));color:#fff;
+  display:grid;place-items:center;font-size:26px;font-weight:800;
+}
+.profile-pic-field{flex:1;min-width:0}
 @media (max-width:560px){.auth-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -57,8 +68,21 @@
         {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
       {% endif %}
 
-      <form class="auth-form" method="post" novalidate>
+      <form class="auth-form" method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
+
+        <div class="profile-pic-row">
+          {% if user.profile_picture %}
+            <img class="profile-pic-preview" src="{{ user.profile_picture.url }}" alt="Profile picture">
+          {% else %}
+            <span class="profile-pic-placeholder">{{ user.name|default:user.email|first|upper }}</span>
+          {% endif %}
+          <label class="profile-pic-field"><span class="auth-label-text">Profile picture</span>
+            {{ form.profile_picture }}
+            <p class="custom-help" style="font-size:12.5px;color:var(--muted);margin:6px 0 0">{{ form.profile_picture.help_text }}</p>
+            {% if form.profile_picture.errors %}<ul class="auth-errors">{% for e in form.profile_picture.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+        </div>
 
         <label><span class="auth-label-text">Email</span>
           <input type="email" value="{{ user.email }}" disabled>

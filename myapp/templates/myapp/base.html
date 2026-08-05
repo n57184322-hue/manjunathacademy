@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Manjunath Academy — Crack any govt exam with confidence{% endblock %}</title>
 <meta name="description" content="{% block meta_description %}Live classes, free PYQs, mock tests and expert guidance for NEET, JEE and government exam aspirants.{% endblock %}">
+{% if site_settings.favicon %}<link rel="icon" href="{{ site_settings.favicon.url }}">{% endif %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400..900&family=Inter:wght@400..700&display=swap" rel="stylesheet">
@@ -33,7 +34,8 @@
 }
 
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;color-scheme:light}
+select{color-scheme:light;background-color:#fff;color:var(--ink)}
 body{
   margin:0;
   font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -164,6 +166,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .brand{display:flex;align-items:center;gap:11px;flex-shrink:0}
 .crest{width:44px;height:44px;display:block}
 .crest svg{width:100%;height:100%}
+.brand-logo-img{height:44px;width:auto;max-width:200px;display:block;object-fit:contain}
 .wordmark{display:flex;flex-direction:column;font-family:"Archivo",sans-serif;font-weight:800;
   font-size:15px;line-height:1.02;letter-spacing:.01em}
 .wordmark span:last-child{color:#2b2b2f}
@@ -202,6 +205,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .nav-user-avatar{
   width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-deep));
   color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex:0 0 auto;
+  object-fit:cover;
 }
 .nav-user-caret{transition:transform .15s ease;flex:0 0 auto}
 .nav-user-menu.is-open .nav-user-caret{transform:rotate(180deg)}
@@ -255,9 +259,6 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   background:radial-gradient(ellipse at center,rgba(255,255,255,.93) 0%,rgba(255,255,255,.78) 45%,rgba(255,255,255,.4) 100%);
 }
 .ad-slide > *{position:relative;z-index:1}
-.ad-slide:nth-child(1){background-image:url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=70")}
-.ad-slide:nth-child(2){background-image:url("https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1400&q=70")}
-.ad-slide:nth-child(3){background-image:url("https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1400&q=70")}
 .ad-kicker{
   margin:0;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
   color:var(--orange);
@@ -448,56 +449,87 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .btn-pc-navy{background:#1E3A5F}
 
 /* ============================================================
-   TEST SERIES
+   TEST SERIES — glass / glossy finish
    ============================================================ */
+#test-series{background:linear-gradient(135deg,#FFE8D1 0%,#FDBA74 45%,#F97316 100%)}
+#test-series .section-title{color:#fff;text-shadow:0 2px 14px rgba(120,30,10,.3)}
+#test-series .section-title .text-orange{color:#7A1010}
 .ts-panel{
-  background:#fff;border:1px solid rgba(220,38,38,.18);border-radius:16px;
-  box-shadow:var(--shadow-sm);overflow:hidden;
+  background:rgba(255,255,255,.5);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid rgba(255,255,255,.6);border-radius:24px;
+  box-shadow:0 24px 54px rgba(120,50,10,.22),inset 0 1px 0 rgba(255,255,255,.6);
+  overflow:hidden;
 }
 .ts-panel-title{
-  margin:0;text-align:center;padding:14px 0;font-weight:700;font-size:14px;
-  background:#F3F4F6;border-bottom:1px solid var(--line);
+  margin:0;text-align:center;padding:14px 0;font-weight:800;font-size:14px;color:#7A1010;
+  background:rgba(255,255,255,.3);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.5);
 }
 .ts-tabs{
   display:flex;gap:14px;padding:20px 20px 6px;overflow-x:auto;
 }
 .ts-tab{
   flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;
-  width:130px;padding:16px 10px;border-radius:12px;border:1px solid var(--line);
-  background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);
+  width:130px;padding:16px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.6);
+  background:rgba(255,255,255,.4);backdrop-filter:blur(8px);
+  cursor:pointer;font-size:13px;font-weight:600;color:#5c2b1a;transition:.18s ease;
 }
+.ts-tab:hover{background:rgba(255,255,255,.6);transform:translateY(-1px)}
 .ts-tab-ico{font-size:22px}
-.ts-tab.is-active{border-color:#DC2626;box-shadow:0 0 0 1px #DC2626 inset}
-.ts-body{display:grid;grid-template-columns:260px 1fr;gap:0;border-top:1px solid var(--line)}
+.ts-tab.is-active{
+  background:rgba(255,255,255,.75);border-color:#DC2626;color:var(--ink);
+  box-shadow:0 0 0 1px #DC2626 inset,0 10px 20px rgba(220,38,38,.25);
+}
+.ts-body{display:grid;grid-template-columns:260px 1fr;gap:0;border-top:1px solid rgba(255,255,255,.5)}
 .ts-sidebar{
-  border-right:1px solid var(--line);max-height:520px;overflow-y:auto;padding:6px 0;
+  border-right:1px solid rgba(255,255,255,.5);max-height:520px;overflow-y:auto;padding:6px 0;
+  background:rgba(255,255,255,.15);
 }
 .ts-sidebar ul{display:flex;flex-direction:column}
 .ts-sidebar li{
-  padding:11px 20px;font-size:13.5px;color:#374151;cursor:pointer;border-left:3px solid transparent;
+  padding:11px 20px;font-size:13.5px;color:#4b2b2b;cursor:pointer;border-left:3px solid transparent;transition:.15s ease;
 }
-.ts-sidebar li.is-active{background:#DC2626;color:#fff;font-weight:700;border-left-color:#991B1B}
+.ts-sidebar li:hover{background:rgba(255,255,255,.35)}
+.ts-sidebar li.is-active{
+  background:linear-gradient(180deg,#EF4444,#DC2626);color:#fff;font-weight:700;border-left-color:#991B1B;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+}
 .ts-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:24px;
 }
 .ts-card{
-  background:linear-gradient(160deg,#FEEAEA,#FFF9F5);border:1px solid rgba(220,38,38,.12);
-  border-radius:14px;padding:20px;text-align:center;
+  position:relative;overflow:hidden;
+  background:rgba(255,255,255,.55);backdrop-filter:blur(12px) saturate(160%);
+  border:1px solid rgba(255,255,255,.65);
+  border-radius:16px;padding:20px;text-align:center;
+  box-shadow:0 12px 28px rgba(120,30,10,.14),inset 0 1px 0 rgba(255,255,255,.6);
+  transition:transform .2s ease,box-shadow .2s ease;
 }
+.ts-card::before{
+  content:"";position:absolute;inset:0 0 50% 0;
+  background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0));pointer-events:none;
+}
+.ts-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px rgba(120,30,10,.2),inset 0 1px 0 rgba(255,255,255,.6)}
+.ts-card > *{position:relative;z-index:1}
 .ts-badge{
-  display:inline-grid;place-items:center;width:46px;height:46px;border-radius:10px;
-  background:#fff;border:1px solid var(--line);font-size:20px;margin-bottom:12px;
+  display:inline-grid;place-items:center;width:46px;height:46px;border-radius:12px;
+  background:rgba(255,255,255,.7);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.7);
+  font-size:20px;margin-bottom:12px;
 }
-.ts-badge-dark{background:#7A1010;color:#fff}
+.ts-badge-dark{background:linear-gradient(160deg,#9A2222,#7A1010);color:#fff;border-color:rgba(255,255,255,.2)}
 .ts-card h4{margin:0 0 12px;font-size:14.5px;min-height:38px}
 .ts-count{
   display:inline-block;background:#FACC15;color:#78350F;font-weight:700;font-size:12.5px;
   padding:5px 12px;border-radius:var(--r-pill);margin-bottom:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
 }
 .btn-ts{
-  display:block;background:#DC2626;color:#fff;font-weight:700;font-size:13.5px;
-  padding:10px;border-radius:10px;
+  display:block;background:linear-gradient(180deg,#EF4444,#DC2626);color:#fff;font-weight:700;font-size:13.5px;
+  padding:10px;border-radius:10px;box-shadow:0 8px 16px rgba(220,38,38,.35),inset 0 1px 0 rgba(255,255,255,.4);
+  transition:transform .15s ease,box-shadow .15s ease;
 }
+.btn-ts:hover{transform:translateY(-1px);box-shadow:0 12px 22px rgba(220,38,38,.42),inset 0 1px 0 rgba(255,255,255,.4)}
 
 /* ============================================================
    ACADEMIC EXCELLENCE / RESULTS FAN CAROUSEL
@@ -835,23 +867,22 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .float-access{left:-10px}
 }
 @media (max-width:1400px){
-  .menu-toggle{display:flex}
+  .menu-toggle{display:flex;margin-left:0;order:1}
   .primary-nav{
     position:absolute;left:0;right:0;top:100%;
     flex-direction:column;align-items:stretch;gap:14px;
     background:#fff;border-bottom:1px solid var(--line);
     padding:18px 24px 24px;box-shadow:var(--shadow-md);
-    display:none;
+    display:none;order:3;
   }
   .primary-nav.is-open{display:flex}
   .primary-nav > ul{flex-direction:column;align-items:stretch;margin:0}
   .primary-nav > ul a{padding:12px 14px;font-size:14.5px}
   .chip span.chip-label{display:inline}
-  .nav-user-trigger-text{display:inline}
   .header-actions{flex-wrap:wrap}
   .header-actions .btn{flex:1}
-  .nav-user-dropdown{right:auto;left:0}
   .site-header{position:relative}
+  .nav-user-menu{margin-left:auto;order:2}
 
   .hero-grid,.about-grid{grid-template-columns:1fr;gap:52px}
   .hero{padding:48px 0 70px}
@@ -876,12 +907,15 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .float-card{padding:9px 13px 9px 9px}
   .badge-round,.badge-square{width:32px;height:32px;font-size:11.5px}
   .hero-stats{gap:22px}
-  .daily-grid{grid-template-columns:1fr;max-width:420px}
-  .daily-grid .daily-card:last-of-type{grid-column:1}
-  .daily-card-body{max-width:70%}
+  .daily-grid{grid-template-columns:1fr 1fr;max-width:100%;column-gap:12px}
+  .daily-card{min-height:170px;padding:16px 14px 52px}
+  .daily-card-top{width:58%}
+  .daily-card-body{max-width:78%}
+  .daily-card-body h3{font-size:clamp(16px,4.4vw,20px);margin-bottom:20px}
+  .btn-daily{left:14px;bottom:14px;padding:8px 13px;font-size:12px}
   .pc-grid{grid-template-columns:1fr}
   .ts-body{grid-template-columns:1fr}
-  .ts-sidebar{border-right:0;border-bottom:1px solid var(--line);max-height:220px}
+  .ts-sidebar{border-right:0;border-bottom:1px solid rgba(255,255,255,.5);max-height:220px}
   .ts-grid{grid-template-columns:1fr}
   .ae-fan{transform:scale(.42);height:200px}
   .au-checks{grid-template-columns:1fr}
@@ -963,32 +997,36 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   <div class="wrap header-inner">
 
     <a class="brand" href="{% url 'index' %}" aria-label="Manjunath Academy home">
-      <span class="crest" aria-hidden="true">
-        <svg viewBox="0 0 100 100" role="img">
-          <defs>
-            <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#F7DE9A"/>
-              <stop offset=".5" stop-color="#D4A73C"/>
-              <stop offset="1" stop-color="#9C6B14"/>
-            </linearGradient>
-          </defs>
-          <circle cx="50" cy="50" r="48" fill="url(#gold)"/>
-          <circle cx="50" cy="50" r="41" fill="#141019"/>
-          <circle cx="50" cy="50" r="38" fill="none" stroke="url(#gold)" stroke-width="1.5"/>
-          <!-- wings -->
-          <path d="M50 40 C40 28 26 26 16 32 c10 1 15 6 18 11 -7-2-12-1-16 2 8 1 13 4 17 9 6 7 11 10 15 11z" fill="url(#gold)"/>
-          <path d="M50 40 C60 28 74 26 84 32 c-10 1-15 6-18 11 7-2 12-1 16 2-8 1-13 4-17 9-6 7-11 10-15 11z" fill="url(#gold)"/>
-          <!-- head + body -->
-          <path d="M50 30 c4 0 7 3 7 7 0 3-2 5-4 6l6 3-9 2 3 24-3 4-3-4 3-24-9-2 6-3c-2-1-4-3-4-6 0-4 3-7 7-7z" fill="url(#gold)"/>
-          <path d="M57 36 l7 2-7 3z" fill="#F7DE9A"/>
-          <!-- open book -->
-          <path d="M28 72 c8-4 15-4 22-1 7-3 14-3 22 1-8 5-15 5-22 2-7 3-14 3-22-2z" fill="url(#gold)"/>
-        </svg>
-      </span>
-      <span class="wordmark">
-        <span>MANJUNATH</span>
-        <span>ACADEMY</span>
-      </span>
+      {% if site_settings.logo_type == 'image' and site_settings.logo_image %}
+        <img class="brand-logo-img" src="{{ site_settings.logo_image.url }}" alt="Manjunath Academy">
+      {% else %}
+        <span class="crest" aria-hidden="true">
+          <svg viewBox="0 0 100 100" role="img">
+            <defs>
+              <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#F7DE9A"/>
+                <stop offset=".5" stop-color="#D4A73C"/>
+                <stop offset="1" stop-color="#9C6B14"/>
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="48" fill="url(#gold)"/>
+            <circle cx="50" cy="50" r="41" fill="#141019"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="url(#gold)" stroke-width="1.5"/>
+            <!-- wings -->
+            <path d="M50 40 C40 28 26 26 16 32 c10 1 15 6 18 11 -7-2-12-1-16 2 8 1 13 4 17 9 6 7 11 10 15 11z" fill="url(#gold)"/>
+            <path d="M50 40 C60 28 74 26 84 32 c-10 1-15 6-18 11 7-2 12-1 16 2-8 1-13 4-17 9-6 7-11 10-15 11z" fill="url(#gold)"/>
+            <!-- head + body -->
+            <path d="M50 30 c4 0 7 3 7 7 0 3-2 5-4 6l6 3-9 2 3 24-3 4-3-4 3-24-9-2 6-3c-2-1-4-3-4-6 0-4 3-7 7-7z" fill="url(#gold)"/>
+            <path d="M57 36 l7 2-7 3z" fill="#F7DE9A"/>
+            <!-- open book -->
+            <path d="M28 72 c8-4 15-4 22-1 7-3 14-3 22 1-8 5-15 5-22 2-7 3-14 3-22-2z" fill="url(#gold)"/>
+          </svg>
+        </span>
+        <span class="wordmark">
+          <span>MANJUNATH</span>
+          <span>ACADEMY</span>
+        </span>
+      {% endif %}
     </a>
 
     <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="primaryNav" aria-label="Open menu">
@@ -1007,39 +1045,45 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         <li><a href="#contact-us">Contact</a></li>
       </ul>
       <div class="header-actions">
-        <a class="chip chip-yt" href="{% url 'index' %}#results">
+        <a class="chip chip-yt" href="{{ site_settings.youtube_url|default:'#' }}" {% if site_settings.youtube_url %}target="_blank" rel="noopener"{% endif %}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF0000" d="M23 12s0-3.4-.4-5a2.7 2.7 0 0 0-1.9-1.9C19 4.7 12 4.7 12 4.7s-7 0-8.7.4A2.7 2.7 0 0 0 1.4 7C1 8.6 1 12 1 12s0 3.4.4 5a2.7 2.7 0 0 0 1.9 1.9c1.7.4 8.7.4 8.7.4s7 0 8.7-.4A2.7 2.7 0 0 0 22.6 17c.4-1.6.4-5 .4-5Z"/><path fill="#fff" d="M9.8 15.3 15.5 12 9.8 8.7v6.6Z"/></svg>
           <span class="chip-label">YouTube</span>
         </a>
-        <a class="chip chip-wa" href="{% url 'index' %}#contact">
+        <a class="chip chip-wa" href="{{ site_settings.whatsapp_link|default:'#' }}" {% if site_settings.whatsapp_link %}target="_blank" rel="noopener"{% endif %}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#25D366" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Z"/><path fill="#fff" d="M8.5 7.3c.2-.5.4-.5.6-.5h.5c.2 0 .4 0 .6.5l.8 1.9c.1.3 0 .5-.1.6l-.5.6c-.2.2-.3.4-.1.7a7.5 7.5 0 0 0 3.5 3c.4.2.6.1.8-.1l.6-.7c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.3.4.5 0 .9-.7 1.7-1.5 1.9-1.6.3-3.8-.6-5.6-2.2-1.8-1.7-2.8-3.7-2.7-5.2 0-.7.2-1.3.3-1.7Z"/></svg>
           <span class="chip-label">WhatsApp</span>
         </a>
-        {% if user.is_authenticated %}
-          <div class="nav-user-menu" id="navUserMenu">
-            <button type="button" class="nav-user-trigger" id="navUserTrigger" aria-haspopup="true" aria-expanded="false">
-              <span class="nav-user-avatar">{{ user.name|default:user.email|first|upper }}</span>
-              <span class="nav-user-trigger-text">Hi, {{ user.name|default:user.email }}</span>
-              <svg class="nav-user-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="nav-user-dropdown" id="navUserDropdown">
-              {% if user.is_staff %}
-                <a href="{% url 'panel_signups' %}">🛠️ Admin panel</a>
-                <hr>
-              {% endif %}
-              <a href="{% url 'account_edit' %}">✏️ Update account details</a>
-              <a href="{% url 'account_password' %}">🔒 Edit password</a>
-              <a href="{% url 'account_purchases' %}">🛍️ My purchases</a>
-              <hr>
-              <a href="{% url 'logout' %}" class="nav-user-logout">🚪 Logout</a>
-            </div>
-          </div>
-        {% else %}
+        {% if not user.is_authenticated %}
           <a class="btn btn-ghost btn-sm" href="{% url 'login' %}">Login</a>
           <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Join for Free</a>
         {% endif %}
       </div>
     </nav>
+
+    {% if user.is_authenticated %}
+      <div class="nav-user-menu" id="navUserMenu">
+        <button type="button" class="nav-user-trigger" id="navUserTrigger" aria-haspopup="true" aria-expanded="false">
+          {% if user.profile_picture %}
+            <img class="nav-user-avatar" src="{{ user.profile_picture.url }}" alt="">
+          {% else %}
+            <span class="nav-user-avatar">{{ user.name|default:user.email|first|upper }}</span>
+          {% endif %}
+          <span class="nav-user-trigger-text">Hi, {{ user.name|default:user.email }}</span>
+          <svg class="nav-user-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-user-dropdown" id="navUserDropdown">
+          {% if user.is_staff %}
+            <a href="{% url 'panel_signups' %}">🛠️ Admin panel</a>
+            <hr>
+          {% endif %}
+          <a href="{% url 'account_edit' %}">✏️ Update account details</a>
+          <a href="{% url 'account_password' %}">🔒 Edit password</a>
+          <a href="{% url 'account_purchases' %}">🛍️ My purchases</a>
+          <hr>
+          <a href="{% url 'logout' %}" class="nav-user-logout">🚪 Logout</a>
+        </div>
+      </div>
+    {% endif %}
   </div>
 </header>
 
@@ -1056,8 +1100,8 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         <a href="#" aria-label="Facebook">📘</a>
         <a href="#" aria-label="Twitter/X">✖️</a>
         <a href="#" aria-label="Telegram">✈️</a>
-        <a href="#" aria-label="YouTube">▶️</a>
-        <a href="https://wa.me/915220000000" aria-label="WhatsApp">💬</a>
+        <a href="{{ site_settings.youtube_url|default:'#' }}" aria-label="YouTube">▶️</a>
+        <a href="{{ site_settings.whatsapp_link|default:'https://wa.me/915220000000' }}" aria-label="WhatsApp">💬</a>
       </div>
     </div>
     <div>

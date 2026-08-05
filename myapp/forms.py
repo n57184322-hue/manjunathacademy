@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from .models import CustomUser
+from .models import BannerSlide, CustomUser, SiteSettings
 
 STATE_CHOICES = [
     ('', 'Select state'),
@@ -65,7 +65,7 @@ class EmailAuthenticationForm(AuthenticationForm):
 class AccountUpdateForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ('name', 'number', 'age', 'gender', 'state', 'city')
+        fields = ('profile_picture', 'name', 'number', 'age', 'gender', 'state', 'city')
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Your full name'}),
             'number': forms.TextInput(attrs={'placeholder': '10-digit mobile number'}),
@@ -73,12 +73,52 @@ class AccountUpdateForm(forms.ModelForm):
             'state': forms.Select(choices=STATE_CHOICES),
             'city': forms.Select(choices=CITY_CHOICES),
         }
+        help_texts = {
+            'profile_picture': 'Square image works best, e.g. 300×300px. Max 2MB.',
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['name'].required = True
         self.fields['number'].required = True
+        self.fields['profile_picture'].required = False
         self.fields['age'].required = False
         self.fields['gender'].required = False
         self.fields['state'].required = False
         self.fields['city'].required = False
+
+
+class NavbarCustomizationForm(forms.ModelForm):
+    class Meta:
+        model = SiteSettings
+        fields = ('logo_type', 'logo_image', 'favicon', 'youtube_url', 'whatsapp_number')
+        widgets = {
+            'logo_type': forms.RadioSelect(),
+            'youtube_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/@yourchannel'}),
+            'whatsapp_number': forms.TextInput(attrs={'placeholder': 'e.g. 915220000000'}),
+        }
+        help_texts = {
+            'logo_image': 'Recommended size: 200×60px (transparent PNG works best). Max 1MB.',
+            'favicon': 'Recommended size: 512×512px, square PNG or ICO. Shown in the browser tab.',
+            'whatsapp_number': 'Digits only, with country code, no + or spaces (e.g. 915220000000).',
+        }
+
+
+class BannerSlideForm(forms.ModelForm):
+    class Meta:
+        model = BannerSlide
+        fields = ('kicker', 'title', 'subtitle', 'button_text', 'button_link', 'image', 'image_url', 'order', 'is_active')
+        widgets = {
+            'kicker': forms.TextInput(attrs={'placeholder': 'e.g. Admissions open'}),
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. New Batch Starting Soon'}),
+            'subtitle': forms.TextInput(attrs={'placeholder': 'A short supporting line'}),
+            'button_text': forms.TextInput(attrs={'placeholder': 'e.g. See the batch plan'}),
+            'button_link': forms.TextInput(attrs={'placeholder': 'e.g. #popular-courses'}),
+            'image_url': forms.URLInput(attrs={'placeholder': 'https://example.com/photo.jpg'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'image': 'Recommended size: 1400×500px (wide photo). JPG or PNG, under 2MB.',
+            'image_url': 'Used only if no image is uploaded above.',
+            'order': 'Lower numbers show first.',
+        }

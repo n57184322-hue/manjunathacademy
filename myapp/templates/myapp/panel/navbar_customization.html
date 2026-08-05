@@ -1,0 +1,131 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Navbar Customization{% endblock %}
+{% block page_title %}Navbar Customization{% endblock %}
+{% block page_sub %}Control the logo, favicon and social links shown in the site header{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_navbar_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:28px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-radio-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.custom-radio{
+  display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 16px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.15s ease;
+}
+.custom-radio:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-deep)}
+.custom-radio input{accent-color:var(--orange)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:48px;max-width:160px;display:block}
+.custom-preview-fav img{max-height:32px;max-width:32px;border-radius:6px}
+.custom-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:26px 0}
+.custom-field{margin-bottom:16px}
+.custom-field:last-child{margin-bottom:0}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input[type="file"],.custom-field input[type="text"],.custom-field input[type="url"]{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:420px;
+}
+.custom-field input:focus{outline:2px solid var(--orange);outline-offset:1px}
+#logoImageField{display:none}
+#logoImageField.is-visible{display:block}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>Logo</h3>
+      <p class="custom-section-sub">Choose whether the header shows a text wordmark or an uploaded image logo.</p>
+
+      <div class="custom-radio-row" id="logoTypeRow">
+        {% for radio in form.logo_type %}
+          <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+      </div>
+
+      <div id="logoImageField" class="custom-field">
+        <label>Logo image</label>
+        {{ form.logo_image }}
+        <p class="custom-help">{{ form.logo_image.help_text }}</p>
+        {% if form.logo_image.errors %}<ul class="panel-errors">{% for e in form.logo_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if site_settings.logo_image %}
+          <div class="custom-preview">
+            <img src="{{ site_settings.logo_image.url }}" alt="Current logo">
+            <span class="custom-preview-label">Current logo</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Favicon</h3>
+      <p class="custom-section-sub">The small icon shown in the browser tab.</p>
+      <div class="custom-field">
+        {{ form.favicon }}
+        <p class="custom-help">{{ form.favicon.help_text }}</p>
+        {% if form.favicon.errors %}<ul class="panel-errors">{% for e in form.favicon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if site_settings.favicon %}
+          <div class="custom-preview custom-preview-fav">
+            <img src="{{ site_settings.favicon.url }}" alt="Current favicon">
+            <span class="custom-preview-label">Current favicon</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Social links</h3>
+      <p class="custom-section-sub">Update the YouTube and WhatsApp links shown as chips in the header.</p>
+
+      <div class="custom-field">
+        <label>YouTube channel link</label>
+        {{ form.youtube_url }}
+        {% if form.youtube_url.errors %}<ul class="panel-errors">{% for e in form.youtube_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="custom-field">
+        <label>WhatsApp number</label>
+        {{ form.whatsapp_number }}
+        <p class="custom-help">{{ form.whatsapp_number.help_text }}</p>
+        {% if form.whatsapp_number.errors %}<ul class="panel-errors">{% for e in form.whatsapp_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var radios = document.querySelectorAll('#logoTypeRow input[type="radio"]');
+  var imageField = document.getElementById('logoImageField');
+
+  function syncVisibility() {
+    var checked = document.querySelector('#logoTypeRow input[type="radio"]:checked');
+    imageField.classList.toggle('is-visible', !!checked && checked.value === 'image');
+  }
+
+  radios.forEach(function (r) { r.addEventListener('change', syncVisibility); });
+  syncVisibility();
+})();
+{% endblock %}

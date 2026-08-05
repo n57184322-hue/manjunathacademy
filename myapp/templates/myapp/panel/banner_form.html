@@ -1,0 +1,96 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Banner Slide{% endblock %}
+{% block page_title %}{% if is_new %}Add banner slide{% else %}Edit banner slide{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_banner_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.banner-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.banner-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.banner-preview img{max-height:80px;max-width:220px;border-radius:8px;object-fit:cover}
+.banner-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.banner-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new slide{% else %}Editing: {{ slide.title }}{% endif %}</h2>
+      <p>Both text and image are fully editable.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_banner_list' %}">← Back to slides</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Kicker (small label)</span>
+      {{ form.kicker }}
+      {% if form.kicker.errors %}<ul class="panel-errors">{% for e in form.kicker.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Subtitle</span>
+      {{ form.subtitle }}
+      {% if form.subtitle.errors %}<ul class="panel-errors">{% for e in form.subtitle.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row banner-form-row">
+      <label><span class="panel-label-text">Button text</span>
+        {{ form.button_text }}
+      </label>
+      <label><span class="panel-label-text">Button link</span>
+        {{ form.button_link }}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Upload image</span>
+      {{ form.image }}
+      <p class="custom-help">{{ form.image.help_text }}</p>
+      {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Or image URL</span>
+      {{ form.image_url }}
+      <p class="custom-help">{{ form.image_url.help_text }}</p>
+      {% if form.image_url.errors %}<ul class="panel-errors">{% for e in form.image_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if slide.display_image_url %}
+      <div class="banner-preview">
+        <img src="{{ slide.display_image_url }}" alt="Current slide image">
+        <span class="banner-preview-label">Current image</span>
+      </div>
+    {% endif %}
+
+    <div class="panel-form-row banner-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show on homepage
+      </label>
+    </div>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add slide{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_banner_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

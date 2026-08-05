@@ -1,0 +1,90 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Banner Customization{% endblock %}
+{% block page_title %}Banner Customization{% endblock %}
+{% block page_sub %}Edit the homepage sliding banner — add, edit or remove slides{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_banner_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.banner-thumb{
+  width:64px;height:40px;border-radius:8px;object-fit:cover;background:#F3F4F6;flex:0 0 auto;
+}
+.banner-thumb-empty{
+  width:64px;height:40px;border-radius:8px;background:#F3F4F6;display:grid;place-items:center;
+  color:var(--muted);font-size:11px;flex:0 0 auto;
+}
+.banner-cell{display:flex;align-items:center;gap:12px}
+.banner-title-text{font-weight:700;color:var(--ink)}
+.banner-kicker-text{font-size:12px;color:var(--muted)}
+.banner-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Banner slides</h2>
+      <p>{{ slides|length }} slide{{ slides|length|pluralize }} — shown in order on the homepage</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_banner_add' %}">+ Add slide</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if slides %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Slide</th>
+            <th>Button</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for slide in slides %}
+          <tr>
+            <td>{{ slide.order }}</td>
+            <td>
+              <div class="banner-cell">
+                {% if slide.display_image_url %}
+                  <img class="banner-thumb" src="{{ slide.display_image_url }}" alt="">
+                {% else %}
+                  <span class="banner-thumb-empty">No image</span>
+                {% endif %}
+                <div>
+                  {% if slide.kicker %}<div class="banner-kicker-text">{{ slide.kicker }}</div>{% endif %}
+                  <div class="banner-title-text">{{ slide.title }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ slide.button_text|default:"—" }}</td>
+            <td>{% if slide.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="banner-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_banner_edit' slide.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_banner_delete' slide.pk %}" onsubmit="return confirm('Delete this banner slide?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🖼️</span>No banner slides yet — the homepage shows its default banner until you add one.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -2,16 +2,17 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from .forms import AccountUpdateForm, EmailAuthenticationForm, SignupForm
-from .models import CustomUser
+from .forms import AccountUpdateForm, BannerSlideForm, EmailAuthenticationForm, NavbarCustomizationForm, SignupForm
+from .models import BannerSlide, CustomUser, SiteSettings
 
 
 def index(request):
-    return render(request, 'myapp/index.html')
+    banner_slides = BannerSlide.objects.filter(is_active=True)
+    return render(request, 'myapp/index.html', {'banner_slides': banner_slides})
 
 
 def signup(request):
@@ -49,7 +50,7 @@ def logout_view(request):
 @login_required(login_url='login')
 def account_edit(request):
     if request.method == 'POST':
-        form = AccountUpdateForm(request.POST, instance=request.user)
+        form = AccountUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your account details have been updated.')
@@ -82,14 +83,16 @@ def _is_staff(user):
 @login_required(login_url='login')
 @user_passes_test(_is_staff, login_url='login')
 def panel_signups(request):
-    users = CustomUser.objects.order_by('-date_joined')
+    # Superadmin/admin accounts are internal and never listed as signups.
+    students = CustomUser.objects.filter(is_superuser=False)
     week_ago = timezone.now() - timezone.timedelta(days=7)
     stats = {
-        'total': users.count(),
-        'admins': users.filter(is_superuser=True).count(),
-        'students': users.filter(is_superuser=False).count(),
-        'this_week': users.filter(date_joined__gte=week_ago).count(),
+        'total': students.count(),
+        'admins': CustomUser.objects.filter(is_superuser=True).count(),
+        'students': students.count(),
+        'this_week': students.filter(date_joined__gte=week_ago).count(),
     }
+    users = students.order_by('-date_joined')
     return render(request, 'myapp/panel/signups_list.html', {'users': users, 'stats': stats})
 
 
@@ -106,3 +109,68 @@ def panel_signup_add(request):
         form = SignupForm()
 
     return render(request, 'myapp/panel/signup_add.html', {'form': form})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_navbar_customization(request):
+    site_settings = SiteSettings.load()
+    if request.method == 'POST':
+        form = NavbarCustomizationForm(request.POST, request.FILES, instance=site_settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Navbar customization saved.')
+            return redirect('panel_navbar_customization')
+    else:
+        form = NavbarCustomizationForm(instance=site_settings)
+
+    return render(request, 'myapp/panel/navbar_customization.html', {'form': form, 'site_settings': site_settings})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_banner_list(request):
+    slides = BannerSlide.objects.all()
+    return render(request, 'myapp/panel/banner_list.html', {'slides': slides})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_banner_add(request):
+    if request.method == 'POST':
+        form = BannerSlideForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Banner slide added.')
+            return redirect('panel_banner_list')
+    else:
+        form = BannerSlideForm(initial={'order': BannerSlide.objects.count()})
+
+    return render(request, 'myapp/panel/banner_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_banner_edit(request, pk):
+    slide = get_object_or_404(BannerSlide, pk=pk)
+
+    if request.method == 'POST':
+        form = BannerSlideForm(request.POST, request.FILES, instance=slide)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Banner slide updated.')
+            return redirect('panel_banner_list')
+    else:
+        form = BannerSlideForm(instance=slide)
+
+    return render(request, 'myapp/panel/banner_form.html', {'form': form, 'is_new': False, 'slide': slide})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_banner_delete(request, pk):
+    slide = get_object_or_404(BannerSlide, pk=pk)
+    if request.method == 'POST':
+        slide.delete()
+        messages.success(request, 'Banner slide deleted.')
+    return redirect('panel_banner_list')
