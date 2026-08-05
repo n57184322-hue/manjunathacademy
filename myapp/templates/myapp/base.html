@@ -248,6 +248,14 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
 .menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
+.back-bar{padding:16px 0 0}
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
+  padding:8px 16px;border-radius:var(--r-pill);font-weight:700;font-size:13.5px;color:var(--ink);
+  cursor:pointer;transition:.15s ease;font-family:inherit;
+}
+.back-btn:hover{border-color:rgba(249,115,22,.45);color:var(--orange-deep);transform:translateX(-2px)}
+
 /* ============================================================
    SLIDING ADVERTISEMENT BANNER
    ============================================================ */
@@ -1115,6 +1123,17 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   </div>
 </header>
 
+{% if request.path != '/' %}
+<div class="back-bar">
+  <div class="wrap">
+    <button type="button" class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </button>
+  </div>
+</div>
+{% endif %}
+
 {% block content %}{% endblock %}
 
 <!-- ================= FOOTER ================= -->
@@ -1175,6 +1194,19 @@ document.addEventListener('DOMContentLoaded', function () {
   if (topLoader) {
     document.querySelectorAll('a[href$="/login/"], a[href$="/signup/"]').forEach((link) => {
       link.addEventListener('click', () => topLoader.classList.add('is-active'));
+    });
+  }
+
+  /* ---------- 0a-2. Back button ---------- */
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      const cameFromSameSite = document.referrer && document.referrer.indexOf(window.location.origin) === 0;
+      if (cameFromSameSite && window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '{% url "index" %}';
+      }
     });
   }
 
