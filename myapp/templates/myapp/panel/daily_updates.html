@@ -1,0 +1,198 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Daily Updates{% endblock %}
+{% block page_title %}Daily Updates{% endblock %}
+{% block page_sub %}Edit the two homepage cards and manage the Current Affairs / Daily News posts{% endblock %}
+{% block nav_daily_updates %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-radio-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.custom-radio{
+  display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 16px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.15s ease;
+}
+.custom-radio:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-deep)}
+.custom-radio input{accent-color:var(--orange)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:80px;max-width:160px;display:block;border-radius:8px;object-fit:cover}
+.custom-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-field{margin-bottom:16px}
+.custom-field:last-child{margin-bottom:0}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input[type="text"],.custom-field input[type="file"]{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:420px;
+}
+.custom-field input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+[id^="imgField"]{display:none}
+[id^="imgField"].is-visible{display:block}
+.post-cell{max-width:320px;white-space:normal}
+.post-title-cell{font-weight:700;color:var(--ink)}
+.post-body-cell{font-size:12.5px;color:var(--muted)}
+.post-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+@media (max-width:900px){.card-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+  {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+{% endif %}
+
+<div class="card-grid">
+  <div class="panel-card">
+    <div class="custom-section">
+      <h3>Current Affairs card</h3>
+      <p class="custom-section-sub">The left card in the homepage Daily Updates section.</p>
+    </div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="card" value="current_affairs">
+      <div class="custom-field"><label>Title</label>{{ current_form.title }}</div>
+      <div class="custom-field"><label>Caption</label>{{ current_form.caption }}</div>
+      <div class="custom-field"><label>Button text</label>{{ current_form.button_text }}</div>
+
+      <div class="custom-radio-row" id="visualTypeRow1">
+        {% for radio in current_form.visual_type %}
+          <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+      </div>
+      <div id="illusField1" class="custom-field">
+        <label>Illustration style</label>
+        <div class="custom-radio-row">
+          {% for radio in current_form.illustration_style %}
+            <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+          {% endfor %}
+        </div>
+      </div>
+      <div id="imgField1" class="custom-field">
+        <label>Image</label>
+        {{ current_form.image }}
+        <p class="custom-help">{{ current_form.image.help_text }}</p>
+        {% if current_form.instance.image %}
+          <div class="custom-preview"><img src="{{ current_form.instance.image.url }}" alt=""><span class="custom-preview-label">Current image</span></div>
+        {% endif %}
+      </div>
+
+      <div class="panel-form-actions" style="margin-top:20px">
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel-card">
+    <div class="custom-section">
+      <h3>Daily News card</h3>
+      <p class="custom-section-sub">The right card in the homepage Daily Updates section.</p>
+    </div>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="card" value="daily_news">
+      <div class="custom-field"><label>Title</label>{{ news_form.title }}</div>
+      <div class="custom-field"><label>Caption</label>{{ news_form.caption }}</div>
+      <div class="custom-field"><label>Button text</label>{{ news_form.button_text }}</div>
+
+      <div class="custom-radio-row" id="visualTypeRow2">
+        {% for radio in news_form.visual_type %}
+          <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+      </div>
+      <div id="illusField2" class="custom-field">
+        <label>Illustration style</label>
+        <div class="custom-radio-row">
+          {% for radio in news_form.illustration_style %}
+            <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+          {% endfor %}
+        </div>
+      </div>
+      <div id="imgField2" class="custom-field">
+        <label>Image</label>
+        {{ news_form.image }}
+        <p class="custom-help">{{ news_form.image.help_text }}</p>
+        {% if news_form.instance.image %}
+          <div class="custom-preview"><img src="{{ news_form.instance.image.url }}" alt=""><span class="custom-preview-label">Current image</span></div>
+        {% endif %}
+      </div>
+
+      <div class="panel-form-actions" style="margin-top:20px">
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Posts</h2>
+      <p>{{ posts|length }} post{{ posts|length|pluralize }} — shown on the Current Affairs / Daily News pages</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_daily_post_add' %}">+ Add post</a>
+  </div>
+
+  {% if posts %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Post</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in posts %}
+          <tr>
+            <td>{% if post.category == 'current_affairs' %}<span class="panel-badge">Current Affairs</span>{% else %}<span class="panel-badge panel-badge-muted">Daily News</span>{% endif %}</td>
+            <td class="post-cell">
+              <div class="post-title-cell">{{ post.title }}</div>
+              <div class="post-body-cell">{{ post.body|truncatechars:90 }}</div>
+            </td>
+            <td>{% if post.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="post-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_daily_post_edit' post.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_daily_post_delete' post.pk %}" onsubmit="return confirm('Delete this post?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">📰</span>No posts yet — the Current Affairs and Daily News pages will show nothing.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  function wire(rowId, illusId, imgId) {
+    var row = document.getElementById(rowId);
+    var illusField = document.getElementById(illusId);
+    var imgField = document.getElementById(imgId);
+    if (!row) return;
+    function sync() {
+      var checked = row.querySelector('input[type="radio"]:checked');
+      var value = checked ? checked.value : '';
+      illusField.classList.toggle('is-visible', value === 'illustration');
+      imgField.classList.toggle('is-visible', value === 'image');
+    }
+    row.querySelectorAll('input[type="radio"]').forEach(function (r) { r.addEventListener('change', sync); });
+    sync();
+  }
+  wire('visualTypeRow1', 'illusField1', 'imgField1');
+  wire('visualTypeRow2', 'illusField2', 'imgField2');
+})();
+{% endblock %}

@@ -252,3 +252,79 @@ class HeroSection(models.Model):
 
     def __str__(self):
         return 'Hero section'
+
+
+class DailyUpdateCard(models.Model):
+    CURRENT_AFFAIRS = 'current_affairs'
+    DAILY_NEWS = 'daily_news'
+    KEY_CHOICES = [
+        (CURRENT_AFFAIRS, 'Current Affairs'),
+        (DAILY_NEWS, 'Daily News'),
+    ]
+
+    VISUAL_ILLUSTRATION = 'illustration'
+    VISUAL_IMAGE = 'image'
+    VISUAL_TYPE_CHOICES = [
+        (VISUAL_ILLUSTRATION, 'Default illustration'),
+        (VISUAL_IMAGE, 'Image'),
+    ]
+
+    ILLUSTRATION_CHOICES = [
+        ('reading', 'Reading on a couch'),
+        ('quiz', 'On a video call'),
+        ('news', 'Reading the newspaper'),
+    ]
+
+    key = models.CharField(max_length=20, choices=KEY_CHOICES, unique=True)
+    title = models.CharField(max_length=100)
+    caption = models.CharField(max_length=200, blank=True)
+    button_text = models.CharField(max_length=50, blank=True)
+    visual_type = models.CharField(max_length=15, choices=VISUAL_TYPE_CHOICES, default=VISUAL_ILLUSTRATION)
+    illustration_style = models.CharField(max_length=15, choices=ILLUSTRATION_CHOICES, default='reading')
+    image = models.ImageField(upload_to='daily_updates/', blank=True, null=True, help_text='Used when visual type is "Image". Recommended size: 340×190px.')
+
+    DEFAULTS = {
+        CURRENT_AFFAIRS: {
+            'title': 'Current Affairs',
+            'caption': 'Brief updates on all the recent happening',
+            'button_text': 'Continue Reading',
+            'illustration_style': 'reading',
+        },
+        DAILY_NEWS: {
+            'title': 'Daily News',
+            'caption': 'Daily nuggets of news for you to ponder on',
+            'button_text': 'Read Now',
+            'illustration_style': 'quiz',
+        },
+    }
+
+    class Meta:
+        ordering = ['key']
+        verbose_name = 'Daily update card'
+
+    @classmethod
+    def load(cls, key):
+        obj, _ = cls.objects.get_or_create(key=key, defaults={'key': key, **cls.DEFAULTS[key]})
+        return obj
+
+    def __str__(self):
+        return self.title
+
+
+class DailyUpdatePost(models.Model):
+    CURRENT_AFFAIRS = DailyUpdateCard.CURRENT_AFFAIRS
+    DAILY_NEWS = DailyUpdateCard.DAILY_NEWS
+    CATEGORY_CHOICES = DailyUpdateCard.KEY_CHOICES
+
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    title = models.CharField(max_length=200)
+    body = models.TextField()
+    image = models.ImageField(upload_to='daily_updates/posts/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title

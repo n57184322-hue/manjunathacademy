@@ -2,6 +2,7 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -11,18 +12,39 @@ from .forms import (
     BannerSlideForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
+    DailyUpdateCardForm,
+    DailyUpdatePostForm,
     EmailAuthenticationForm,
     HeroSectionForm,
     NavbarCustomizationForm,
     NotificationForm,
     SignupForm,
 )
-from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, HeroSection, Notification, SiteSettings
+from .models import (
+    BannerSlide,
+    ChatbotQuestion,
+    ChatbotSettings,
+    CustomUser,
+    DailyUpdateCard,
+    DailyUpdatePost,
+    HeroSection,
+    Notification,
+    SiteSettings,
+)
 
 
 def index(request):
     banner_slides = BannerSlide.objects.filter(is_active=True)
     return render(request, 'myapp/index.html', {'banner_slides': banner_slides})
+
+
+def daily_updates_page(request, category):
+    if category not in dict(DailyUpdateCard.KEY_CHOICES):
+        raise Http404
+
+    card = DailyUpdateCard.load(category)
+    posts = DailyUpdatePost.objects.filter(category=category, is_active=True)
+    return render(request, 'myapp/daily_updates_page.html', {'card': card, 'posts': posts})
 
 
 def signup(request):
@@ -308,6 +330,80 @@ def panel_hero_section(request):
         form = HeroSectionForm(instance=hero)
 
     return render(request, 'myapp/panel/hero_section.html', {'form': form, 'hero': hero})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_daily_updates(request):
+    current_card = DailyUpdateCard.load(DailyUpdateCard.CURRENT_AFFAIRS)
+    news_card = DailyUpdateCard.load(DailyUpdateCard.DAILY_NEWS)
+
+    if request.method == 'POST' and request.POST.get('card') == DailyUpdateCard.CURRENT_AFFAIRS:
+        current_form = DailyUpdateCardForm(request.POST, request.FILES, instance=current_card)
+        news_form = DailyUpdateCardForm(instance=news_card)
+        if current_form.is_valid():
+            current_form.save()
+            messages.success(request, 'Current Affairs card updated.')
+            return redirect('panel_daily_updates')
+    elif request.method == 'POST' and request.POST.get('card') == DailyUpdateCard.DAILY_NEWS:
+        news_form = DailyUpdateCardForm(request.POST, request.FILES, instance=news_card)
+        current_form = DailyUpdateCardForm(instance=current_card)
+        if news_form.is_valid():
+            news_form.save()
+            messages.success(request, 'Daily News card updated.')
+            return redirect('panel_daily_updates')
+    else:
+        current_form = DailyUpdateCardForm(instance=current_card)
+        news_form = DailyUpdateCardForm(instance=news_card)
+
+    posts = DailyUpdatePost.objects.all()
+    return render(request, 'myapp/panel/daily_updates.html', {
+        'current_form': current_form,
+        'news_form': news_form,
+        'posts': posts,
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_daily_post_add(request):
+    if request.method == 'POST':
+        form = DailyUpdatePostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Post added.')
+            return redirect('panel_daily_updates')
+    else:
+        form = DailyUpdatePostForm()
+
+    return render(request, 'myapp/panel/daily_post_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_daily_post_edit(request, pk):
+    post = get_object_or_404(DailyUpdatePost, pk=pk)
+
+    if request.method == 'POST':
+        form = DailyUpdatePostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Post updated.')
+            return redirect('panel_daily_updates')
+    else:
+        form = DailyUpdatePostForm(instance=post)
+
+    return render(request, 'myapp/panel/daily_post_form.html', {'form': form, 'is_new': False, 'post': post})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_daily_post_delete(request, pk):
+    post = get_object_or_404(DailyUpdatePost, pk=pk)
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Post deleted.')
+    return redirect('panel_daily_updates')
 
 
 

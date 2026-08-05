@@ -1,4 +1,4 @@
-from .models import ChatbotQuestion, ChatbotSettings, HeroSection, Notification, SiteSettings
+from .models import ChatbotQuestion, ChatbotSettings, DailyUpdateCard, HeroSection, Notification, SiteSettings
 
 
 def site_settings(request):
@@ -8,4 +8,6 @@ def site_settings(request):
         'chatbot_settings': ChatbotSettings.load(),
         'chatbot_questions': ChatbotQuestion.objects.filter(is_active=True),
         'hero': HeroSection.load(),
+        'daily_current_card': DailyUpdateCard.load(DailyUpdateCard.CURRENT_AFFAIRS),
+        'daily_news_card': DailyUpdateCard.load(DailyUpdateCard.DAILY_NEWS),
     }

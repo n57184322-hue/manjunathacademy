@@ -1,0 +1,51 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ card.title }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ card.caption }}{% endblock %}
+
+{% block extra_style %}
+.daily-page-hero{padding:56px 0 40px;background:var(--peach)}
+.daily-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.daily-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.daily-posts{padding:56px 0 90px}
+.daily-post-card{
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;
+  box-shadow:var(--shadow-sm);margin-bottom:24px;
+}
+.daily-post-card:last-child{margin-bottom:0}
+.daily-post-img{width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin-bottom:18px}
+.daily-post-date{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.daily-post-card h2{font-size:20px;margin:0 0 12px}
+.daily-post-card p{color:#374151;font-size:15px;line-height:1.7;white-space:pre-line;margin:0}
+.daily-empty{text-align:center;padding:60px 0;color:var(--muted)}
+.daily-empty-ico{font-size:36px;display:block;margin-bottom:12px}
+{% endblock %}
+
+{% block content %}
+<section class="daily-page-hero">
+  <div class="wrap">
+    <h1>{{ card.title }}</h1>
+    {% if card.caption %}<p>{{ card.caption }}</p>{% endif %}
+  </div>
+</section>
+
+<section class="daily-posts">
+  <div class="wrap" style="max-width:760px">
+    {% if posts %}
+      {% for post in posts %}
+      <article class="daily-post-card">
+        {% if post.image %}<img class="daily-post-img" src="{{ post.image.url }}" alt="">{% endif %}
+        <p class="daily-post-date">{{ post.created_at|date:"d M Y" }}</p>
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.body }}</p>
+      </article>
+      {% endfor %}
+    {% else %}
+      <div class="daily-empty">
+        <span class="daily-empty-ico">📰</span>
+        Nothing posted here yet — check back soon.
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

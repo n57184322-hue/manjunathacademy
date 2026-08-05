@@ -1,0 +1,65 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Post{% endblock %}
+{% block page_title %}{% if is_new %}Add post{% else %}Edit post{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_daily_updates %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+.panel-form select,.panel-form textarea{
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+  font-size:14px;font-family:inherit;color:var(--ink);resize:vertical;
+}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new post{% else %}Editing: {{ post.title }}{% endif %}</h2>
+      <p>Shown on the public Current Affairs or Daily News page, depending on category.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_daily_updates' %}">← Back to Daily Updates</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Category <span class="req">*</span></span>
+      {{ form.category }}
+      {% if form.category.errors %}<ul class="panel-errors">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Body <span class="req">*</span></span>
+      {{ form.body }}
+      {% if form.body.errors %}<ul class="panel-errors">{% for e in form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Image</span>
+      {{ form.image }}
+      {% if post.image %}<p class="custom-help">Current: {{ post.image.name }}</p>{% endif %}
+      {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label class="panel-form-check">
+      {{ form.is_active }} Show on the site
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add post{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_daily_updates' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

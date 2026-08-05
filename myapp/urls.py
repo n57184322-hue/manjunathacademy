@@ -10,6 +10,8 @@ urlpatterns = [
     path('account/edit/', views.account_edit, name='account_edit'),
     path('account/password/', views.AccountPasswordChangeView.as_view(), name='account_password'),
     path('account/purchases/', views.account_purchases, name='account_purchases'),
+    path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
+    path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
     path('panel/', views.panel_signups, name='panel_signups'),
     path('panel/signups/add/', views.panel_signup_add, name='panel_signup_add'),
     path('panel/customization/navbar/', views.panel_navbar_customization, name='panel_navbar_customization'),
@@ -26,4 +28,8 @@ urlpatterns = [
     path('panel/chatbot/questions/add/', views.panel_chatbot_question_add, name='panel_chatbot_question_add'),
     path('panel/chatbot/questions/<int:pk>/edit/', views.panel_chatbot_question_edit, name='panel_chatbot_question_edit'),
     path('panel/chatbot/questions/<int:pk>/delete/', views.panel_chatbot_question_delete, name='panel_chatbot_question_delete'),
+    path('panel/daily-updates/', views.panel_daily_updates, name='panel_daily_updates'),
+    path('panel/daily-updates/posts/add/', views.panel_daily_post_add, name='panel_daily_post_add'),
+    path('panel/daily-updates/posts/<int:pk>/edit/', views.panel_daily_post_edit, name='panel_daily_post_edit'),
+    path('panel/daily-updates/posts/<int:pk>/delete/', views.panel_daily_post_delete, name='panel_daily_post_delete'),
 ]

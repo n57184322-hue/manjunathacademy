@@ -1,7 +1,17 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, HeroSection, Notification, SiteSettings
+from .models import (
+    BannerSlide,
+    ChatbotQuestion,
+    ChatbotSettings,
+    CustomUser,
+    DailyUpdateCard,
+    DailyUpdatePost,
+    HeroSection,
+    Notification,
+    SiteSettings,
+)
 
 STATE_CHOICES = [
     ('', 'Select state'),
@@ -184,4 +194,25 @@ class HeroSectionForm(forms.ModelForm):
             'primary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #admission or a full https:// URL'}),
             'secondary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #popular-courses or a full https:// URL'}),
             'visual_video_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/watch?v=...'}),
+        }
+
+
+class DailyUpdateCardForm(forms.ModelForm):
+    class Meta:
+        model = DailyUpdateCard
+        fields = ('title', 'caption', 'button_text', 'visual_type', 'illustration_style', 'image')
+        widgets = {
+            'visual_type': forms.RadioSelect(),
+            'illustration_style': forms.RadioSelect(),
+        }
+
+
+class DailyUpdatePostForm(forms.ModelForm):
+    class Meta:
+        model = DailyUpdatePost
+        fields = ('category', 'title', 'body', 'image', 'is_active')
+        widgets = {
+            'category': forms.Select(),
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Union Budget 2026: Key Highlights'}),
+            'body': forms.Textarea(attrs={'rows': 8, 'placeholder': 'Full article text'}),
         }

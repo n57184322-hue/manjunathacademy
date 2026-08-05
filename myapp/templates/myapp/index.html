@@ -250,53 +250,123 @@
       <div class="daily-col">
         <article class="daily-card daily-current">
           <div class="daily-card-top">
-            <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading on a couch">
-              <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
-              <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
-              <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
-              <rect x="185" y="100" width="130" height="70" rx="16" fill="#8FB86B"/>
-              <rect x="185" y="92" width="130" height="24" rx="12" fill="#7CA857"/>
-              <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
-              <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
-              <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
-              <rect x="238" y="140" width="28" height="30" rx="6" fill="#2E6DA4"/>
-              <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
-              <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
-              <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
-            </svg>
+            {% if daily_current_card.visual_type == 'image' and daily_current_card.image %}
+              <img class="daily-illus" src="{{ daily_current_card.image.url }}" alt="">
+            {% elif daily_current_card.illustration_style == 'quiz' %}
+              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person on a video call">
+                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+                <rect x="185" y="100" width="130" height="70" rx="16" fill="#5B5BD6"/>
+                <rect x="185" y="92" width="130" height="24" rx="12" fill="#4A49C4"/>
+                <circle cx="252" cy="118" r="24" fill="#7A3B22"/>
+                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+                <path d="M231 108c2-12 12-18 21-18s19 6 21 18c-4 6-38 6-42 0Z" fill="#5A3420"/>
+                <rect x="238" y="140" width="28" height="30" rx="6" fill="#E7C36B"/>
+                <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
+                <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
+                <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
+              </svg>
+            {% elif daily_current_card.illustration_style == 'news' %}
+              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading the newspaper">
+                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+                <rect x="185" y="100" width="130" height="70" rx="16" fill="#F59E0B"/>
+                <rect x="185" y="92" width="130" height="24" rx="12" fill="#D97706"/>
+                <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
+                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+                <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
+                <path d="M214 148l38-10 38 10-38 10Z" fill="#EDEDED"/>
+                <path d="M214 148l38 10v10l-38-10Z" fill="#D8D8D8"/>
+                <path d="M290 148l-38 10v10l38-10Z" fill="#F7F7F7"/>
+                <rect x="228" y="152" width="16" height="3" fill="#B9B9B9"/>
+                <rect x="228" y="158" width="10" height="3" fill="#B9B9B9"/>
+              </svg>
+            {% else %}
+              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading on a couch">
+                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+                <rect x="185" y="100" width="130" height="70" rx="16" fill="#8FB86B"/>
+                <rect x="185" y="92" width="130" height="24" rx="12" fill="#7CA857"/>
+                <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
+                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+                <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
+                <rect x="238" y="140" width="28" height="30" rx="6" fill="#2E6DA4"/>
+                <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
+                <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
+                <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
+              </svg>
+            {% endif %}
           </div>
           <div class="daily-card-body">
-            <h3>Current<br>Affairs</h3>
+            <h3>{{ daily_current_card.title|linebreaksbr }}</h3>
           </div>
-          <a class="btn-daily btn-daily-red" href="#results">Continue Reading</a>
+          <a class="btn-daily btn-daily-red" href="{% url 'current_affairs_page' %}">{{ daily_current_card.button_text }}</a>
         </article>
-        <p class="daily-caption">Brief updates on all the recent happening</p>
+        <p class="daily-caption">{{ daily_current_card.caption }}</p>
       </div>
 
       <div class="daily-col">
         <article class="daily-card daily-kbc">
           <div class="daily-card-top">
-            <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading news on a laptop">
-              <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
-              <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
-              <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
-              <rect x="185" y="100" width="130" height="70" rx="16" fill="#5B5BD6"/>
-              <rect x="185" y="92" width="130" height="24" rx="12" fill="#4A49C4"/>
-              <circle cx="252" cy="118" r="24" fill="#7A3B22"/>
-              <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
-              <path d="M231 108c2-12 12-18 21-18s19 6 21 18c-4 6-38 6-42 0Z" fill="#5A3420"/>
-              <rect x="238" y="140" width="28" height="30" rx="6" fill="#E7C36B"/>
-              <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
-              <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
-              <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
-            </svg>
+            {% if daily_news_card.visual_type == 'image' and daily_news_card.image %}
+              <img class="daily-illus" src="{{ daily_news_card.image.url }}" alt="">
+            {% elif daily_news_card.illustration_style == 'reading' %}
+              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading on a couch">
+                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+                <rect x="185" y="100" width="130" height="70" rx="16" fill="#8FB86B"/>
+                <rect x="185" y="92" width="130" height="24" rx="12" fill="#7CA857"/>
+                <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
+                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+                <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
+                <rect x="238" y="140" width="28" height="30" rx="6" fill="#2E6DA4"/>
+                <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
+                <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
+                <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
+              </svg>
+            {% elif daily_news_card.illustration_style == 'news' %}
+              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person reading the newspaper">
+                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+                <rect x="185" y="100" width="130" height="70" rx="16" fill="#F59E0B"/>
+                <rect x="185" y="92" width="130" height="24" rx="12" fill="#D97706"/>
+                <circle cx="252" cy="118" r="24" fill="#3A2A22"/>
+                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+                <path d="M233 112c4-10 15-16 19-16s15 6 19 16c-8 4-30 4-38 0Z" fill="#1F1712"/>
+                <path d="M214 148l38-10 38 10-38 10Z" fill="#EDEDED"/>
+                <path d="M214 148l38 10v10l-38-10Z" fill="#D8D8D8"/>
+                <path d="M290 148l-38 10v10l38-10Z" fill="#F7F7F7"/>
+                <rect x="228" y="152" width="16" height="3" fill="#B9B9B9"/>
+                <rect x="228" y="158" width="10" height="3" fill="#B9B9B9"/>
+              </svg>
+            {% else %}
+              <svg class="daily-illus" viewBox="0 0 340 190" role="img" aria-label="Person on a video call">
+                <ellipse cx="255" cy="165" rx="90" ry="18" fill="#000" opacity=".18"/>
+                <rect x="150" y="18" width="4" height="46" fill="#3A2A22"/>
+                <path d="M120 18c0-18 60-18 60 0Z" fill="#3A2A22"/>
+                <rect x="185" y="100" width="130" height="70" rx="16" fill="#5B5BD6"/>
+                <rect x="185" y="92" width="130" height="24" rx="12" fill="#4A49C4"/>
+                <circle cx="252" cy="118" r="24" fill="#7A3B22"/>
+                <circle cx="252" cy="122" r="19" fill="#E7A26B"/>
+                <path d="M231 108c2-12 12-18 21-18s19 6 21 18c-4 6-38 6-42 0Z" fill="#5A3420"/>
+                <rect x="238" y="140" width="28" height="30" rx="6" fill="#E7C36B"/>
+                <rect x="220" y="150" width="64" height="34" rx="6" fill="#EDEDED"/>
+                <rect x="226" y="156" width="52" height="4" rx="2" fill="#B9B9B9"/>
+                <rect x="226" y="164" width="40" height="4" rx="2" fill="#B9B9B9"/>
+              </svg>
+            {% endif %}
           </div>
           <div class="daily-card-body">
-            <h3 class="kbc-title"><span>Daily</span>NEWS</h3>
+            <h3>{{ daily_news_card.title|linebreaksbr }}</h3>
           </div>
-          <a class="btn-daily btn-daily-red" href="#results">Read Now</a>
+          <a class="btn-daily btn-daily-red" href="{% url 'daily_news_page' %}">{{ daily_news_card.button_text }}</a>
         </article>
-        <p class="daily-caption">Daily nuggets of news for you to ponder on</p>
+        <p class="daily-caption">{{ daily_news_card.caption }}</p>
       </div>
 
     </div>
