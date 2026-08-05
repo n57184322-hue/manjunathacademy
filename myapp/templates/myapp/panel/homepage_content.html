@@ -1,0 +1,78 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Homepage Content{% endblock %}
+{% block page_title %}Homepage content{% endblock %}
+{% block page_sub %}Text and image for the Academic Excellence, Gallery preview and About Us sections{% endblock %}
+{% block nav_homepage_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:26px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:24px 0}
+.custom-field{margin-bottom:16px;max-width:520px}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input,.custom-field textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink);width:100%}
+.custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:90px;max-width:160px;border-radius:8px;object-fit:cover}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>Academic Excellence : Results</h3>
+      <div class="custom-field"><label>Heading</label>{{ form.results_heading }}</div>
+      <div class="custom-field"><label>Subtitle</label>{{ form.results_subtitle }}</div>
+      <p class="custom-help">Manage the actual result photos under Customization → Results photos.</p>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Life At Manjunath Academy (gallery preview)</h3>
+      <div class="custom-field"><label>Heading</label>{{ form.gallery_heading }}</div>
+      <div class="custom-field"><label>Subtitle</label>{{ form.gallery_subtitle }}</div>
+      <p class="custom-help">Shows the 5 most recent photos from the Gallery section.</p>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>About Us</h3>
+      <div class="custom-field"><label>Heading</label>{{ form.about_heading }}</div>
+      <div class="custom-field"><label>Paragraph 1</label>{{ form.about_para1 }}</div>
+      <div class="custom-field"><label>Paragraph 2</label>{{ form.about_para2 }}</div>
+      <div class="custom-field"><label>Checklist</label>{{ form.about_checklist }}<p class="custom-help">{{ form.about_checklist.help_text }}</p></div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Badge number</label>{{ form.about_badge_value }}</div>
+        <div class="custom-field"><label>Badge label</label>{{ form.about_badge_label }}</div>
+      </div>
+      <div class="custom-field">
+        <label>Photo</label>
+        {{ form.about_image }}
+        <p class="custom-help">{{ form.about_image.help_text }}</p>
+        {% if content.about_image %}
+          <div class="custom-preview"><img src="{{ content.about_image.url }}" alt=""><span>Current photo</span></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

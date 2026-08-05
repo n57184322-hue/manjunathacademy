@@ -67,6 +67,17 @@ class SiteSettings(models.Model):
     youtube_url = models.URLField(blank=True)
     whatsapp_number = models.CharField(max_length=15, blank=True, help_text='Digits only, with country code, e.g. 915220000000')
 
+    footer_about = models.TextField(blank=True, default='Coaching for government exams, NEET and JEE. Classes online and at the Lucknow centre.')
+    footer_address = models.CharField(max_length=200, blank=True, default='Hazratganj, Lucknow, Uttar Pradesh')
+    footer_phone = models.CharField(max_length=20, blank=True, default='+915220000000')
+    footer_email = models.EmailField(blank=True, default='hello@manjunathacademy.in')
+    copyright_text = models.CharField(max_length=150, blank=True, default='Manjunath Academy')
+    facebook_url = models.URLField(blank=True)
+    instagram_url = models.URLField(blank=True)
+    twitter_url = models.URLField(blank=True)
+    telegram_url = models.URLField(blank=True)
+    linkedin_url = models.URLField(blank=True)
+
     class Meta:
         verbose_name = 'Site settings'
         verbose_name_plural = 'Site settings'
@@ -448,6 +459,7 @@ class Course(models.Model):
     test_type = models.CharField(max_length=20, choices=TEST_TYPE_CHOICES, blank=True, help_text='Used for Test Series only — e.g. Mock Test, Practice Test.')
     original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     current_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    force_free = models.BooleanField(default=False, verbose_name='Make this free', help_text='Grant free access even if a price is set above')
     enable_validity = models.BooleanField(default=False, help_text='Turn on if access to this course expires after a validity period')
     validity_value = models.PositiveIntegerField(null=True, blank=True, help_text='Length of access, e.g. 6')
     validity_unit = models.CharField(max_length=10, choices=VALIDITY_UNIT_CHOICES, default=VALIDITY_MONTHS, blank=True)
@@ -467,7 +479,7 @@ class Course(models.Model):
 
     @property
     def is_free(self):
-        return not self.current_price or self.current_price <= 0
+        return self.force_free or not self.current_price or self.current_price <= 0
 
     def __str__(self):
         return self.name
@@ -710,6 +722,177 @@ class JobPosting(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class HomepageContent(models.Model):
+    results_heading = models.CharField(max_length=150, blank=True, default='Academic Excellence')
+    results_subtitle = models.CharField(max_length=250, blank=True, default='Giving wings to a millions dreams, a million more to go')
+
+    gallery_heading = models.CharField(max_length=150, blank=True, default='Life At Manjunath Academy')
+    gallery_subtitle = models.CharField(max_length=250, blank=True, default='Classrooms, felicitations, and the moments in between.')
+
+    about_heading = models.CharField(max_length=200, blank=True, default="India's Most Trusted Free Exam Prep Platform")
+    about_para1 = models.TextField(blank=True, default='Online Kaksha was built with one belief — every Indian aspirant deserves world-class government exam preparation without paying a rupee. We provide meticulously crafted PYQs, daily quizzes, and study notes covering Banking, SSC, Railway, CDS, and AFCAT.')
+    about_para2 = models.TextField(blank=True, default='Founded by educators who cleared competitive exams themselves, we understand the grind. Our platform is designed to save your time, sharpen your knowledge, and maximise your selection chances.')
+    about_checklist = models.TextField(blank=True, default='100% free access to PYQs and daily quizzes\nCurated study notes for every major govt exam\nExpert faculty with years of exam experience\nMobile-friendly platform — study anywhere, anytime\nRegular updates aligned with latest exam patterns\nDedicated doubt-solving and community support', help_text='One point per line.')
+    about_badge_value = models.CharField(max_length=20, blank=True, default='50,000+')
+    about_badge_label = models.CharField(max_length=60, blank=True, default='Students')
+    about_image = models.ImageField(upload_to='homepage/', blank=True, null=True, help_text='Recommended size: 760×560px.')
+
+    class Meta:
+        verbose_name = 'Homepage content'
+        verbose_name_plural = 'Homepage content'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def about_checklist_items(self):
+        return [line.strip() for line in self.about_checklist.splitlines() if line.strip()]
+
+    def __str__(self):
+        return 'Homepage content'
+
+
+class ResultHighlight(models.Model):
+    image = models.ImageField(upload_to='results/')
+    caption = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.caption
+
+
+class Bundle(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    courses = models.ManyToManyField(Course, related_name='bundles', blank=True)
+    icon = models.CharField(max_length=10, blank=True, default='🎓', help_text='Emoji shown on the bundle card, e.g. 🎓')
+    badge_label = models.CharField(max_length=100, blank=True, help_text='e.g. All Subjects Included')
+    original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    current_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, default=4.9)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.name
+
+
+class BundlePurchase(models.Model):
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='bundle_purchases')
+    bundle = models.ForeignKey(Bundle, on_delete=models.CASCADE, related_name='purchases')
+    amount_paid = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
+    purchased_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-purchased_at']
+
+    def __str__(self):
+        return f'{self.user} — {self.bundle}'
+
+
+class QuizQuestion(models.Model):
+    OPTION_CHOICES = [('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')]
+
+    level = models.PositiveIntegerField(default=1, help_text='Difficulty order — lower levels are asked first')
+    text = models.TextField(verbose_name='Question')
+    option_a = models.CharField(max_length=200)
+    option_b = models.CharField(max_length=200)
+    option_c = models.CharField(max_length=200)
+    option_d = models.CharField(max_length=200)
+    correct_option = models.CharField(max_length=1, choices=OPTION_CHOICES, default='A')
+    prize_label = models.CharField(max_length=20, blank=True, help_text='Shown on the money ladder, e.g. ₹10,000')
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['level', 'id']
+
+    def __str__(self):
+        return self.text[:60]
+
+
+class EligibilityCriteria(models.Model):
+    EDU_10TH = '10th'
+    EDU_12TH = '12th'
+    EDU_GRADUATE = 'graduate'
+    EDU_POST_GRADUATE = 'post_graduate'
+    EDUCATION_CHOICES = [
+        (EDU_10TH, '10th Pass'),
+        (EDU_12TH, '12th Pass'),
+        (EDU_GRADUATE, 'Graduate'),
+        (EDU_POST_GRADUATE, 'Post Graduate'),
+    ]
+    GENDER_CHOICES = [('any', 'Any'), ('male', 'Male'), ('female', 'Female')]
+    MARITAL_CHOICES = [('any', 'Any'), ('unmarried_only', 'Unmarried Only')]
+
+    job_name = models.CharField(max_length=150)
+    min_education = models.CharField(max_length=15, choices=EDUCATION_CHOICES, default=EDU_10TH)
+    min_age = models.PositiveIntegerField(null=True, blank=True)
+    max_age = models.PositiveIntegerField(null=True, blank=True)
+    min_height_cm = models.PositiveIntegerField(null=True, blank=True, help_text='Leave blank if height does not matter')
+    allowed_gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='any')
+    marital_status = models.CharField(max_length=20, choices=MARITAL_CHOICES, default='any')
+    allowed_states = models.CharField(max_length=500, blank=True, help_text='Comma-separated states this job is open to. Leave blank to allow every state.')
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'job_name']
+        verbose_name_plural = 'Eligibility criteria'
+
+    def __str__(self):
+        return self.job_name
+
+
+class EligibilitySubmission(models.Model):
+    GENDER_CHOICES = [('male', 'Male'), ('female', 'Female'), ('other', 'Other')]
+    MARITAL_CHOICES = [('unmarried', 'Unmarried'), ('married', 'Married')]
+
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='eligibility_submissions')
+    education = models.CharField(max_length=15, choices=EligibilityCriteria.EDUCATION_CHOICES)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+    dob = models.DateField()
+    height_cm = models.PositiveIntegerField()
+    state = models.CharField(max_length=100)
+    district = models.CharField(max_length=100, blank=True)
+    marital_status = models.CharField(max_length=15, choices=MARITAL_CHOICES)
+    matched_jobs = models.TextField(blank=True, help_text='Snapshot of job names the candidate was eligible for at submission time')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    @property
+    def age(self):
+        from datetime import date
+
+        today = date.today()
+        return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+
+    def __str__(self):
+        return f'{self.user} — {self.created_at:%d %b %Y}'
 
 
 class JobApplication(models.Model):

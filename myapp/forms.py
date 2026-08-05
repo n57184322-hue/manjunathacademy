@@ -4,6 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import (
     AdmissionRegistration,
     BannerSlide,
+    Bundle,
     Category,
     ChatbotQuestion,
     ChatbotSettings,
@@ -11,15 +12,19 @@ from .models import (
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
+    EligibilityCriteria,
     GalleryImage,
     HeroSection,
+    HomepageContent,
     JobApplication,
     JobPosting,
     Notification,
     Product,
     PWASettings,
     Question,
+    QuizQuestion,
     RazorpaySettings,
+    ResultHighlight,
     SiteSettings,
     StoreOrder,
 )
@@ -282,7 +287,7 @@ class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
         fields = (
-            'category', 'name', 'test_type', 'original_price', 'current_price',
+            'category', 'name', 'test_type', 'original_price', 'current_price', 'force_free',
             'enable_validity', 'validity_value', 'validity_unit',
             'about', 'thumbnail', 'pdf_file', 'video_file',
             'duration_minutes', 'author', 'pages',
@@ -389,3 +394,140 @@ class CareerApplicationForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'placeholder': '10-digit mobile number'}),
             'cover_note': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Why should we hire you? (optional)'}),
         }
+
+
+class FooterSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SiteSettings
+        fields = (
+            'footer_about', 'footer_address', 'footer_phone', 'footer_email', 'copyright_text',
+            'facebook_url', 'instagram_url', 'twitter_url', 'telegram_url', 'linkedin_url',
+        )
+        widgets = {
+            'footer_about': forms.Textarea(attrs={'rows': 3}),
+            'footer_address': forms.TextInput(attrs={'placeholder': 'e.g. Hazratganj, Lucknow, Uttar Pradesh'}),
+            'footer_phone': forms.TextInput(attrs={'placeholder': '+915220000000'}),
+            'footer_email': forms.EmailInput(attrs={'placeholder': 'hello@example.com'}),
+            'copyright_text': forms.TextInput(attrs={'placeholder': 'Manjunath Academy'}),
+            'facebook_url': forms.URLInput(attrs={'placeholder': 'https://facebook.com/yourpage'}),
+            'instagram_url': forms.URLInput(attrs={'placeholder': 'https://instagram.com/yourhandle'}),
+            'twitter_url': forms.URLInput(attrs={'placeholder': 'https://x.com/yourhandle'}),
+            'telegram_url': forms.URLInput(attrs={'placeholder': 'https://t.me/yourchannel'}),
+            'linkedin_url': forms.URLInput(attrs={'placeholder': 'https://linkedin.com/company/yourpage'}),
+        }
+        help_texts = {
+            'facebook_url': 'Leave blank to hide this icon in the footer.',
+            'instagram_url': 'Leave blank to hide this icon in the footer.',
+            'twitter_url': 'Leave blank to hide this icon in the footer.',
+            'telegram_url': 'Leave blank to hide this icon in the footer.',
+            'linkedin_url': 'Leave blank to hide this icon in the footer.',
+        }
+
+
+class HomepageContentForm(forms.ModelForm):
+    class Meta:
+        model = HomepageContent
+        fields = (
+            'results_heading', 'results_subtitle',
+            'gallery_heading', 'gallery_subtitle',
+            'about_heading', 'about_para1', 'about_para2', 'about_checklist',
+            'about_badge_value', 'about_badge_label', 'about_image',
+        )
+        widgets = {
+            'about_para1': forms.Textarea(attrs={'rows': 4}),
+            'about_para2': forms.Textarea(attrs={'rows': 4}),
+            'about_checklist': forms.Textarea(attrs={'rows': 6}),
+        }
+        help_texts = {
+            'about_checklist': 'One bullet point per line.',
+        }
+
+
+class ResultHighlightForm(forms.ModelForm):
+    class Meta:
+        model = ResultHighlight
+        fields = ('image', 'caption', 'order', 'is_active')
+        widgets = {
+            'caption': forms.TextInput(attrs={'placeholder': 'e.g. Health'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
+        }
+
+
+class CourseMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return f'{obj.get_course_type_display()} — {obj.name}'
+
+
+class BundleForm(forms.ModelForm):
+    courses = CourseMultipleChoiceField(
+        queryset=Course.objects.filter(is_active=True).order_by('course_type', 'name'),
+        widget=forms.CheckboxSelectMultiple(), required=False,
+        help_text='Select every Test Series, Video Course and E-Library item included in this bundle.',
+    )
+
+    class Meta:
+        model = Bundle
+        fields = ('name', 'description', 'courses', 'icon', 'badge_label', 'original_price', 'current_price', 'rating', 'order', 'is_active')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. Unified Syllabus Course'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'What this bundle includes'}),
+            'icon': forms.TextInput(attrs={'placeholder': '🏛'}),
+            'badge_label': forms.TextInput(attrs={'placeholder': 'e.g. All Subjects Included'}),
+            'rating': forms.NumberInput(attrs={'min': 0, 'max': 5, 'step': '0.1'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
+        }
+
+
+class QuizQuestionForm(forms.ModelForm):
+    class Meta:
+        model = QuizQuestion
+        fields = ('level', 'text', 'option_a', 'option_b', 'option_c', 'option_d', 'correct_option', 'prize_label', 'is_active')
+        widgets = {
+            'level': forms.NumberInput(attrs={'min': 1}),
+            'text': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Type the question here'}),
+            'option_a': forms.TextInput(attrs={'placeholder': 'Option A'}),
+            'option_b': forms.TextInput(attrs={'placeholder': 'Option B'}),
+            'option_c': forms.TextInput(attrs={'placeholder': 'Option C'}),
+            'option_d': forms.TextInput(attrs={'placeholder': 'Option D'}),
+            'prize_label': forms.TextInput(attrs={'placeholder': 'e.g. ₹10,000'}),
+        }
+        help_texts = {
+            'level': 'Lower levels are asked first — like a difficulty ladder.',
+        }
+
+
+class EligibilityCriteriaForm(forms.ModelForm):
+    class Meta:
+        model = EligibilityCriteria
+        fields = (
+            'job_name', 'min_education', 'min_age', 'max_age', 'min_height_cm',
+            'allowed_gender', 'marital_status', 'allowed_states', 'description', 'order', 'is_active',
+        )
+        widgets = {
+            'job_name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL'}),
+            'min_age': forms.NumberInput(attrs={'min': 0, 'placeholder': 'e.g. 18'}),
+            'max_age': forms.NumberInput(attrs={'min': 0, 'placeholder': 'e.g. 32'}),
+            'min_height_cm': forms.NumberInput(attrs={'min': 0, 'placeholder': 'e.g. 157'}),
+            'allowed_states': forms.TextInput(attrs={'placeholder': 'Leave blank to allow every state'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
+        }
+
+
+class EligibilityCheckForm(forms.Form):
+    education = forms.ChoiceField(choices=EligibilityCriteria.EDUCATION_CHOICES)
+    gender = forms.ChoiceField(choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
+    dob = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Date of birth')
+    height_cm = forms.IntegerField(min_value=100, max_value=250, label='Height (cm)', widget=forms.NumberInput(attrs={'placeholder': 'e.g. 168'}))
+    state = forms.ChoiceField(choices=[c for c in STATE_CHOICES if c[0]])
+    district = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'e.g. Lucknow'}))
+    marital_status = forms.ChoiceField(choices=[('unmarried', 'Unmarried'), ('married', 'Married')])

@@ -3,6 +3,46 @@
 {% block extra_style %}
 .career-apply-btn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
 .career-modal-form{margin-top:4px}
+
+.quiz-game-modal{position:fixed;inset:0;background:rgba(16,16,18,.65);display:none;align-items:center;justify-content:center;z-index:220;padding:18px}
+.quiz-game-modal.is-open{display:flex}
+.quiz-game-card{background:#fff;border-radius:18px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden;max-height:88vh;display:flex;flex-direction:column}
+.quiz-game-titlebar{background:#1B2030;padding:10px 14px;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.quiz-game-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.quiz-game-dot-red{background:#EF4444}.quiz-game-dot-yellow{background:#EAB308}.quiz-game-dot-green{background:#22C55E}
+.quiz-game-titlebar-label{color:#CBD3E1;font-size:12px;font-weight:700;margin-left:8px;flex:1}
+.quiz-game-titlebar-close{background:none;border:0;color:#CBD3E1;cursor:pointer;font-size:14px;padding:2px 6px}
+.quiz-game-body{padding:24px;overflow-y:auto}
+.quiz-game-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.quiz-game-level{font-size:12.5px;font-weight:800;color:var(--orange-deep);background:var(--orange-soft);padding:5px 12px;border-radius:var(--r-pill)}
+.quiz-game-prize{font-size:12.5px;font-weight:800;color:#374151}
+.quiz-game-question{font-size:16.5px;font-weight:700;color:var(--ink);margin:0 0 18px;line-height:1.5}
+.quiz-game-options{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.quiz-opt-btn{
+  text-align:left;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:#FAFAF9;
+  font-size:14px;font-weight:600;color:#374151;cursor:pointer;transition:.15s ease;font-family:inherit;
+}
+.quiz-opt-btn:hover:not(:disabled){border-color:rgba(249,115,22,.5);background:var(--orange-soft)}
+.quiz-opt-btn:disabled{cursor:default;opacity:.55}
+.quiz-opt-btn.is-correct{background:#ECFDF3;border-color:#15803D;color:#15803D;opacity:1}
+.quiz-opt-btn.is-wrong{background:#FEF2F2;border-color:#DC2626;color:#DC2626;opacity:1}
+.quiz-opt-btn.is-eliminated{visibility:hidden}
+.quiz-game-lifelines{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.quiz-lifeline-btn{
+  padding:8px 14px;border-radius:var(--r-pill);border:1.5px solid var(--line);background:#fff;
+  font-size:12.5px;font-weight:700;color:#374151;cursor:pointer;font-family:inherit;
+}
+.quiz-lifeline-btn:hover:not(:disabled){border-color:rgba(249,115,22,.5);color:var(--orange-deep)}
+.quiz-lifeline-btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-game-audience{display:flex;gap:8px;align-items:flex-end;height:70px;margin-bottom:14px}
+.quiz-audience-bar{flex:1;background:var(--orange-soft);border-radius:6px 6px 0 0;position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:4px}
+.quiz-audience-bar span{position:absolute;top:-18px;font-size:11px;font-weight:800;color:#374151}
+.quiz-audience-bar em{position:absolute;bottom:-18px;font-size:11px;font-style:normal;font-weight:700;color:var(--muted)}
+.quiz-game-feedback{padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:700;margin-bottom:14px}
+.quiz-feedback-correct{background:#ECFDF3;color:#15803D}
+.quiz-feedback-wrong{background:#FEF2F2;color:#DC2626}
+.quiz-feedback-info{background:var(--orange-soft);color:var(--orange-deep)}
+.quiz-game-footer{display:flex;gap:10px;flex-wrap:wrap}
 {% endblock %}
 
 {% block content %}
@@ -386,41 +426,24 @@
     <p class="section-sub">Comprehensive courses for all major government exams with expert guidance and complete study material.</p>
 
     <div class="pc-grid">
+      {% for bundle in bundles %}
       <article class="pc-card">
         <div class="pc-top">
-          <span class="pc-icon pc-icon-grey">🏛</span>
-          <span class="pc-rating">★ 4.9</span>
+          <span class="pc-icon pc-icon-grey">{{ bundle.icon }}</span>
+          <span class="pc-rating">★ {{ bundle.rating }}</span>
         </div>
-        <h3>Unified Syllabus Course</h3>
-        <p>Complete access to all exam courses – Banking, SSC, Railway, AFCAT &amp; CDS</p>
-        <div class="pc-tags"><span>All Subjects Included</span></div>
-        <div class="pc-meta"><span>👥 21,230</span><span>🕐 Lifetime Access</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact">Enroll Now →</a>
-      </article>
-
-      <article class="pc-card">
-        <div class="pc-top">
-          <span class="pc-icon pc-icon-gold">⚜</span>
-          <span class="pc-rating">★ 4.9</span>
+        <h3>{{ bundle.name }}</h3>
+        {% if bundle.description %}<p>{{ bundle.description|truncatechars:110 }}</p>{% endif %}
+        {% if bundle.badge_label %}<div class="pc-tags"><span>{{ bundle.badge_label }}</span></div>{% endif %}
+        <div class="pc-meta">
+          <span>₹{{ bundle.current_price }}</span>
+          {% if bundle.original_price and bundle.original_price != bundle.current_price %}<span><s>₹{{ bundle.original_price }}</s></span>{% endif %}
         </div>
-        <h3>CDS Exam</h3>
-        <p>Combined Defence Services preparation for Indian Army, &amp; Navy</p>
-        <div class="pc-tags"><span>Mathematics</span><span>English</span><span>GK</span></div>
-        <div class="pc-meta"><span>👥 14,670</span><span>🕐 Full Course</span></div>
-        <a class="btn-pc btn-pc-navy" href="#contact">Enroll Now →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'bundle_checkout' bundle.pk %}">Enroll Now →</a>
       </article>
-
-      <article class="pc-card">
-        <div class="pc-top">
-          <span class="pc-icon pc-icon-gold">🛡</span>
-          <span class="pc-rating">★ 4.8</span>
-        </div>
-        <h3>AFCAT Exam</h3>
-        <p>Air Force Common Admission Test preparation for Flying, Technical &amp; Ground Duty</p>
-        <div class="pc-tags"><span>Mathematics</span><span>Reasoning</span><span>GK</span></div>
-        <div class="pc-meta"><span>👥 12,540</span><span>🕐 Full Course</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact">Enroll Now →</a>
-      </article>
+      {% empty %}
+      <p class="panel-empty">No course bundles added yet — check back soon.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -544,15 +567,14 @@
           <p>Our own Kaun Banega Crorepati–style quiz — climb the money ladder one question at a time, with lifelines and our own original music.</p>
         </div>
         <ul class="kbc-ladder">
-          <li><span>Q15</span><strong>₹25,00,000</strong></li>
-          <li><span>Q10</span><strong>₹1,00,000</strong></li>
-          <li><span>Q5</span><strong>₹10,000</strong></li>
-          <li class="is-current"><span>Q1</span><strong>₹1,000</strong></li>
+          <li><span>Q10</span><strong>Champion</strong></li>
+          <li><span>Q5</span><strong>Halfway</strong></li>
+          <li class="is-current"><span>Q1</span><strong>Start</strong></li>
         </ul>
         <div class="kbc-lifelines">
-          <span>50-50</span><span>Audience Poll</span><span>Phone a Friend</span>
+          <span>50-50</span><span>Audience Poll</span><span>Skip Question</span>
         </div>
-        <a class="btn btn-primary btn-lg" href="#contact-us">▶ Play Now</a>
+        <button type="button" class="btn btn-primary btn-lg" id="quizPlayBtn">▶ Play Now</button>
       </article>
 
       <div class="quiz-topics">
@@ -565,21 +587,60 @@
   </div>
 </section>
 
+<div class="notif-modal" id="quizLoginModal">
+  <div class="notif-modal-card">
+    <button type="button" class="notif-modal-close" id="quizLoginModalClose" aria-label="Close">✕</button>
+    <p class="notif-modal-kicker">Login required</p>
+    <h3>Please log in to play</h3>
+    <p>Create a free account or log in to play Padho Aur Jeeto and climb the money ladder.</p>
+    <div class="notif-modal-actions">
+      <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+      <a class="btn btn-ghost" href="{% url 'signup' %}">Sign up free</a>
+    </div>
+  </div>
+</div>
+
+<div class="quiz-game-modal" id="quizGameModal">
+  <div class="quiz-game-card">
+    <div class="quiz-game-titlebar">
+      <span class="quiz-game-dot quiz-game-dot-red"></span>
+      <span class="quiz-game-dot quiz-game-dot-yellow"></span>
+      <span class="quiz-game-dot quiz-game-dot-green"></span>
+      <span class="quiz-game-titlebar-label">Padho Aur Jeeto</span>
+      <button type="button" class="quiz-game-titlebar-close" id="quizGameClose" aria-label="Close">✕</button>
+    </div>
+    <div class="quiz-game-body">
+      {% csrf_token %}
+      <div class="quiz-game-head">
+        <span class="quiz-game-level" id="quizLevel">Question 1</span>
+        <span class="quiz-game-prize" id="quizPrize"></span>
+      </div>
+      <p class="quiz-game-question" id="quizQuestionText">Loading…</p>
+      <div class="quiz-game-options" id="quizOptions"></div>
+      <div class="quiz-game-audience" id="quizAudienceChart" hidden></div>
+      <div class="quiz-game-lifelines">
+        <button type="button" class="quiz-lifeline-btn" id="quizFiftyBtn">50-50</button>
+        <button type="button" class="quiz-lifeline-btn" id="quizAudienceBtn">Audience Poll</button>
+        <button type="button" class="quiz-lifeline-btn" id="quizSkipBtn">Skip Question</button>
+      </div>
+      <div class="quiz-game-feedback" id="quizFeedback" hidden></div>
+      <div class="quiz-game-footer" id="quizFooter" hidden></div>
+    </div>
+  </div>
+</div>
+
 <!-- ================= ACADEMIC EXCELLENCE / RESULTS ================= -->
 <section class="section" id="results">
   <div class="wrap">
-    <h2 class="section-title center-title ae-title"><span class="text-orange">Academic Excellence</span> : Results</h2>
-    <p class="section-sub ae-sub">Giving wings to a millions dreams, a million more to go</p>
+    <h2 class="section-title center-title ae-title"><span class="text-orange">{{ homepage_content.results_heading }}</span> : Results</h2>
+    <p class="section-sub ae-sub">{{ homepage_content.results_subtitle }}</p>
 
     <div class="ae-fan">
-      <figure class="ae-card ae-c1"><img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Health</figcaption></figure>
-      <figure class="ae-card ae-c2"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Management</figcaption></figure>
-      <figure class="ae-card ae-c3"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Pre-University</figcaption></figure>
-      <figure class="ae-card ae-c4"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Agriculture</figcaption></figure>
-      <figure class="ae-card ae-c5 ae-featured"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=440&h=560&q=70" alt=""><figcaption>KLE School</figcaption></figure>
-      <figure class="ae-card ae-c6"><img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Law College</figcaption></figure>
-      <figure class="ae-card ae-c7"><img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Collegiate</figcaption></figure>
-      <figure class="ae-card ae-c8"><img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=400&h=520&q=70" alt=""><figcaption>Foundation</figcaption></figure>
+      {% for photo in result_highlights %}
+      <figure class="ae-card ae-c{{ forloop.counter }}{% if forloop.counter == 5 %} ae-featured{% endif %}"><img src="{{ photo.image.url }}" alt="{{ photo.caption }}"><figcaption>{{ photo.caption }}</figcaption></figure>
+      {% empty %}
+      <p class="panel-empty">No result photos added yet — check back soon.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -588,14 +649,14 @@
 <section class="section section-tint" id="gallery">
   <div class="wrap">
     <p class="eyebrow eyebrow-pill">📸 Gallery</p>
-    <h2 class="section-title center-title">Life At <span class="text-orange">Manjunath Academy</span></h2>
-    <p class="section-sub">Classrooms, felicitations, and the moments in between.</p>
+    <h2 class="section-title center-title">{{ homepage_content.gallery_heading }}</h2>
+    <p class="section-sub">{{ homepage_content.gallery_subtitle }}</p>
     <div class="gal-grid">
-      <figure class="gal-item gal-big"><img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&h=500&q=70" alt="Classroom session"></figure>
-      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=400&h=300&q=70" alt="Students writing a test"></figure>
-      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&h=300&q=70" alt="Study group"></figure>
-      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&h=300&q=70" alt="Award ceremony"></figure>
-      <figure class="gal-item"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&h=300&q=70" alt="Library"></figure>
+      {% for photo in gallery_preview %}
+      <figure class="gal-item{% if forloop.first %} gal-big{% endif %}"><img src="{{ photo.image.url }}" alt="{{ photo.title }}"></figure>
+      {% empty %}
+      <p class="panel-empty">No gallery photos added yet — check back soon.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -605,23 +666,24 @@
   <div class="wrap about-us-grid">
 
     <div class="au-media">
-      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night">
-      <div class="au-badge"><span class="au-badge-ico">🎓</span><div><strong>Trusted by</strong><span>50,000+ Students</span></div></div>
+      {% if homepage_content.about_image %}
+        <img src="{{ homepage_content.about_image.url }}" alt="">
+      {% else %}
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=760&h=560&q=70" alt="Students studying together at night">
+      {% endif %}
+      <div class="au-badge"><span class="au-badge-ico">🎓</span><div><strong>Trusted by</strong><span>{{ homepage_content.about_badge_value }} {{ homepage_content.about_badge_label }}</span></div></div>
     </div>
 
     <div class="au-copy">
       <p class="eyebrow eyebrow-pill">About Us</p>
-      <h2 class="section-title">India's Most Trusted <span class="text-orange">Free</span> Exam Prep Platform</h2>
-      <p class="body-copy">Online Kaksha was built with one belief — every Indian aspirant deserves world-class government exam preparation without paying a rupee. We provide meticulously crafted PYQs, daily quizzes, and study notes covering Banking, SSC, Railway, CDS, and AFCAT.</p>
-      <p class="body-copy au-muted">Founded by educators who cleared competitive exams themselves, we understand the grind. Our platform is designed to save your time, sharpen your knowledge, and maximise your selection chances.</p>
+      <h2 class="section-title">{{ homepage_content.about_heading }}</h2>
+      <p class="body-copy">{{ homepage_content.about_para1 }}</p>
+      <p class="body-copy au-muted">{{ homepage_content.about_para2 }}</p>
 
       <ul class="au-checks">
-        <li><span class="au-check-ico">✓</span>100% free access to PYQs and daily quizzes</li>
-        <li><span class="au-check-ico">✓</span>Curated study notes for every major govt exam</li>
-        <li><span class="au-check-ico">✓</span>Expert faculty with years of exam experience</li>
-        <li><span class="au-check-ico">✓</span>Mobile-friendly platform — study anywhere, anytime</li>
-        <li><span class="au-check-ico">✓</span>Regular updates aligned with latest exam patterns</li>
-        <li><span class="au-check-ico">✓</span>Dedicated doubt-solving and community support</li>
+        {% for point in homepage_content.about_checklist_items %}
+        <li><span class="au-check-ico">✓</span>{{ point }}</li>
+        {% endfor %}
       </ul>
 
       <a class="btn btn-primary" href="#about">🎓 Know Your Faculty</a>
@@ -635,24 +697,10 @@
   <div class="wrap">
     <p class="eyebrow eyebrow-pill">🎯 Eligibility Check</p>
     <h2 class="section-title center-title">Which Exams Are You <span class="text-orange">Eligible For?</span></h2>
-    <p class="section-sub">Enter your details once — see every government exam you currently qualify for, the way the Join Indian Army portal does it.</p>
-
-    <form class="elig-form" id="eligForm">
-      <div class="elig-grid">
-        <label>Education<select required><option value="">Select</option><option>10th Pass</option><option>12th Pass</option><option>Graduate</option><option>Post Graduate</option></select></label>
-        <label>Gender<select required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></label>
-        <label>Date of Birth<input type="date" required></label>
-        <label>Height (cm)<input type="number" min="120" max="220" placeholder="e.g. 168" required></label>
-        <label>State<select required><option value="">Select</option><option>Uttar Pradesh</option><option>Bihar</option><option>Madhya Pradesh</option><option>Uttarakhand</option><option>Delhi</option><option>Other</option></select></label>
-        <label>Marital Status<select><option>Unmarried</option><option>Married</option></select></label>
-      </div>
-      <button class="btn btn-primary btn-lg" type="submit">Check My Eligibility →</button>
-    </form>
-
-    <div class="elig-result" id="eligResult" hidden>
-      <p class="elig-result-title">Based on what you entered, you may be eligible for:</p>
-      <ul class="elig-result-list" id="eligResultList"></ul>
-      <p class="elig-note">This is an indicative check for demo purposes — always confirm exact criteria on the official exam notification before applying.</p>
+    <p class="section-sub">Enter your education, height, state, DOB, gender and marital status once — see every job/exam you currently qualify for, the way the Join Indian Army portal does it.</p>
+    <div style="text-align:center">
+      <a class="btn btn-primary btn-lg" href="{% url 'eligibility_check' %}">Check My Eligibility →</a>
+      {% if not user.is_authenticated %}<p class="section-sub" style="margin-top:14px">You'll need to log in first — it only takes a minute.</p>{% endif %}
     </div>
   </div>
 </section>
@@ -781,4 +829,178 @@
     </form>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
+  var playBtn = document.getElementById('quizPlayBtn');
+  var loginModal = document.getElementById('quizLoginModal');
+  var loginModalClose = document.getElementById('quizLoginModalClose');
+  var gameModal = document.getElementById('quizGameModal');
+  var gameClose = document.getElementById('quizGameClose');
+  if (!playBtn || !gameModal) return;
+
+  var csrfToken = gameModal.querySelector('[name=csrfmiddlewaretoken]').value;
+  var levelEl = document.getElementById('quizLevel');
+  var prizeEl = document.getElementById('quizPrize');
+  var questionEl = document.getElementById('quizQuestionText');
+  var optionsEl = document.getElementById('quizOptions');
+  var audienceEl = document.getElementById('quizAudienceChart');
+  var feedbackEl = document.getElementById('quizFeedback');
+  var footerEl = document.getElementById('quizFooter');
+  var fiftyBtn = document.getElementById('quizFiftyBtn');
+  var audienceBtn = document.getElementById('quizAudienceBtn');
+  var skipBtn = document.getElementById('quizSkipBtn');
+  var currentQuestion = null;
+
+  function apiCall(url, method, params) {
+    var opts = { method: method, headers: { 'X-CSRFToken': csrfToken } };
+    if (method === 'POST') opts.body = new URLSearchParams(params || {});
+    return fetch(url + (method === 'GET' && params ? '?' + new URLSearchParams(params) : ''), opts).then(function (r) { return r.json(); });
+  }
+
+  function showFeedback(text, kind) {
+    feedbackEl.hidden = false;
+    feedbackEl.textContent = text;
+    feedbackEl.className = 'quiz-game-feedback quiz-feedback-' + kind;
+  }
+
+  function loadQuestion() {
+    feedbackEl.hidden = true;
+    audienceEl.hidden = true;
+    audienceEl.innerHTML = '';
+    footerEl.hidden = true;
+    footerEl.innerHTML = '';
+    fiftyBtn.disabled = false;
+    audienceBtn.disabled = false;
+    skipBtn.disabled = false;
+    questionEl.textContent = 'Loading…';
+    optionsEl.innerHTML = '';
+
+    apiCall('{% url "quiz_get_question" %}', 'GET').then(function (data) {
+      if (data.finished) {
+        currentQuestion = null;
+        levelEl.textContent = 'Finished';
+        prizeEl.textContent = '';
+        questionEl.textContent = '🏆 Congratulations — you have answered every question in the quiz!';
+        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
+        showPlayAgain();
+        return;
+      }
+      if (!data.question) {
+        questionEl.textContent = 'No quiz questions have been added yet — check back soon.';
+        fiftyBtn.disabled = true; audienceBtn.disabled = true; skipBtn.disabled = true;
+        return;
+      }
+      currentQuestion = data.question;
+      levelEl.textContent = 'Question ' + data.question.level;
+      prizeEl.textContent = data.question.prize_label || '';
+      questionEl.textContent = data.question.text;
+      fiftyBtn.disabled = !!data.lifelines_used.fifty;
+      audienceBtn.disabled = !!data.lifelines_used.audience;
+      skipBtn.disabled = !!data.lifelines_used.skip;
+
+      optionsEl.innerHTML = '';
+      ['A', 'B', 'C', 'D'].forEach(function (letter) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'quiz-opt-btn';
+        btn.dataset.option = letter;
+        btn.textContent = letter + '. ' + data.question['option_' + letter.toLowerCase()];
+        btn.addEventListener('click', function () { submitAnswer(letter); });
+        optionsEl.appendChild(btn);
+      });
+    });
+  }
+
+  function showPlayAgain() {
+    footerEl.hidden = false;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-primary';
+    btn.textContent = 'Play Again';
+    btn.addEventListener('click', function () {
+      apiCall('{% url "quiz_reset" %}', 'POST').then(loadQuestion);
+    });
+    footerEl.appendChild(btn);
+  }
+
+  function submitAnswer(letter) {
+    if (!currentQuestion) return;
+    optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) { btn.disabled = true; });
+
+    apiCall('{% url "quiz_submit_answer" %}', 'POST', { question_id: currentQuestion.id, selected_option: letter }).then(function (data) {
+      optionsEl.querySelectorAll('.quiz-opt-btn').forEach(function (btn) {
+        if (btn.dataset.option === data.correct_option) btn.classList.add('is-correct');
+        else if (btn.dataset.option === letter) btn.classList.add('is-wrong');
+      });
+
+      if (data.is_correct) {
+        showFeedback('✓ Correct!' + (data.prize_label ? ' You have won ' + data.prize_label + '.' : ''), 'correct');
+        footerEl.hidden = false;
+        var nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.className = 'btn btn-primary';
+        nextBtn.textContent = 'Next Question →';
+        nextBtn.addEventListener('click', loadQuestion);
+        footerEl.appendChild(nextBtn);
+      } else {
+        showFeedback('✗ Wrong answer. The correct answer was ' + data.correct_option + '.', 'wrong');
+        showPlayAgain();
+      }
+    });
+  }
+
+  fiftyBtn.addEventListener('click', function () {
+    if (!currentQuestion) return;
+    apiCall('{% url "quiz_lifeline_fifty" %}', 'GET', { question_id: currentQuestion.id }).then(function (data) {
+      if (!data.ok) return;
+      fiftyBtn.disabled = true;
+      data.eliminate.forEach(function (letter) {
+        var btn = optionsEl.querySelector('.quiz-opt-btn[data-option="' + letter + '"]');
+        if (btn) { btn.classList.add('is-eliminated'); btn.disabled = true; }
+      });
+    });
+  });
+
+  audienceBtn.addEventListener('click', function () {
+    if (!currentQuestion) return;
+    apiCall('{% url "quiz_lifeline_audience" %}', 'GET', { question_id: currentQuestion.id }).then(function (data) {
+      if (!data.ok) return;
+      audienceBtn.disabled = true;
+      audienceEl.hidden = false;
+      audienceEl.innerHTML = '';
+      ['A', 'B', 'C', 'D'].forEach(function (letter) {
+        var pct = data.percentages[letter] || 0;
+        var bar = document.createElement('div');
+        bar.className = 'quiz-audience-bar';
+        bar.style.height = Math.max(pct, 3) + '%';
+        bar.innerHTML = '<span>' + pct + '%</span><em>' + letter + '</em>';
+        audienceEl.appendChild(bar);
+      });
+    });
+  });
+
+  skipBtn.addEventListener('click', function () {
+    if (!currentQuestion) return;
+    apiCall('{% url "quiz_lifeline_skip" %}', 'POST', { question_id: currentQuestion.id }).then(function (data) {
+      if (!data.ok) return;
+      loadQuestion();
+    });
+  });
+
+  playBtn.addEventListener('click', function () {
+    if (!IS_AUTHENTICATED) {
+      loginModal.classList.add('is-open');
+      return;
+    }
+    gameModal.classList.add('is-open');
+    apiCall('{% url "quiz_reset" %}', 'POST').then(loadQuestion);
+  });
+
+  if (loginModalClose) loginModalClose.addEventListener('click', function () { loginModal.classList.remove('is-open'); });
+  if (loginModal) loginModal.addEventListener('click', function (e) { if (e.target === loginModal) loginModal.classList.remove('is-open'); });
+  if (gameClose) gameClose.addEventListener('click', function () { gameModal.classList.remove('is-open'); });
+})();
 {% endblock %}

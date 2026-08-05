@@ -1,0 +1,73 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Results Photos{% endblock %}
+{% block page_title %}Academic Excellence photos{% endblock %}
+{% block page_sub %}Photos shown in the "Academic Excellence : Results" section on the homepage{% endblock %}
+{% block nav_results_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+
+{% block extra_style %}
+.gallery-thumb{width:64px;height:44px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:#F3F4F6}
+.gallery-cell{display:flex;align-items:center;gap:12px}
+.gallery-title-text{font-weight:700;color:var(--ink)}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Result photos</h2>
+      <p>{{ results|length }} photo{{ results|length|pluralize }} — shown in order on the homepage</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_result_add' %}">+ Add photo</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if results %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Photo</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for result in results %}
+          <tr>
+            <td>{{ result.order }}</td>
+            <td>
+              <div class="gallery-cell">
+                <img class="gallery-thumb" src="{{ result.image.url }}" alt="">
+                <div class="gallery-title-text">{{ result.caption }}</div>
+              </div>
+            </td>
+            <td>{% if result.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_result_edit' result.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_result_delete' result.pk %}" onsubmit="return confirm('Delete this photo?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏆</span>No result photos yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Quiz Question{% endblock %}
+{% block page_title %}{% if is_new %}Add quiz question{% else %}Edit quiz question{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_quiz %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new question{% else %}Editing question{% endif %}</h2>
+      <p>Lower levels are asked first, like a difficulty ladder.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_quiz_question_list' %}">← Back to questions</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Level</span>{{ form.level }}<p class="custom-help">{{ form.level.help_text }}</p></label>
+      <label><span class="panel-label-text">Prize label</span>{{ form.prize_label }}</label>
+    </div>
+
+    <label><span class="panel-label-text">Question <span class="req">*</span></span>
+      {{ form.text }}
+      {% if form.text.errors %}<ul class="panel-errors">{% for e in form.text.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Option A</span>{{ form.option_a }}</label>
+      <label><span class="panel-label-text">Option B</span>{{ form.option_b }}</label>
+    </div>
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Option C</span>{{ form.option_c }}</label>
+      <label><span class="panel-label-text">Option D</span>{{ form.option_d }}</label>
+    </div>
+
+    <label><span class="panel-label-text">Correct option</span>
+      {{ form.correct_option }}
+    </label>
+
+    <label class="panel-form-check">{{ form.is_active }} Active</label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add question{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_quiz_question_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

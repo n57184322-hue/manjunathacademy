@@ -11,6 +11,7 @@ from .forms import (
     AccountUpdateForm,
     AdmissionRegistrationForm,
     BannerSlideForm,
+    BundleForm,
     CareerApplicationForm,
     CategoryForm,
     ChatbotQuestionForm,
@@ -18,16 +19,22 @@ from .forms import (
     CourseForm,
     DailyUpdateCardForm,
     DailyUpdatePostForm,
+    EligibilityCheckForm,
+    EligibilityCriteriaForm,
     EmailAuthenticationForm,
+    FooterSettingsForm,
     GalleryImageForm,
     HeroSectionForm,
+    HomepageContentForm,
     JobPostingForm,
     NavbarCustomizationForm,
     NotificationForm,
     ProductForm,
     PWASettingsForm,
     QuestionForm,
+    QuizQuestionForm,
     RazorpaySettingsForm,
+    ResultHighlightForm,
     SignupForm,
     StoreCheckoutForm,
     StoreOrderStatusForm,
@@ -35,6 +42,8 @@ from .forms import (
 from .models import (
     AdmissionRegistration,
     BannerSlide,
+    Bundle,
+    BundlePurchase,
     Category,
     ChatbotQuestion,
     ChatbotSettings,
@@ -43,15 +52,20 @@ from .models import (
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
+    EligibilityCriteria,
+    EligibilitySubmission,
     GalleryImage,
     HeroSection,
+    HomepageContent,
     JobApplication,
     JobPosting,
     Notification,
     Product,
     PWASettings,
     Question,
+    QuizQuestion,
     RazorpaySettings,
+    ResultHighlight,
     SiteSettings,
     StoreOrder,
     TestAnswer,
@@ -69,6 +83,10 @@ def index(request):
     test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
     store_products = Product.objects.filter(is_active=True)
     jobs = JobPosting.objects.filter(is_active=True)
+    bundles = Bundle.objects.filter(is_active=True).prefetch_related('courses')
+    homepage_content = HomepageContent.load()
+    result_highlights = ResultHighlight.objects.filter(is_active=True)
+    gallery_preview = GalleryImage.objects.filter(is_active=True)[:5]
 
     return render(request, 'myapp/index.html', {
         'banner_slides': banner_slides,
@@ -78,6 +96,10 @@ def index(request):
         'test_series_categories': test_series_categories,
         'store_products': store_products,
         'jobs': jobs,
+        'bundles': bundles,
+        'homepage_content': homepage_content,
+        'result_highlights': result_highlights,
+        'gallery_preview': gallery_preview,
     })
 
 
@@ -322,6 +344,11 @@ def razorpay_create_order(request):
         amount = order.amount
         name = order.product.name
         receipt = f'store_{order.pk}_{timestamp}'
+    elif content_type == 'bundle':
+        bundle = get_object_or_404(Bundle, pk=object_id, is_active=True)
+        amount = bundle.current_price
+        name = bundle.name
+        receipt = f'bundle_{bundle.pk}_{request.user.pk}_{timestamp}'
     else:
         raise Http404
 
@@ -377,6 +404,17 @@ def razorpay_verify_payment(request):
         order.razorpay_payment_id = razorpay_payment_id
         order.save()
         redirect_url = reverse('store_order_success', args=[order.pk])
+    elif content_type == 'bundle':
+        bundle = get_object_or_404(Bundle, pk=object_id)
+        BundlePurchase.objects.create(
+            user=request.user, bundle=bundle, amount_paid=bundle.current_price,
+            razorpay_order_id=razorpay_order_id, razorpay_payment_id=razorpay_payment_id,
+        )
+        for course in bundle.courses.all():
+            enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+            if not enrollment.is_paid:
+                enrollment.grant_paid_access(amount_paid=0, razorpay_order_id=razorpay_order_id, razorpay_payment_id=razorpay_payment_id)
+        redirect_url = reverse('bundle_success', args=[bundle.pk])
     else:
         raise Http404
 
@@ -433,6 +471,187 @@ def career_apply(request, job_pk):
         application.save()
         return JsonResponse({'ok': True})
     return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
+
+
+@login_required(login_url='login')
+def bundle_checkout(request, pk):
+    bundle = get_object_or_404(Bundle, pk=pk, is_active=True)
+    already_owned = not bundle.courses.exclude(enrollments__user=request.user, enrollments__is_paid=True).exists() and bundle.courses.exists()
+    return render(request, 'myapp/bundle_checkout.html', {'bundle': bundle, 'already_owned': already_owned})
+
+
+@login_required(login_url='login')
+def bundle_success(request, pk):
+    bundle = get_object_or_404(Bundle, pk=pk)
+    return render(request, 'myapp/bundle_success.html', {'bundle': bundle})
+
+
+def _education_rank(value):
+    order = [EligibilityCriteria.EDU_10TH, EligibilityCriteria.EDU_12TH, EligibilityCriteria.EDU_GRADUATE, EligibilityCriteria.EDU_POST_GRADUATE]
+    return order.index(value) if value in order else 0
+
+
+def _matches_criteria(criteria, data):
+    if _education_rank(data['education']) < _education_rank(criteria.min_education):
+        return False
+    if criteria.min_age and data['age'] < criteria.min_age:
+        return False
+    if criteria.max_age and data['age'] > criteria.max_age:
+        return False
+    if criteria.min_height_cm and data['height_cm'] < criteria.min_height_cm:
+        return False
+    if criteria.allowed_gender != 'any' and data['gender'] != criteria.allowed_gender:
+        return False
+    if criteria.marital_status == 'unmarried_only' and data['marital_status'] != 'unmarried':
+        return False
+    if criteria.allowed_states:
+        allowed = [s.strip().lower() for s in criteria.allowed_states.split(',') if s.strip()]
+        if allowed and data['state'].strip().lower() not in allowed:
+            return False
+    return True
+
+
+@login_required(login_url='login')
+def eligibility_check(request):
+    result = None
+    if request.method == 'POST':
+        form = EligibilityCheckForm(request.POST)
+        if form.is_valid():
+            from datetime import date
+
+            dob = form.cleaned_data['dob']
+            today = date.today()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            data = {
+                'education': form.cleaned_data['education'],
+                'gender': form.cleaned_data['gender'],
+                'age': age,
+                'height_cm': form.cleaned_data['height_cm'],
+                'state': form.cleaned_data['state'],
+                'marital_status': form.cleaned_data['marital_status'],
+            }
+            matched = [c for c in EligibilityCriteria.objects.filter(is_active=True) if _matches_criteria(c, data)]
+
+            submission = EligibilitySubmission.objects.create(
+                user=request.user,
+                education=data['education'],
+                gender=data['gender'],
+                dob=dob,
+                height_cm=data['height_cm'],
+                state=data['state'],
+                district=form.cleaned_data['district'],
+                marital_status=data['marital_status'],
+                matched_jobs=', '.join(c.job_name for c in matched),
+            )
+            result = {'matched': matched, 'age': age, 'submission': submission}
+    else:
+        form = EligibilityCheckForm()
+
+    return render(request, 'myapp/eligibility_check.html', {'form': form, 'result': result})
+
+
+@login_required(login_url='login')
+def quiz_reset(request):
+    if request.method != 'POST':
+        raise Http404
+    request.session['quiz_level'] = 1
+    request.session['quiz_used_fifty'] = False
+    request.session['quiz_used_audience'] = False
+    request.session['quiz_used_skip'] = False
+    return JsonResponse({'ok': True})
+
+
+@login_required(login_url='login')
+def quiz_get_question(request):
+    level = request.session.get('quiz_level', 1)
+    question = QuizQuestion.objects.filter(is_active=True, level__gte=level).order_by('level', 'id').first()
+    if not question:
+        return JsonResponse({'ok': True, 'finished': True})
+    return JsonResponse({
+        'ok': True,
+        'finished': False,
+        'question': {
+            'id': question.pk,
+            'level': question.level,
+            'text': question.text,
+            'option_a': question.option_a,
+            'option_b': question.option_b,
+            'option_c': question.option_c,
+            'option_d': question.option_d,
+            'prize_label': question.prize_label,
+        },
+        'lifelines_used': {
+            'fifty': request.session.get('quiz_used_fifty', False),
+            'audience': request.session.get('quiz_used_audience', False),
+            'skip': request.session.get('quiz_used_skip', False),
+        },
+    })
+
+
+@login_required(login_url='login')
+def quiz_submit_answer(request):
+    if request.method != 'POST':
+        raise Http404
+    question = get_object_or_404(QuizQuestion, pk=request.POST.get('question_id'))
+    selected = (request.POST.get('selected_option') or '').strip().upper()
+    is_correct = selected == question.correct_option
+
+    if is_correct:
+        request.session['quiz_level'] = question.level + 1
+    return JsonResponse({
+        'ok': True,
+        'is_correct': is_correct,
+        'correct_option': question.correct_option,
+        'prize_label': question.prize_label,
+    })
+
+
+@login_required(login_url='login')
+def quiz_lifeline_fifty(request):
+    question = get_object_or_404(QuizQuestion, pk=request.GET.get('question_id'))
+    if request.session.get('quiz_used_fifty'):
+        return JsonResponse({'ok': False, 'error': 'Lifeline already used.'}, status=400)
+    import random
+
+    wrong_options = [o for o in ['A', 'B', 'C', 'D'] if o != question.correct_option]
+    keep_wrong = random.choice(wrong_options)
+    eliminate = [o for o in ['A', 'B', 'C', 'D'] if o not in (question.correct_option, keep_wrong)]
+    request.session['quiz_used_fifty'] = True
+    return JsonResponse({'ok': True, 'eliminate': eliminate})
+
+
+@login_required(login_url='login')
+def quiz_lifeline_audience(request):
+    question = get_object_or_404(QuizQuestion, pk=request.GET.get('question_id'))
+    if request.session.get('quiz_used_audience'):
+        return JsonResponse({'ok': False, 'error': 'Lifeline already used.'}, status=400)
+    import random
+
+    correct_share = random.randint(55, 80)
+    remaining = 100 - correct_share
+    others = ['A', 'B', 'C', 'D']
+    others.remove(question.correct_option)
+    random.shuffle(others)
+    splits = [0, 0, 0]
+    for i in range(remaining):
+        splits[i % 3] += 1
+    percentages = {question.correct_option: correct_share}
+    for option, share in zip(others, splits):
+        percentages[option] = share
+    request.session['quiz_used_audience'] = True
+    return JsonResponse({'ok': True, 'percentages': percentages})
+
+
+@login_required(login_url='login')
+def quiz_lifeline_skip(request):
+    if request.method != 'POST':
+        raise Http404
+    if request.session.get('quiz_used_skip'):
+        return JsonResponse({'ok': False, 'error': 'Lifeline already used.'}, status=400)
+    question = get_object_or_404(QuizQuestion, pk=request.POST.get('question_id'))
+    request.session['quiz_used_skip'] = True
+    request.session['quiz_level'] = question.level + 1
+    return JsonResponse({'ok': True})
 
 
 def _is_staff(user):
@@ -1143,6 +1362,245 @@ def panel_career_application_delete(request, pk):
         application.delete()
         messages.success(request, 'Application deleted.')
     return redirect('panel_career_applications')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_footer_settings(request):
+    site_settings_obj = SiteSettings.load()
+    if request.method == 'POST':
+        form = FooterSettingsForm(request.POST, instance=site_settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Footer settings saved.')
+            return redirect('panel_footer_settings')
+    else:
+        form = FooterSettingsForm(instance=site_settings_obj)
+
+    return render(request, 'myapp/panel/footer_settings.html', {'form': form})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_homepage_content(request):
+    content = HomepageContent.load()
+    if request.method == 'POST':
+        form = HomepageContentForm(request.POST, request.FILES, instance=content)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Homepage content saved.')
+            return redirect('panel_homepage_content')
+    else:
+        form = HomepageContentForm(instance=content)
+
+    return render(request, 'myapp/panel/homepage_content.html', {'form': form, 'content': content})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_result_list(request):
+    results = ResultHighlight.objects.all()
+    return render(request, 'myapp/panel/result_list.html', {'results': results})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_result_add(request):
+    if request.method == 'POST':
+        form = ResultHighlightForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Result photo added.')
+            return redirect('panel_result_list')
+    else:
+        form = ResultHighlightForm(initial={'order': ResultHighlight.objects.count()})
+
+    return render(request, 'myapp/panel/result_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_result_edit(request, pk):
+    result = get_object_or_404(ResultHighlight, pk=pk)
+
+    if request.method == 'POST':
+        form = ResultHighlightForm(request.POST, request.FILES, instance=result)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Result photo updated.')
+            return redirect('panel_result_list')
+    else:
+        form = ResultHighlightForm(instance=result)
+
+    return render(request, 'myapp/panel/result_form.html', {'form': form, 'is_new': False, 'result': result})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_result_delete(request, pk):
+    result = get_object_or_404(ResultHighlight, pk=pk)
+    if request.method == 'POST':
+        result.delete()
+        messages.success(request, 'Result photo deleted.')
+    return redirect('panel_result_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_bundle_list(request):
+    bundles = Bundle.objects.all().prefetch_related('courses')
+    return render(request, 'myapp/panel/bundle_list.html', {'bundles': bundles})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_bundle_add(request):
+    if request.method == 'POST':
+        form = BundleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Bundle added.')
+            return redirect('panel_bundle_list')
+    else:
+        form = BundleForm(initial={'order': Bundle.objects.count()})
+
+    return render(request, 'myapp/panel/bundle_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_bundle_edit(request, pk):
+    bundle = get_object_or_404(Bundle, pk=pk)
+
+    if request.method == 'POST':
+        form = BundleForm(request.POST, instance=bundle)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Bundle updated.')
+            return redirect('panel_bundle_list')
+    else:
+        form = BundleForm(instance=bundle)
+
+    return render(request, 'myapp/panel/bundle_form.html', {'form': form, 'is_new': False, 'bundle': bundle})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_bundle_delete(request, pk):
+    bundle = get_object_or_404(Bundle, pk=pk)
+    if request.method == 'POST':
+        bundle.delete()
+        messages.success(request, 'Bundle deleted.')
+    return redirect('panel_bundle_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_quiz_question_list(request):
+    questions = QuizQuestion.objects.all()
+    return render(request, 'myapp/panel/quiz_question_list.html', {'questions': questions})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_quiz_question_add(request):
+    if request.method == 'POST':
+        form = QuizQuestionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question added.')
+            return redirect('panel_quiz_question_list')
+    else:
+        form = QuizQuestionForm(initial={'level': QuizQuestion.objects.count() + 1})
+
+    return render(request, 'myapp/panel/quiz_question_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_quiz_question_edit(request, pk):
+    question = get_object_or_404(QuizQuestion, pk=pk)
+
+    if request.method == 'POST':
+        form = QuizQuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question updated.')
+            return redirect('panel_quiz_question_list')
+    else:
+        form = QuizQuestionForm(instance=question)
+
+    return render(request, 'myapp/panel/quiz_question_form.html', {'form': form, 'is_new': False, 'question': question})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_quiz_question_delete(request, pk):
+    question = get_object_or_404(QuizQuestion, pk=pk)
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, 'Question deleted.')
+    return redirect('panel_quiz_question_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_eligibility_criteria_list(request):
+    criteria = EligibilityCriteria.objects.all()
+    return render(request, 'myapp/panel/eligibility_criteria_list.html', {'criteria': criteria})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_eligibility_criteria_add(request):
+    if request.method == 'POST':
+        form = EligibilityCriteriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Eligibility criteria added.')
+            return redirect('panel_eligibility_criteria_list')
+    else:
+        form = EligibilityCriteriaForm(initial={'order': EligibilityCriteria.objects.count()})
+
+    return render(request, 'myapp/panel/eligibility_criteria_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_eligibility_criteria_edit(request, pk):
+    criteria = get_object_or_404(EligibilityCriteria, pk=pk)
+
+    if request.method == 'POST':
+        form = EligibilityCriteriaForm(request.POST, instance=criteria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Eligibility criteria updated.')
+            return redirect('panel_eligibility_criteria_list')
+    else:
+        form = EligibilityCriteriaForm(instance=criteria)
+
+    return render(request, 'myapp/panel/eligibility_criteria_form.html', {'form': form, 'is_new': False, 'criteria': criteria})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_eligibility_criteria_delete(request, pk):
+    criteria = get_object_or_404(EligibilityCriteria, pk=pk)
+    if request.method == 'POST':
+        criteria.delete()
+        messages.success(request, 'Eligibility criteria deleted.')
+    return redirect('panel_eligibility_criteria_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_eligibility_submissions(request):
+    submissions = EligibilitySubmission.objects.select_related('user')
+    stats = {
+        'total': submissions.count(),
+        'this_week': submissions.filter(created_at__gte=timezone.now() - timezone.timedelta(days=7)).count(),
+    }
+    return render(request, 'myapp/panel/eligibility_submissions.html', {'submissions': submissions, 'stats': stats})
 
 
 

@@ -1,0 +1,67 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Bundles{% endblock %}
+{% block page_title %}Course bundles{% endblock %}
+{% block page_sub %}Combine Test Series, Video Courses and E-Library items into one purchase — shown in "Our Popular Courses"{% endblock %}
+{% block nav_bundles %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.bundle-courses{max-width:280px;white-space:normal!important;color:var(--muted);font-size:12.5px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Bundles</h2>
+      <p>{{ bundles|length }} bundle{{ bundles|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_bundle_add' %}">+ Add bundle</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if bundles %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Bundle</th>
+            <th>Includes</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bundle in bundles %}
+          <tr>
+            <td class="panel-row-name">{{ bundle.icon }} {{ bundle.name }}</td>
+            <td class="bundle-courses">{% for c in bundle.courses.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td>₹{{ bundle.current_price }}{% if bundle.original_price and bundle.original_price != bundle.current_price %} <s>₹{{ bundle.original_price }}</s>{% endif %}</td>
+            <td>{% if bundle.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_bundle_edit' bundle.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_bundle_delete' bundle.pk %}" onsubmit="return confirm('Delete this bundle?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🎁</span>No bundles yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

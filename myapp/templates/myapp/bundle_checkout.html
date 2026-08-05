@@ -1,0 +1,152 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Checkout — {{ bundle.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}Complete your purchase of {{ bundle.name }}.{% endblock %}
+
+{% block extra_style %}
+.checkout-section{padding:64px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.checkout-card{max-width:560px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow-md)}
+.checkout-card h1{font-size:22px;margin:8px 0 6px}
+.checkout-icon{font-size:38px}
+.checkout-about{color:#374151;font-size:14.5px;line-height:1.7;margin:0 0 18px}
+.checkout-includes{list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:8px}
+.checkout-includes li{font-size:13.5px;color:#374151;background:#FAFAF9;border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+.checkout-price-row{display:flex;align-items:baseline;gap:10px;margin:18px 0}
+.checkout-price{font-size:30px;font-weight:800;color:var(--ink)}
+.checkout-price-old{font-size:16px;color:var(--muted);text-decoration:line-through}
+.checkout-pay-btn{width:100%;justify-content:center;padding:15px;font-size:15.5px}
+.checkout-error{background:#FEF2F2;color:#DC2626;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;margin-top:14px;display:none}
+.checkout-error.is-visible{display:block}
+.checkout-secure{display:flex;align-items:center;gap:6px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
+{% endblock %}
+
+{% block content %}
+<section class="checkout-section">
+  <div class="wrap">
+    <div class="checkout-card">
+      <span class="checkout-icon">{{ bundle.icon }}</span>
+      <h1>{{ bundle.name }}</h1>
+      {% if bundle.description %}<p class="checkout-about">{{ bundle.description }}</p>{% endif %}
+
+      <ul class="checkout-includes">
+        {% for course in bundle.courses.all %}
+          <li>{{ course.get_course_type_display }} — {{ course.name }}</li>
+        {% endfor %}
+      </ul>
+
+      <div class="checkout-price-row">
+        <span class="checkout-price">₹{{ bundle.current_price }}</span>
+        {% if bundle.original_price and bundle.original_price != bundle.current_price %}<span class="checkout-price-old">₹{{ bundle.original_price }}</span>{% endif %}
+      </div>
+
+      {% if already_owned %}
+        <p class="checkout-about">You already have access to everything in this bundle.</p>
+        <a class="btn btn-primary btn-lg checkout-pay-btn" href="{% url 'account_purchases' %}">Go to My Purchases</a>
+      {% else %}
+        {% csrf_token %}
+        <button type="button" class="btn btn-primary btn-lg checkout-pay-btn" id="payBtn" data-content-type="bundle" data-object-id="{{ bundle.pk }}">Pay ₹{{ bundle.current_price }} &amp; Unlock Bundle</button>
+        <p class="checkout-error" id="payError"></p>
+        <p class="checkout-secure">🔒 Secured by Razorpay</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+  var payBtn = document.getElementById('payBtn');
+  var errorBox = document.getElementById('payError');
+  if (!payBtn) return;
+  var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  var originalLabel = payBtn.textContent;
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('is-visible');
+  }
+
+  payBtn.addEventListener('click', function () {
+    payBtn.disabled = true;
+    payBtn.textContent = 'Please wait…';
+    errorBox.classList.remove('is-visible');
+
+    var body = new URLSearchParams({
+      content_type: payBtn.dataset.contentType,
+      object_id: payBtn.dataset.objectId,
+    });
+
+    fetch('{% url "razorpay_create_order" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: body,
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.ok) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = originalLabel;
+          return;
+        }
+
+        var rzp = new Razorpay({
+          key: data.key_id,
+          amount: data.amount,
+          currency: data.currency,
+          order_id: data.order_id,
+          name: 'Manjunath Academy',
+          description: data.name,
+          prefill: {
+            name: data.prefill_name,
+            email: data.prefill_email,
+            contact: data.prefill_contact,
+          },
+          theme: { color: '#F97316' },
+          handler: function (response) {
+            var verifyBody = new URLSearchParams({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              content_type: payBtn.dataset.contentType,
+              object_id: payBtn.dataset.objectId,
+            });
+            fetch('{% url "razorpay_verify_payment" %}', {
+              method: 'POST',
+              headers: { 'X-CSRFToken': csrfToken },
+              body: verifyBody,
+            })
+              .then(function (res) { return res.json(); })
+              .then(function (verifyData) {
+                if (verifyData.ok) {
+                  window.location.href = verifyData.redirect_url;
+                } else {
+                  showError(verifyData.error || 'Payment verification failed.');
+                }
+              });
+          },
+          modal: {
+            ondismiss: function () {
+              payBtn.disabled = false;
+              payBtn.textContent = originalLabel;
+            },
+          },
+        });
+        rzp.on('payment.failed', function () {
+          showError('Payment failed. Please try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = originalLabel;
+        });
+        rzp.open();
+      })
+      .catch(function () {
+        showError('Could not connect. Please try again.');
+        payBtn.disabled = false;
+        payBtn.textContent = originalLabel;
+      });
+  });
+})();
+</script>
+{% endblock %}

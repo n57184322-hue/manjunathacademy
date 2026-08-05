@@ -1,0 +1,81 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Eligibility Check — Manjunath Academy{% endblock %}
+{% block meta_description %}Check which government exams and jobs you're eligible for.{% endblock %}
+
+{% block extra_style %}
+.elig-section{padding:56px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
+.elig-card{max-width:720px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow-md)}
+.elig-card h1{font-size:clamp(22px,3vw,28px);margin:0 0 8px}
+.elig-card-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px}
+.elig-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.elig-form-grid label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:#374151}
+.elig-form-grid select,.elig-form-grid input{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink)}
+.elig-form-grid select:focus,.elig-form-grid input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.elig-errors{color:#DC2626;font-size:12.5px;margin:2px 0 0;padding:0;list-style:none}
+.elig-submit{margin-top:22px;width:100%;justify-content:center}
+.elig-result{margin-top:30px;padding-top:26px;border-top:1px solid var(--line)}
+.elig-result-title{font-weight:800;margin:0 0 14px;font-size:15px}
+.elig-result-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.elig-result-list li{background:#ECFDF3;color:#15803D;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.elig-empty{background:#FEF2F2;color:#DC2626;border-radius:12px;padding:14px 16px;font-size:14px;font-weight:600}
+.elig-note{font-size:12.5px;color:var(--muted);margin:14px 0 0}
+@media (max-width:600px){.elig-form-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="elig-section">
+  <div class="wrap">
+    <div class="elig-card">
+      <p class="eyebrow eyebrow-pill">🎯 Eligibility Check</p>
+      <h1>Which Exams Are You <span class="text-orange">Eligible For?</span></h1>
+      <p class="elig-card-sub">Enter your details once — see every job/exam you currently qualify for, the way the Join Indian Army portal does it.</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="elig-form-grid">
+          <label>Education
+            {{ form.education }}
+            {% if form.education.errors %}<ul class="elig-errors">{% for e in form.education.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+          <label>Gender
+            {{ form.gender }}
+          </label>
+          <label>Date of birth
+            {{ form.dob }}
+            {% if form.dob.errors %}<ul class="elig-errors">{% for e in form.dob.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+          <label>Height (cm)
+            {{ form.height_cm }}
+            {% if form.height_cm.errors %}<ul class="elig-errors">{% for e in form.height_cm.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </label>
+          <label>State
+            {{ form.state }}
+          </label>
+          <label>District (optional)
+            {{ form.district }}
+          </label>
+          <label>Marital status
+            {{ form.marital_status }}
+          </label>
+        </div>
+        <button class="btn btn-primary btn-lg elig-submit" type="submit">Check My Eligibility →</button>
+      </form>
+
+      {% if result %}
+        <div class="elig-result">
+          <p class="elig-result-title">Based on what you entered (age {{ result.age }}), you are eligible for:</p>
+          {% if result.matched %}
+            <ul class="elig-result-list">
+              {% for job in result.matched %}<li>✓ {{ job.job_name }}</li>{% endfor %}
+            </ul>
+          {% else %}
+            <p class="elig-empty">No matching jobs/exams found for the details you entered — check back as we add more.</p>
+          {% endif %}
+          <p class="elig-note">This is an indicative check based on criteria set by the academy — always confirm exact eligibility on the official exam notification before applying.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

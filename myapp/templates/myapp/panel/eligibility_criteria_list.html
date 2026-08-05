@@ -1,0 +1,72 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Eligibility Criteria{% endblock %}
+{% block page_title %}Eligibility criteria{% endblock %}
+{% block page_sub %}Jobs/exams candidates are matched against in the Eligibility Check tool{% endblock %}
+{% block nav_eligibility %}is-active{% endblock %}
+{% block nav_eligibility_open %}is-open{% endblock %}
+{% block nav_eligibility_criteria %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Eligibility criteria</h2>
+      <p>{{ criteria|length }} job{{ criteria|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_eligibility_criteria_add' %}">+ Add criteria</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if criteria %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Job</th>
+            <th>Education</th>
+            <th>Age</th>
+            <th>Height</th>
+            <th>Gender</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in criteria %}
+          <tr>
+            <td class="panel-row-name">{{ c.job_name }}</td>
+            <td>{{ c.get_min_education_display }}+</td>
+            <td>{% if c.min_age or c.max_age %}{{ c.min_age|default:"—" }}–{{ c.max_age|default:"—" }}{% else %}Any{% endif %}</td>
+            <td>{{ c.min_height_cm|default:"Any" }}{% if c.min_height_cm %} cm+{% endif %}</td>
+            <td>{{ c.get_allowed_gender_display }}</td>
+            <td>{% if c.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_eligibility_criteria_edit' c.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_eligibility_criteria_delete' c.pk %}" onsubmit="return confirm('Delete this criteria?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🎯</span>No eligibility criteria yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

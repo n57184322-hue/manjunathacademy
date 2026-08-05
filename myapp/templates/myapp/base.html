@@ -763,8 +763,16 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .social-row{display:flex;gap:10px;flex-wrap:wrap}
 .social-row a{
   width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);
-  display:grid;place-items:center;font-size:15px;color:#fff;
+  display:grid;place-items:center;font-size:15px;color:#fff;transition:transform .15s ease;
 }
+.social-row a:hover{transform:translateY(-2px)}
+.social-row a.ico-facebook{background:#1877F2}
+.social-row a.ico-instagram{background:radial-gradient(circle at 30% 110%,#FDF497 0%,#FD5949 45%,#D6249F 60%,#285AEB 90%)}
+.social-row a.ico-twitter{background:#000}
+.social-row a.ico-telegram{background:#229ED9}
+.social-row a.ico-youtube{background:#FF0000}
+.social-row a.ico-whatsapp{background:#25D366}
+.social-row a.ico-linkedin{background:#0A66C2;font-weight:800;font-size:13px;font-style:normal}
 
 /* ============================================================
    INSTALL APP BUTTON
@@ -1217,14 +1225,15 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   <div class="wrap footer-grid">
     <div class="footer-brand">
       <span class="wordmark wordmark-light"><span>MANJUNATH</span><span>ACADEMY</span></span>
-      <p>Coaching for government exams, NEET and JEE. Classes online and at the Lucknow centre.</p>
+      <p>{{ site_settings.footer_about }}</p>
       <div class="social-row">
-        <a href="#" aria-label="Instagram">📷</a>
-        <a href="#" aria-label="Facebook">📘</a>
-        <a href="#" aria-label="Twitter/X">✖️</a>
-        <a href="#" aria-label="Telegram">✈️</a>
-        <a href="{{ site_settings.youtube_url|default:'#' }}" aria-label="YouTube">▶️</a>
-        <a href="{{ site_settings.whatsapp_link|default:'https://wa.me/915220000000' }}" aria-label="WhatsApp">💬</a>
+        {% if site_settings.facebook_url %}<a class="ico-facebook" href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">📘</a>{% endif %}
+        {% if site_settings.instagram_url %}<a class="ico-instagram" href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">📷</a>{% endif %}
+        {% if site_settings.twitter_url %}<a class="ico-twitter" href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" aria-label="Twitter/X">✖️</a>{% endif %}
+        {% if site_settings.telegram_url %}<a class="ico-telegram" href="{{ site_settings.telegram_url }}" target="_blank" rel="noopener" aria-label="Telegram">✈️</a>{% endif %}
+        {% if site_settings.linkedin_url %}<a class="ico-linkedin" href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>{% endif %}
+        {% if site_settings.youtube_url %}<a class="ico-youtube" href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">▶️</a>{% endif %}
+        {% if site_settings.whatsapp_link %}<a class="ico-whatsapp" href="{{ site_settings.whatsapp_link }}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>{% endif %}
       </div>
     </div>
     <div>
@@ -1233,15 +1242,20 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
     </div>
     <div>
       <h4>Resources</h4>
-      <ul><li><a href="#results">PYQ library</a></li><li><a href="#results">Current affairs</a></li><li><a href="#test-series">Exam calendar</a></li><li><a href="#about">Eligibility check</a></li></ul>
+      <ul><li><a href="#results">PYQ library</a></li><li><a href="#results">Current affairs</a></li><li><a href="#test-series">Exam calendar</a></li><li><a href="{% url 'eligibility_check' %}">Eligibility check</a></li></ul>
     </div>
     <div>
       <h4>Reach us</h4>
-      <ul><li><a href="tel:+915220000000">+91 522 000 0000</a></li><li><a href="mailto:hello@manjunathacademy.in">hello@manjunathacademy.in</a></li><li>Hazratganj, Lucknow</li><li>Mon–Sat, 8 am – 8 pm</li></ul>
+      <ul>
+        {% if site_settings.footer_phone %}<li><a href="tel:{{ site_settings.footer_phone }}">{{ site_settings.footer_phone }}</a></li>{% endif %}
+        {% if site_settings.footer_email %}<li><a href="mailto:{{ site_settings.footer_email }}">{{ site_settings.footer_email }}</a></li>{% endif %}
+        {% if site_settings.footer_address %}<li>{{ site_settings.footer_address }}</li>{% endif %}
+        <li>Mon–Sat, 8 am – 8 pm</li>
+      </ul>
     </div>
   </div>
   <div class="wrap footer-base">
-    <p>© <span id="year"></span> Manjunath Academy</p>
+    <p>© <span id="year"></span> {{ site_settings.copyright_text }}</p>
     <p>Demo site build</p>
   </div>
 </footer>
@@ -1517,25 +1531,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
-
-  /* ---------- Eligibility check (simple demo logic) ---------- */
-  const eligForm = document.getElementById('eligForm');
-  if (eligForm) {
-    eligForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const education = eligForm.querySelectorAll('select')[0].value;
-      const results = [];
-      if (education === '10th Pass') results.push('SSC MTS', 'Indian Army Sepoy GD', 'Railway Group D');
-      if (education === '12th Pass') results.push('SSC CHSL', 'UPSC NDA', 'Railway NTPC', 'CDS (if graduating soon)');
-      if (education === 'Graduate') results.push('SSC CGL', 'IBPS PO', 'CDS', 'AFCAT', 'UPSC Civil Services');
-      if (education === 'Post Graduate') results.push('SSC CGL', 'IBPS PO/SO', 'UPSC Civil Services', 'State PSC');
-      if (!results.length) results.push('Please select your education level to see matching exams');
-      const list = document.getElementById('eligResultList');
-      list.innerHTML = results.map(r => `<li>${r}</li>`).join('');
-      document.getElementById('eligResult').hidden = false;
-      document.getElementById('eligResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  }
 
   /* ---------- Admission form (saved to the database) ---------- */
   const admissionForm = document.getElementById('admissionForm');

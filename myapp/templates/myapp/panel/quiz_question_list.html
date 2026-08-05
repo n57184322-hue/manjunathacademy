@@ -1,0 +1,69 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Quiz Questions{% endblock %}
+{% block page_title %}Quiz Zone questions{% endblock %}
+{% block page_sub %}Questions used in the "Padho Aur Jeeto" KBC-style quiz game on the homepage{% endblock %}
+{% block nav_quiz %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.quiz-text-cell{max-width:320px;white-space:normal!important;color:#374151}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Quiz questions</h2>
+      <p>{{ questions|length }} question{{ questions|length|pluralize }} — asked in order of level, lowest first</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_quiz_question_add' %}">+ Add question</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if questions %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>Question</th>
+            <th>Correct</th>
+            <th>Prize</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for question in questions %}
+          <tr>
+            <td>{{ question.level }}</td>
+            <td class="quiz-text-cell">{{ question.text }}</td>
+            <td>{{ question.correct_option }}</td>
+            <td>{{ question.prize_label|default:"—" }}</td>
+            <td>{% if question.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_quiz_question_edit' question.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_quiz_question_delete' question.pk %}" onsubmit="return confirm('Delete this question?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🎮</span>No quiz questions yet — the game will show "no questions" until you add some.</p>
+  {% endif %}
+</div>
+{% endblock %}

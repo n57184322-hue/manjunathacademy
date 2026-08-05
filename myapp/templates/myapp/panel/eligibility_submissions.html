@@ -1,0 +1,67 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Eligibility Submissions{% endblock %}
+{% block page_title %}Eligibility check submissions{% endblock %}
+{% block page_sub %}Everyone who has run the Eligibility Check tool{% endblock %}
+{% block nav_eligibility %}is-active{% endblock %}
+{% block nav_eligibility_open %}is-open{% endblock %}
+{% block nav_eligibility_submissions %}is-active{% endblock %}
+
+{% block extra_style %}
+.matched-cell{max-width:260px;white-space:normal!important;color:var(--muted);font-size:12.5px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-1">
+    <span class="panel-stat-ico">🎯</span>
+    <div><div class="panel-stat-num">{{ stats.total }}</div><div class="panel-stat-label">Total checks run</div></div>
+  </div>
+  <div class="panel-stat panel-stat-3">
+    <span class="panel-stat-ico">🆕</span>
+    <div><div class="panel-stat-num">{{ stats.this_week }}</div><div class="panel-stat-label">This week</div></div>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Submissions</h2>
+      <p>{{ submissions|length }} submission{{ submissions|length|pluralize }}</p>
+    </div>
+  </div>
+
+  {% if submissions %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Age</th>
+            <th>Education</th>
+            <th>Height</th>
+            <th>State / District</th>
+            <th>Eligible for</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in submissions %}
+          <tr>
+            <td class="panel-row-name">{{ s.user.name|default:s.user.email }}</td>
+            <td>{{ s.age }}</td>
+            <td>{{ s.get_education_display }}</td>
+            <td>{{ s.height_cm }} cm</td>
+            <td>{{ s.state }}{% if s.district %}, {{ s.district }}{% endif %}</td>
+            <td class="matched-cell">{{ s.matched_jobs|default:"None matched" }}</td>
+            <td>{{ s.created_at|date:"d M Y, h:i A" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🎯</span>No one has used the Eligibility Check tool yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Bundle Unlocked — Manjunath Academy{% endblock %}
+{% block meta_description %}Your bundle purchase is confirmed.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.auth-card{position:relative;overflow:hidden;max-width:480px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:24px;padding:44px 34px;box-shadow:var(--shadow-md);text-align:center}
+.auth-card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--orange),#FBBF24)}
+.auth-icon{width:56px;height:56px;border-radius:16px;background:#ECFDF3;color:#15803D;display:grid;place-items:center;font-size:26px;margin:0 auto 18px}
+.auth-card h1{font-size:clamp(20px,3vw,24px);font-weight:800;margin:0 0 8px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 20px}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap">
+    <div class="auth-card">
+      <span class="auth-icon">✓</span>
+      <h1>Bundle unlocked!</h1>
+      <p class="auth-sub">You now have full access to every course in "{{ bundle.name }}". Head to My Purchases to start learning.</p>
+      <a class="btn btn-primary btn-lg" href="{% url 'account_purchases' %}">Go to My Purchases</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

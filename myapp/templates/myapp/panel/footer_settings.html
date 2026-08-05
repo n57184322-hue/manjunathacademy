@@ -1,0 +1,65 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Footer{% endblock %}
+{% block page_title %}Footer{% endblock %}
+{% block page_sub %}Contact details, copyright text and social media links shown in the site footer{% endblock %}
+{% block nav_footer_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:26px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:24px 0}
+.custom-field{margin-bottom:16px;max-width:420px}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input,.custom-field textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink);width:100%}
+.custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>About &amp; contact</h3>
+      <p class="custom-section-sub">Shown in the footer's first column and "Reach us" list.</p>
+      <div class="custom-field"><label>Short description</label>{{ form.footer_about }}</div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Address</label>{{ form.footer_address }}</div>
+        <div class="custom-field"><label>Phone</label>{{ form.footer_phone }}</div>
+      </div>
+      <div class="custom-field"><label>Email</label>{{ form.footer_email }}</div>
+      <div class="custom-field"><label>Copyright name</label>{{ form.copyright_text }}<p class="custom-help">Shown as "© {{ "now"|date:"Y" }} — your text" at the bottom of the footer.</p></div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Social media links</h3>
+      <p class="custom-section-sub">Each icon only appears in the footer once its link is filled in.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>Facebook</label>{{ form.facebook_url }}</div>
+        <div class="custom-field"><label>Instagram</label>{{ form.instagram_url }}</div>
+        <div class="custom-field"><label>Twitter / X</label>{{ form.twitter_url }}</div>
+        <div class="custom-field"><label>Telegram</label>{{ form.telegram_url }}</div>
+        <div class="custom-field"><label>LinkedIn</label>{{ form.linkedin_url }}</div>
+      </div>
+      <p class="custom-help">YouTube and WhatsApp links are managed under Customization → Navbar.</p>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

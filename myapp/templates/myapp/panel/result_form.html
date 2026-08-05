@@ -1,0 +1,64 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Result Photo{% endblock %}
+{% block page_title %}{% if is_new %}Add result photo{% else %}Edit result photo{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_results_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+
+{% block extra_style %}
+.gallery-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gallery-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.gallery-preview img{max-height:100px;max-width:180px;border-radius:8px;object-fit:cover}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.gallery-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new photo{% else %}Editing: {{ result.caption }}{% endif %}</h2>
+      <p>Shown as a card in the Academic Excellence : Results section.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_result_list' %}">← Back to results</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Caption <span class="req">*</span></span>
+      {{ form.caption }}
+      {% if form.caption.errors %}<ul class="panel-errors">{% for e in form.caption.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Photo {% if is_new %}<span class="req">*</span>{% endif %}</span>
+      {{ form.image }}
+      {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if result.image %}
+      <div class="gallery-preview">
+        <img src="{{ result.image.url }}" alt="Current image">
+        <span class="custom-help">Current image</span>
+      </div>
+    {% endif %}
+
+    <div class="panel-form-row gallery-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show on homepage
+      </label>
+    </div>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add photo{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_result_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
