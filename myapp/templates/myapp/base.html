@@ -377,6 +377,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   display:grid;grid-template-columns:1fr 1fr;column-gap:26px;row-gap:10px;
   max-width:920px;margin-inline:auto;
 }
+.daily-col{display:flex;flex-direction:column;gap:10px;min-width:0}
 .daily-card{
   position:relative;overflow:hidden;border-radius:20px;min-height:200px;
   box-shadow:var(--shadow-md);
@@ -401,9 +402,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   color:#fff;
 }
 .btn-daily-red{background:#E23F3F}
-.daily-caption{text-align:center;margin:14px 0 0;font-size:13.5px;color:var(--muted)}
-.daily-grid .daily-card:first-of-type{grid-column:1}
-.daily-grid .daily-card:last-of-type{grid-column:2}
+.daily-caption{text-align:center;margin:0;font-size:13.5px;color:var(--muted)}
 
 /* ============================================================
    GENERIC SECTIONS
