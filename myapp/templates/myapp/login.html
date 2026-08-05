@@ -2,6 +2,7 @@
 
 {% block title %}Log In — Manjunath Academy{% endblock %}
 {% block meta_description %}Log in to your Manjunath Academy account.{% endblock %}
+{% block preloader %}{% endblock %}
 
 {% block extra_style %}
 .auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
@@ -43,7 +44,7 @@
       <h1>Welcome back</h1>
       <p class="auth-sub">Log in to continue your preparation.</p>
 
-      <form class="auth-form" method="post" novalidate>
+      <form class="auth-form" id="loginForm" method="post" novalidate>
         {% csrf_token %}
 
         <label>Email
@@ -60,11 +61,17 @@
           <ul class="auth-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
 
-        <button type="submit" class="btn btn-primary btn-lg">Log in</button>
+        <button type="submit" class="btn btn-primary btn-lg" id="loginSubmit">Log in</button>
       </form>
 
       <p class="auth-footer">New here? <a href="{% url 'signup' %}">Create an account</a></p>
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_script %}
+document.getElementById('loginForm').addEventListener('submit', function () {
+  document.getElementById('loginSubmit').classList.add('btn-loading');
+});
 {% endblock %}

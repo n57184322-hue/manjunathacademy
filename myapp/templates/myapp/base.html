@@ -65,6 +65,27 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   color:#F7DE9A;font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:.22em;
   font-size:12px;text-transform:uppercase;opacity:.9;
 }
+/* ============================================================
+   TOP LOADER — lightweight bar for login/signup navigation
+   ============================================================ */
+.top-loader{
+  position:fixed;top:0;left:0;height:3px;width:0%;z-index:999;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+  opacity:0;transition:width .3s ease,opacity .2s ease;
+}
+.top-loader.is-active{opacity:1;width:80%}
+
+/* ============================================================
+   BUTTON SPINNER — for form submit buttons
+   ============================================================ */
+.btn-loading{position:relative;color:transparent !important;pointer-events:none}
+.btn-loading::after{
+  content:"";position:absolute;top:50%;left:50%;width:18px;height:18px;margin:-9px 0 0 -9px;
+  border:2.5px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;
+  animation:btn-spin .6s linear infinite;
+}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+
 @keyframes crest-pulse{
   0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(247,222,154,0))}
   50%{transform:scale(1.12);filter:drop-shadow(0 0 14px rgba(247,222,154,.55))}
@@ -854,6 +875,9 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 </head>
 <body>
 
+<div class="top-loader" id="topLoader"></div>
+
+{% block preloader %}
 <!-- ================= LOADER (logo animation, no spinner) ================= -->
 <div class="preloader" id="preloader">
   <span class="preloader-crest">
@@ -877,6 +901,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   </span>
   <span class="preloader-word">MANJUNATH ACADEMY</span>
 </div>
+{% endblock %}
 
 <!-- ================= NOTIFICATION BAR / LATEST JOBS ================= -->
 <div class="notif-bar" id="notifBar">
@@ -1026,6 +1051,14 @@ document.addEventListener('DOMContentLoaded', function () {
       setTimeout(() => preloader.classList.add('is-hidden'), 500);
     });
     setTimeout(() => preloader.classList.add('is-hidden'), 2500);
+  }
+
+  /* ---------- 0a. Top loader for login/signup navigation ---------- */
+  const topLoader = document.getElementById('topLoader');
+  if (topLoader) {
+    document.querySelectorAll('a[href$="/login/"], a[href$="/signup/"]').forEach((link) => {
+      link.addEventListener('click', () => topLoader.classList.add('is-active'));
+    });
   }
 
   /* ---------- 0b. Notification bar modal ---------- */

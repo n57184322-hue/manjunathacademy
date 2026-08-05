@@ -2,6 +2,7 @@
 
 {% block title %}Sign Up — Manjunath Academy{% endblock %}
 {% block meta_description %}Create your free Manjunath Academy account to access live classes, PYQs and mock tests.{% endblock %}
+{% block preloader %}{% endblock %}
 
 {% block extra_style %}
 .auth-section{padding:64px 0 90px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
@@ -64,7 +65,7 @@
       <h1>Create your account</h1>
       <p class="auth-sub">Join Manjunath Academy for live classes, free PYQs and mock tests.</p>
 
-      <form class="auth-form" method="post" novalidate>
+      <form class="auth-form" id="signupForm" method="post" novalidate>
         {% csrf_token %}
 
         <label><span class="auth-label-text">Name <span class="req">*</span></span>
@@ -115,7 +116,7 @@
           <ul class="auth-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
 
-        <button type="submit" class="btn btn-primary btn-lg">Sign up</button>
+        <button type="submit" class="btn btn-primary btn-lg" id="signupSubmit">Sign up</button>
       </form>
 
       <p class="auth-footer">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
@@ -123,4 +124,10 @@
 
   </div>
 </section>
+{% endblock %}
+
+{% block extra_script %}
+document.getElementById('signupForm').addEventListener('submit', function () {
+  document.getElementById('signupSubmit').classList.add('btn-loading');
+});
 {% endblock %}
