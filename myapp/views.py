@@ -291,3 +291,8 @@ def panel_chatbot_question_delete(request, pk):
         question.delete()
         messages.success(request, 'Question deleted.')
     return redirect('panel_chatbot_list')
+
+
+
+
+
