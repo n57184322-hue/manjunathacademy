@@ -175,11 +175,12 @@ class HeroSectionForm(forms.ModelForm):
             'stat3_number', 'stat3_label',
             'badge1_value', 'badge1_title', 'badge1_subtitle',
             'badge2_value', 'badge2_title', 'badge2_subtitle',
-            'visual_type', 'visual_image', 'visual_video_url',
+            'visual_type', 'illustration_style', 'visual_image', 'visual_video_url',
         )
         widgets = {
             'subtitle': forms.Textarea(attrs={'rows': 3}),
             'visual_type': forms.RadioSelect(),
+            'illustration_style': forms.RadioSelect(),
             'primary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #admission or a full https:// URL'}),
             'secondary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #popular-courses or a full https:// URL'}),
             'visual_video_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/watch?v=...'}),

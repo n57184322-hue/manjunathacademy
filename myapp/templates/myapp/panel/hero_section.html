@@ -37,8 +37,8 @@
 }
 .custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
 .custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px}
-#heroImageField,#heroVideoField{display:none}
-#heroImageField.is-visible,#heroVideoField.is-visible{display:block}
+#heroIllustrationField,#heroImageField,#heroVideoField{display:none}
+#heroIllustrationField.is-visible,#heroImageField.is-visible,#heroVideoField.is-visible{display:block}
 @media (max-width:560px){.custom-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -134,6 +134,15 @@
         {% endfor %}
       </div>
 
+      <div id="heroIllustrationField" class="custom-field">
+        <label>Illustration style</label>
+        <div class="custom-radio-row">
+          {% for radio in form.illustration_style %}
+            <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
       <div id="heroImageField" class="custom-field">
         <label>Image</label>
         {{ form.visual_image }}
@@ -165,12 +174,14 @@
 {% block extra_script %}
 (function () {
   var radios = document.querySelectorAll('#heroVisualTypeRow input[type="radio"]');
+  var illustrationField = document.getElementById('heroIllustrationField');
   var imageField = document.getElementById('heroImageField');
   var videoField = document.getElementById('heroVideoField');
 
   function syncVisibility() {
     var checked = document.querySelector('#heroVisualTypeRow input[type="radio"]:checked');
     var value = checked ? checked.value : '';
+    illustrationField.classList.toggle('is-visible', value === 'illustration');
     imageField.classList.toggle('is-visible', value === 'image');
     videoField.classList.toggle('is-visible', value === 'video');
   }

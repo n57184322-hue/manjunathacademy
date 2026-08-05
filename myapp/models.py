@@ -176,6 +176,14 @@ class HeroSection(models.Model):
         (VISUAL_VIDEO, 'Video'),
     ]
 
+    ILLUSTRATION_CHOICES = [
+        ('study', 'Studying with a laptop'),
+        ('reading', 'Reading a book'),
+        ('graduate', 'Graduation success'),
+        ('online_class', 'Live online class'),
+        ('exam', 'Writing an exam'),
+    ]
+
     badge_text = models.CharField(max_length=80, blank=True, default='New batches starting')
     badge_highlight = models.CharField(max_length=80, blank=True, default='Enroll free', help_text='Shown after the small dot in the badge pill')
 
@@ -205,6 +213,7 @@ class HeroSection(models.Model):
     badge2_subtitle = models.CharField(max_length=100, blank=True, default='Mock tests & guidance')
 
     visual_type = models.CharField(max_length=15, choices=VISUAL_TYPE_CHOICES, default=VISUAL_ILLUSTRATION)
+    illustration_style = models.CharField(max_length=20, choices=ILLUSTRATION_CHOICES, default='study', help_text='Used when visual type is "Default illustration".')
     visual_image = models.ImageField(upload_to='hero/', blank=True, null=True, help_text='Used when visual type is "Image". Recommended size: 520×420px.')
     visual_video_url = models.URLField(blank=True, help_text='Used when visual type is "Video". Paste a normal YouTube/Vimeo link, or a direct .mp4 link.')
 

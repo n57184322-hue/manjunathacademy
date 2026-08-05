@@ -83,6 +83,118 @@
           {% else %}
             <iframe class="hero-visual-media" src="{{ hero.visual_video_embed_url }}" title="Hero video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           {% endif %}
+        {% elif hero.illustration_style == 'reading' %}
+        <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Student reading a book">
+          <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
+          <circle cx="120" cy="150" r="118" fill="#F0D9C4" opacity=".7"/>
+          <text x="352" y="150" class="il-word">C</text>
+          <text x="330" y="196" class="il-word2">EDUCATION</text>
+          <rect x="336" y="288" width="150" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="306" width="126" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="324" width="140" height="7" rx="3.5" fill="#D9BFA6"/>
+          <path d="M262 320c-22-8-34-30-30-54 22 6 36 28 30 54Z" fill="#4CA36A"/>
+          <path d="M270 322c14-14 16-38 4-56-16 12-20 38-4 56Z" fill="#3E8C59"/>
+          <path d="M240 318h48l-6 44a10 10 0 0 1-10 9h-16a10 10 0 0 1-10-9Z" fill="#E4864E"/>
+          <rect x="60" y="366" width="330" height="14" rx="7" fill="#C9A98C"/>
+          <path d="M150 366c-6-52 10-86 46-86s52 34 46 86Z" fill="#5B5BD6"/>
+          <path d="M196 214c22 0 34 14 34 32 0 22-14 36-34 36s-34-14-34-36c0-18 12-32 34-32Z" fill="#3B2B26"/>
+          <path d="M172 240c6-10 16-16 26-16s20 5 24 14c-6 4-14 6-24 6s-20-1-26-4Z" fill="#2A1D1A"/>
+          <circle cx="184" cy="256" r="5" fill="#151515"/><circle cx="208" cy="256" r="5" fill="#151515"/>
+          <path d="M188 270c5 4 11 4 16 0" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- open book -->
+          <path d="M152 328c14-8 28-8 42 0v36c-14-8-28-8-42 0Z" fill="#EDEDED"/>
+          <path d="M236 328c-14-8-28-8-42 0v36c14-8 28-8 42 0Z" fill="#F7F7F7"/>
+          <path d="M182 332v34M194 336v34M206 336v34" stroke="#C9A98C" stroke-width="2"/>
+          <!-- arms holding book -->
+          <path d="M172 300c-8 10-14 20-16 32M220 300c8 10 14 20 16 32" stroke="#E9B08C" stroke-width="16" fill="none" stroke-linecap="round"/>
+        </svg>
+        {% elif hero.illustration_style == 'graduate' %}
+        <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Graduation success">
+          <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
+          <circle cx="120" cy="150" r="118" fill="#F0D9C4" opacity=".7"/>
+          <text x="352" y="150" class="il-word">C</text>
+          <text x="330" y="196" class="il-word2">EDUCATION</text>
+          <rect x="336" y="288" width="150" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="306" width="126" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="324" width="140" height="7" rx="3.5" fill="#D9BFA6"/>
+          <path d="M262 320c-22-8-34-30-30-54 22 6 36 28 30 54Z" fill="#4CA36A"/>
+          <path d="M270 322c14-14 16-38 4-56-16 12-20 38-4 56Z" fill="#3E8C59"/>
+          <path d="M240 318h48l-6 44a10 10 0 0 1-10 9h-16a10 10 0 0 1-10-9Z" fill="#E4864E"/>
+          <rect x="60" y="366" width="330" height="14" rx="7" fill="#C9A98C"/>
+          <path d="M150 366c-6-52 10-86 46-86s52 34 46 86Z" fill="#5B5BD6"/>
+          <path d="M196 214c22 0 34 14 34 32 0 22-14 36-34 36s-34-14-34-36c0-18 12-32 34-32Z" fill="#3B2B26"/>
+          <circle cx="184" cy="256" r="5" fill="#151515"/><circle cx="208" cy="256" r="5" fill="#151515"/>
+          <path d="M188 270c5 4 11 4 16 0" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- graduation cap -->
+          <path d="M196 196l54 18-54 18-54-18Z" fill="#151515"/>
+          <rect x="192" y="214" width="8" height="18" rx="2" fill="#151515"/>
+          <circle cx="196" cy="234" r="4" fill="#E4864E"/>
+          <!-- diploma scroll + arm -->
+          <rect x="222" y="316" width="46" height="14" rx="7" fill="#F7E7C6" stroke="#D9BFA6" stroke-width="2"/>
+          <path d="M228 300c6 8 10 16 12 24" stroke="#E9B08C" stroke-width="16" fill="none" stroke-linecap="round"/>
+          <!-- confetti -->
+          <circle cx="150" cy="230" r="4" fill="#F97316"/>
+          <circle cx="272" cy="244" r="3" fill="#14B8A6"/>
+          <circle cx="160" cy="208" r="3" fill="#5B5BD6"/>
+          <rect x="256" y="204" width="7" height="7" fill="#EAB308" transform="rotate(20 259 207)"/>
+        </svg>
+        {% elif hero.illustration_style == 'online_class' %}
+        <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Live online class">
+          <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
+          <circle cx="120" cy="150" r="118" fill="#F0D9C4" opacity=".7"/>
+          <text x="352" y="150" class="il-word">C</text>
+          <text x="330" y="196" class="il-word2">EDUCATION</text>
+          <rect x="336" y="288" width="150" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="306" width="126" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="324" width="140" height="7" rx="3.5" fill="#D9BFA6"/>
+          <path d="M262 320c-22-8-34-30-30-54 22 6 36 28 30 54Z" fill="#4CA36A"/>
+          <path d="M270 322c14-14 16-38 4-56-16 12-20 38-4 56Z" fill="#3E8C59"/>
+          <path d="M240 318h48l-6 44a10 10 0 0 1-10 9h-16a10 10 0 0 1-10-9Z" fill="#E4864E"/>
+          <rect x="60" y="366" width="330" height="14" rx="7" fill="#C9A98C"/>
+          <path d="M150 366c-6-52 10-86 46-86s52 34 46 86Z" fill="#5B5BD6"/>
+          <path d="M196 214c22 0 34 14 34 32 0 22-14 36-34 36s-34-14-34-36c0-18 12-32 34-32Z" fill="#3B2B26"/>
+          <path d="M172 240c6-10 16-16 26-16s20 5 24 14c-6 4-14 6-24 6s-20-1-26-4Z" fill="#2A1D1A"/>
+          <circle cx="184" cy="256" r="5" fill="#151515"/><circle cx="208" cy="256" r="5" fill="#151515"/>
+          <path d="M188 270c5 4 11 4 16 0" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- laptop showing a video call -->
+          <path d="M150 356l24-62h84l24 62Z" fill="#14B8A6"/>
+          <rect x="168" y="300" width="96" height="50" rx="5" fill="#CFF3EA"/>
+          <path d="M206 314l24 12-24 14Z" fill="#0E9488"/>
+          <rect x="140" y="356" width="176" height="12" rx="6" fill="#0E9488"/>
+          <circle cx="252" cy="308" r="5" fill="#E23F3F"/>
+          <!-- arm -->
+          <path d="M236 300c22 6 34 20 34 40" stroke="#E9B08C" stroke-width="16" fill="none" stroke-linecap="round"/>
+        </svg>
+        {% elif hero.illustration_style == 'exam' %}
+        <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Writing an exam">
+          <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
+          <circle cx="120" cy="150" r="118" fill="#F0D9C4" opacity=".7"/>
+          <text x="352" y="150" class="il-word">C</text>
+          <text x="330" y="196" class="il-word2">EDUCATION</text>
+          <rect x="336" y="288" width="150" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="306" width="126" height="7" rx="3.5" fill="#D9BFA6"/>
+          <rect x="336" y="324" width="140" height="7" rx="3.5" fill="#D9BFA6"/>
+          <path d="M262 320c-22-8-34-30-30-54 22 6 36 28 30 54Z" fill="#4CA36A"/>
+          <path d="M270 322c14-14 16-38 4-56-16 12-20 38-4 56Z" fill="#3E8C59"/>
+          <path d="M240 318h48l-6 44a10 10 0 0 1-10 9h-16a10 10 0 0 1-10-9Z" fill="#E4864E"/>
+          <rect x="60" y="366" width="330" height="14" rx="7" fill="#C9A98C"/>
+          <path d="M150 366c-6-52 10-86 46-86s52 34 46 86Z" fill="#5B5BD6"/>
+          <path d="M196 214c22 0 34 14 34 32 0 22-14 36-34 36s-34-14-34-36c0-18 12-32 34-32Z" fill="#3B2B26"/>
+          <circle cx="184" cy="256" r="5" fill="#151515"/><circle cx="208" cy="256" r="5" fill="#151515"/>
+          <path d="M192 270c4 3 8 3 12 0" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- notepad -->
+          <rect x="164" y="316" width="80" height="50" rx="5" fill="#EDEDED"/>
+          <rect x="176" y="330" width="56" height="4" rx="2" fill="#B9B9B9"/>
+          <rect x="176" y="342" width="40" height="4" rx="2" fill="#B9B9B9"/>
+          <rect x="176" y="354" width="48" height="4" rx="2" fill="#B9B9B9"/>
+          <!-- pencil -->
+          <path d="M232 320l14-14 8 8-14 14Z" fill="#F5B84E"/>
+          <path d="M246 306l8-8 8 8-8 8Z" fill="#E4864E"/>
+          <path d="M228 300c4 8 6 16 8 24" stroke="#E9B08C" stroke-width="16" fill="none" stroke-linecap="round"/>
+          <!-- clock -->
+          <circle cx="266" cy="234" r="20" fill="#fff" stroke="#D9BFA6" stroke-width="3"/>
+          <path d="M266 224v12l9 6" stroke="#151515" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
         {% else %}
         <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Student studying with a laptop">
           <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
