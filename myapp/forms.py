@@ -9,6 +9,7 @@ from .models import (
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
+    GalleryImage,
     HeroSection,
     Notification,
     PWASettings,
@@ -238,4 +239,18 @@ class PWASettingsForm(forms.ModelForm):
         widgets = {
             'theme_color': forms.TextInput(attrs={'type': 'color'}),
             'background_color': forms.TextInput(attrs={'type': 'color'}),
+        }
+
+
+class GalleryImageForm(forms.ModelForm):
+    class Meta:
+        model = GalleryImage
+        fields = ('title', 'caption', 'image', 'order', 'is_active')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Annual Prize Distribution 2026'}),
+            'caption': forms.TextInput(attrs={'placeholder': 'A short line about this photo'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
         }

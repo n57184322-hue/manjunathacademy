@@ -11,6 +11,7 @@ urlpatterns = [
     path('account/purchases/', views.account_purchases, name='account_purchases'),
     path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
     path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
+    path('gallery/', views.gallery_page, name='gallery_page'),
     path('admission/register/', views.admission_register, name='admission_register'),
     path('manifest.json', views.pwa_manifest, name='pwa_manifest'),
     path('sw.js', views.service_worker, name='service_worker'),
@@ -37,4 +38,8 @@ urlpatterns = [
     path('panel/admissions/', views.panel_admissions, name='panel_admissions'),
     path('panel/admissions/<int:pk>/delete/', views.panel_admission_delete, name='panel_admission_delete'),
     path('panel/apps/', views.panel_pwa_settings, name='panel_pwa_settings'),
+    path('panel/gallery/', views.panel_gallery_list, name='panel_gallery_list'),
+    path('panel/gallery/add/', views.panel_gallery_add, name='panel_gallery_add'),
+    path('panel/gallery/<int:pk>/edit/', views.panel_gallery_edit, name='panel_gallery_edit'),
+    path('panel/gallery/<int:pk>/delete/', views.panel_gallery_delete, name='panel_gallery_delete'),
 ]

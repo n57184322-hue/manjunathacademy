@@ -16,6 +16,7 @@ from .forms import (
     DailyUpdateCardForm,
     DailyUpdatePostForm,
     EmailAuthenticationForm,
+    GalleryImageForm,
     HeroSectionForm,
     NavbarCustomizationForm,
     NotificationForm,
@@ -30,6 +31,7 @@ from .models import (
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
+    GalleryImage,
     HeroSection,
     Notification,
     PWASettings,
@@ -80,6 +82,11 @@ def daily_updates_page(request, category):
     card = DailyUpdateCard.load(category)
     posts = DailyUpdatePost.objects.filter(category=category, is_active=True)
     return render(request, 'myapp/daily_updates_page.html', {'card': card, 'posts': posts})
+
+
+def gallery_page(request):
+    images = GalleryImage.objects.filter(is_active=True)
+    return render(request, 'myapp/gallery_page.html', {'images': images})
 
 
 def admission_register(request):
@@ -488,6 +495,55 @@ def panel_pwa_settings(request):
         form = PWASettingsForm(instance=pwa)
 
     return render(request, 'myapp/panel/pwa_settings.html', {'form': form, 'pwa': pwa})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_gallery_list(request):
+    images = GalleryImage.objects.all()
+    return render(request, 'myapp/panel/gallery_list.html', {'images': images})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_gallery_add(request):
+    if request.method == 'POST':
+        form = GalleryImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Image added.')
+            return redirect('panel_gallery_list')
+    else:
+        form = GalleryImageForm(initial={'order': GalleryImage.objects.count()})
+
+    return render(request, 'myapp/panel/gallery_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_gallery_edit(request, pk):
+    image = get_object_or_404(GalleryImage, pk=pk)
+
+    if request.method == 'POST':
+        form = GalleryImageForm(request.POST, request.FILES, instance=image)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Image updated.')
+            return redirect('panel_gallery_list')
+    else:
+        form = GalleryImageForm(instance=image)
+
+    return render(request, 'myapp/panel/gallery_form.html', {'form': form, 'is_new': False, 'image': image})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_gallery_delete(request, pk):
+    image = get_object_or_404(GalleryImage, pk=pk)
+    if request.method == 'POST':
+        image.delete()
+        messages.success(request, 'Image deleted.')
+    return redirect('panel_gallery_list')
 
 
 

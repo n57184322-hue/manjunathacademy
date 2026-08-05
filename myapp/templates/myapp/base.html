@@ -201,6 +201,25 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   background:#EF3B2D;color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;
   padding:2px 7px;border-radius:var(--r-pill);text-transform:uppercase;white-space:nowrap;
 }
+.nav-more{position:relative;list-style:none}
+.nav-more-toggle{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex:0 0 auto;
+  font-size:13px;font-weight:600;color:#4b5563;background:none;border:0;font-family:inherit;
+  padding:8px 9px;border-radius:var(--r-pill);transition:.18s ease;cursor:pointer;
+}
+.nav-more-toggle:hover{background:#F6F6F7;color:var(--ink)}
+.nav-more-caret{transition:transform .15s ease}
+.nav-more.is-open .nav-more-caret{transform:rotate(180deg)}
+.nav-more-dropdown{
+  position:absolute;left:0;top:calc(100% + 8px);min-width:170px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;display:none;flex-direction:column;gap:2px;z-index:70;
+}
+.nav-more.is-open .nav-more-dropdown{display:flex}
+.nav-more-dropdown a{
+  padding:9px 12px;border-radius:8px;font-size:13.5px;font-weight:600;color:#374151;
+  display:flex;align-items:center;gap:8px;transition:.12s ease;
+}
+.nav-more-dropdown a:hover{background:#F6F6F7;color:var(--ink)}
 
 .header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .chip{
@@ -943,6 +962,8 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .primary-nav.is-open{display:flex}
   .primary-nav > ul{flex-direction:column;align-items:stretch;margin:0}
   .primary-nav > ul a{padding:12px 14px;font-size:14.5px}
+  .nav-more-toggle{width:100%;padding:12px 14px;font-size:14.5px}
+  .nav-more-dropdown{position:static;box-shadow:none;border:0;padding:2px 0 0 14px;margin:0}
   .chip span.chip-label{display:inline}
   .header-actions{flex-wrap:wrap}
   .header-actions .btn{flex:1}
@@ -1119,6 +1140,15 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         <li><a href="#results">Results</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#contact-us">Contact</a></li>
+        <li class="nav-more" id="navMore">
+          <button type="button" class="nav-more-toggle" id="navMoreToggle" aria-haspopup="true" aria-expanded="false">
+            More
+            <svg class="nav-more-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="nav-more-dropdown" id="navMoreDropdown">
+            <a href="{% url 'gallery_page' %}">🖼️ Gallery</a>
+          </div>
+        </li>
       </ul>
       <div class="header-actions">
         <a class="chip chip-yt" href="{{ site_settings.youtube_url|default:'#' }}" {% if site_settings.youtube_url %}target="_blank" rel="noopener"{% endif %}>
@@ -1387,6 +1417,32 @@ document.addEventListener('DOMContentLoaded', function () {
       if (e.target.closest('a') && window.innerWidth <= 940) {
         nav.classList.remove('is-open');
         toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  /* ---------- 2a. "More" nav dropdown ---------- */
+  const navMore = document.getElementById('navMore');
+  const navMoreToggle = document.getElementById('navMoreToggle');
+
+  if (navMore && navMoreToggle) {
+    navMoreToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = navMore.classList.toggle('is-open');
+      navMoreToggle.setAttribute('aria-expanded', String(open));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!navMore.contains(e.target)) {
+        navMore.classList.remove('is-open');
+        navMoreToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        navMore.classList.remove('is-open');
+        navMoreToggle.setAttribute('aria-expanded', 'false');
       }
     });
   }

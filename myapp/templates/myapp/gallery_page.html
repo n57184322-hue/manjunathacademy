@@ -1,0 +1,58 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Gallery — Manjunath Academy{% endblock %}
+{% block meta_description %}Photos from Manjunath Academy — classes, events and campus life.{% endblock %}
+
+{% block extra_style %}
+.gallery-page-hero{padding:56px 0 40px;background:var(--peach)}
+.gallery-page-hero h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px}
+.gallery-page-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.gallery-section{padding:56px 0 90px}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.gallery-card{
+  background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+.gallery-card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.gallery-card-body{padding:16px 18px}
+.gallery-card-body h3{font-size:15.5px;margin:0 0 4px}
+.gallery-card-body p{margin:0;font-size:13px;color:var(--muted)}
+.gallery-empty{text-align:center;padding:60px 0;color:var(--muted)}
+.gallery-empty-ico{font-size:36px;display:block;margin-bottom:12px}
+@media (max-width:900px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.gallery-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="gallery-page-hero">
+  <div class="wrap">
+    <h1>Gallery</h1>
+    <p>A look at classes, events and campus life at Manjunath Academy.</p>
+  </div>
+</section>
+
+<section class="gallery-section">
+  <div class="wrap">
+    {% if images %}
+      <div class="gallery-grid">
+        {% for image in images %}
+        <article class="gallery-card">
+          <img src="{{ image.image.url }}" alt="{{ image.title }}">
+          {% if image.title or image.caption %}
+          <div class="gallery-card-body">
+            {% if image.title %}<h3>{{ image.title }}</h3>{% endif %}
+            {% if image.caption %}<p>{{ image.caption }}</p>{% endif %}
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="gallery-empty">
+        <span class="gallery-empty-ico">🖼️</span>
+        No photos posted yet — check back soon.
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
