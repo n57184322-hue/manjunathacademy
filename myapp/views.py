@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.utils import timezone
 
 from .forms import EmailAuthenticationForm, SignupForm
 from .models import CustomUser
@@ -52,7 +53,14 @@ def _is_staff(user):
 @user_passes_test(_is_staff, login_url='login')
 def panel_signups(request):
     users = CustomUser.objects.order_by('-date_joined')
-    return render(request, 'myapp/panel/signups_list.html', {'users': users})
+    week_ago = timezone.now() - timezone.timedelta(days=7)
+    stats = {
+        'total': users.count(),
+        'admins': users.filter(is_superuser=True).count(),
+        'students': users.filter(is_superuser=False).count(),
+        'this_week': users.filter(date_joined__gte=week_ago).count(),
+    }
+    return render(request, 'myapp/panel/signups_list.html', {'users': users, 'stats': stats})
 
 
 @login_required(login_url='login')

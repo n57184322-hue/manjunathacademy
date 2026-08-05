@@ -2,9 +2,30 @@
 
 {% block title %}Signups{% endblock %}
 {% block page_title %}Signups{% endblock %}
+{% block page_sub %}Everyone who has registered on the site{% endblock %}
 {% block nav_signups %}is-active{% endblock %}
 
 {% block content %}
+
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-1">
+    <span class="panel-stat-ico">👥</span>
+    <div><div class="panel-stat-num">{{ stats.total }}</div><div class="panel-stat-label">Total signups</div></div>
+  </div>
+  <div class="panel-stat panel-stat-2">
+    <span class="panel-stat-ico">🎓</span>
+    <div><div class="panel-stat-num">{{ stats.students }}</div><div class="panel-stat-label">Students</div></div>
+  </div>
+  <div class="panel-stat panel-stat-3">
+    <span class="panel-stat-ico">🆕</span>
+    <div><div class="panel-stat-num">{{ stats.this_week }}</div><div class="panel-stat-label">Joined this week</div></div>
+  </div>
+  <div class="panel-stat panel-stat-4">
+    <span class="panel-stat-ico">🛡</span>
+    <div><div class="panel-stat-num">{{ stats.admins }}</div><div class="panel-stat-label">Admins</div></div>
+  </div>
+</div>
+
 <div class="panel-card">
   <div class="panel-card-head">
     <div>
@@ -23,28 +44,31 @@
       <table class="panel-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
+            <th>User</th>
             <th>Number</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>State</th>
-            <th>City</th>
+            <th>Age / Gender</th>
+            <th>Location</th>
             <th>Role</th>
             <th>Joined</th>
           </tr>
         </thead>
         <tbody>
           {% for u in users %}
+          {% cycle '#F97316' '#2563EB' '#16A34A' '#6D3BEB' '#DB2777' as avatarColor silent %}
           <tr>
-            <td>{{ u.name }}</td>
-            <td>{{ u.email }}</td>
+            <td>
+              <div class="panel-user-cell">
+                <span class="panel-row-avatar" style="background:{{ avatarColor }}">{{ u.name|default:u.email|first|upper }}</span>
+                <div>
+                  <div class="panel-row-name">{{ u.name }}</div>
+                  <div>{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
             <td>{{ u.number }}</td>
-            <td>{{ u.age|default:"—" }}</td>
-            <td>{{ u.get_gender_display|default:"—" }}</td>
-            <td>{{ u.state|default:"—" }}</td>
-            <td>{{ u.city|default:"—" }}</td>
-            <td>{% if u.is_superuser %}<span class="panel-badge">Admin</span>{% else %}Student{% endif %}</td>
+            <td>{{ u.age|default:"—" }} {% if u.gender %}· {{ u.get_gender_display }}{% endif %}</td>
+            <td>{% if u.city or u.state %}{{ u.city|default:"—" }}{% if u.state %}, {{ u.state }}{% endif %}{% else %}—{% endif %}</td>
+            <td>{% if u.is_superuser %}<span class="panel-badge">Admin</span>{% else %}<span class="panel-badge panel-badge-muted">Student</span>{% endif %}</td>
             <td>{{ u.date_joined|date:"d M Y" }}</td>
           </tr>
           {% endfor %}
@@ -52,7 +76,7 @@
       </table>
     </div>
   {% else %}
-    <p class="panel-empty">No signups yet.</p>
+    <p class="panel-empty"><span class="panel-empty-ico">🗂️</span>No signups yet.</p>
   {% endif %}
 </div>
 {% endblock %}
