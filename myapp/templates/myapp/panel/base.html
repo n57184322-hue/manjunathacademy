@@ -280,6 +280,32 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
         <span class="panel-nav-ico">📚</span> E-Library
       </a>
 
+      <div class="panel-nav-group {% block nav_store_open %}{% endblock %}">
+        <button type="button" class="panel-nav-group-toggle {% block nav_store %}{% endblock %}">
+          <span class="panel-nav-ico">🛒</span> E-Store
+          <svg class="panel-nav-group-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="panel-nav-subgroup">
+          <a class="panel-nav-sub {% block nav_store_products %}{% endblock %}" href="{% url 'panel_store_product_list' %}">Products</a>
+          <a class="panel-nav-sub {% block nav_store_orders %}{% endblock %}" href="{% url 'panel_store_orders' %}">Orders</a>
+        </div>
+      </div>
+
+      <div class="panel-nav-group {% block nav_career_open %}{% endblock %}">
+        <button type="button" class="panel-nav-group-toggle {% block nav_career %}{% endblock %}">
+          <span class="panel-nav-ico">💼</span> Career
+          <svg class="panel-nav-group-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="panel-nav-subgroup">
+          <a class="panel-nav-sub {% block nav_career_jobs %}{% endblock %}" href="{% url 'panel_career_job_list' %}">Post Job</a>
+          <a class="panel-nav-sub {% block nav_career_applications %}{% endblock %}" href="{% url 'panel_career_applications' %}">User Applied</a>
+        </div>
+      </div>
+
+      <a class="{% block nav_razorpay %}{% endblock %}" href="{% url 'panel_razorpay_settings' %}">
+        <span class="panel-nav-ico">💳</span> Razorpay
+      </a>
+
       <div class="panel-nav-group {% block nav_customization_open %}{% endblock %}" id="navCustomizationGroup">
         <button type="button" class="panel-nav-group-toggle {% block nav_customization %}{% endblock %}" id="navCustomizationToggle">
           <span class="panel-nav-ico">🎨</span> Customization
@@ -324,13 +350,11 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
   </div>
 </div>
 <script>
-  var navToggle = document.getElementById('navCustomizationToggle');
-  var navGroup = document.getElementById('navCustomizationGroup');
-  if (navToggle && navGroup) {
-    navToggle.addEventListener('click', function () {
-      navGroup.classList.toggle('is-open');
+  document.querySelectorAll('.panel-nav-group-toggle').forEach(function (toggle) {
+    toggle.addEventListener('click', function () {
+      toggle.closest('.panel-nav-group').classList.toggle('is-open');
     });
-  }
+  });
   {% block extra_script %}{% endblock %}
 </script>
 </body>

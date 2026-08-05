@@ -13,10 +13,15 @@ from .models import (
     DailyUpdatePost,
     GalleryImage,
     HeroSection,
+    JobApplication,
+    JobPosting,
     Notification,
+    Product,
     PWASettings,
     Question,
+    RazorpaySettings,
     SiteSettings,
+    StoreOrder,
 )
 
 STATE_CHOICES = [
@@ -312,4 +317,75 @@ class QuestionForm(forms.ModelForm):
             'option_d': forms.TextInput(attrs={'placeholder': 'Option D'}),
             'marks': forms.NumberInput(attrs={'min': 1}),
             'order': forms.NumberInput(attrs={'min': 0}),
+        }
+
+
+class RazorpaySettingsForm(forms.ModelForm):
+    class Meta:
+        model = RazorpaySettings
+        fields = ('key_id', 'key_secret')
+        widgets = {
+            'key_id': forms.TextInput(attrs={'placeholder': 'rzp_live_xxxxxxxxxxxx', 'autocomplete': 'off'}),
+            'key_secret': forms.PasswordInput(attrs={'placeholder': 'Your Razorpay key secret', 'autocomplete': 'off'}, render_value=True),
+        }
+        help_texts = {
+            'key_id': 'Found in Razorpay Dashboard → Settings → API Keys.',
+            'key_secret': 'Kept private — never shown on the public site.',
+        }
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ('category', 'name', 'description', 'original_price', 'current_price', 'image', 'stock', 'order', 'is_active')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL Complete Notes Set'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'What this product includes'}),
+            'stock': forms.NumberInput(attrs={'min': 0}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'image': 'Recommended size: 400×400px.',
+            'order': 'Lower numbers show first.',
+        }
+
+
+class StoreCheckoutForm(forms.Form):
+    shipping_name = forms.CharField(max_length=150, label='Full name', widget=forms.TextInput(attrs={'placeholder': 'Your name'}))
+    shipping_phone = forms.CharField(max_length=15, label='Phone number', widget=forms.TextInput(attrs={'placeholder': '10-digit mobile number'}))
+    shipping_address = forms.CharField(label='Delivery address', widget=forms.Textarea(attrs={'rows': 3, 'placeholder': 'House no, street, city, state, PIN code'}))
+    quantity = forms.IntegerField(min_value=1, initial=1, widget=forms.NumberInput(attrs={'min': 1}))
+
+
+class StoreOrderStatusForm(forms.ModelForm):
+    class Meta:
+        model = StoreOrder
+        fields = ('status',)
+
+
+class JobPostingForm(forms.ModelForm):
+    class Meta:
+        model = JobPosting
+        fields = ('title', 'location', 'job_type', 'experience_required', 'description', 'order', 'is_active')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Faculty — Reasoning & General Studies'}),
+            'location': forms.TextInput(attrs={'placeholder': 'e.g. Lucknow centre'}),
+            'experience_required': forms.TextInput(attrs={'placeholder': 'e.g. 3+ years teaching experience'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Role details, responsibilities, requirements'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
+        }
+
+
+class CareerApplicationForm(forms.ModelForm):
+    class Meta:
+        model = JobApplication
+        fields = ('name', 'email', 'phone', 'resume', 'cover_note')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Your full name'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'you@example.com'}),
+            'phone': forms.TextInput(attrs={'placeholder': '10-digit mobile number'}),
+            'cover_note': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Why should we hire you? (optional)'}),
         }

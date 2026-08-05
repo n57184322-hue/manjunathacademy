@@ -1,5 +1,10 @@
 {% extends "myapp/base.html" %}
 
+{% block extra_style %}
+.career-apply-btn{background:none;border:0;padding:0;font:inherit;cursor:pointer}
+.career-modal-form{margin-top:4px}
+{% endblock %}
+
 {% block content %}
 <!-- ================= SLIDING ADVERTISEMENT BANNER ================= -->
 <section class="ad-band" aria-label="Announcements">
@@ -460,9 +465,9 @@
 <!-- ================= VIDEO COURSES ================= -->
 <section class="section section-tint" id="video-courses">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">📹 Video Course</p>
-    <h2 class="section-title center-title">Learn At Your Own <span class="text-orange">Pace</span></h2>
-    <p class="section-sub">Recorded, chapter-wise video courses you can watch anytime, any number of times.</p>
+    <p class="eyebrow eyebrow-pill">🎬 Video Courses</p>
+    <h2 class="section-title center-title">Learn From Expert Faculty, <span class="text-orange">On Video</span></h2>
+    <p class="section-sub">HD recorded lectures with a clear chapter-wise breakdown — pause, rewind and rewatch as many times as you need, on any device.</p>
     <div class="pc-grid">
       {% for course in video_courses %}
       <article class="pc-card">
@@ -493,9 +498,9 @@
 <!-- ================= E-LIBRARY ================= -->
 <section class="section" id="e-library">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">📚 E-Library</p>
-    <h2 class="section-title center-title">Books &amp; Notes For <span class="text-orange">Every Exam</span></h2>
-    <p class="section-sub">Digital books, PYQ compilations and revision notes you can read anytime.</p>
+    <p class="eyebrow eyebrow-pill">📚 Digital E-Library</p>
+    <h2 class="section-title center-title">Your Complete <span class="text-orange">Digital Library</span></h2>
+    <p class="section-sub">E-books, previous year papers and revision notes — read online in the built-in viewer or download the PDF, on any device.</p>
     <div class="pc-grid">
       {% for item in elibrary_items %}
       <article class="pc-card">
@@ -652,51 +657,35 @@
   </div>
 </section>
 
-<!-- ================= E-LIBRARY ================= -->
-<section class="section" id="e-library">
-  <div class="wrap">
-    <p class="eyebrow eyebrow-pill">📚 E-Library</p>
-    <h2 class="section-title center-title">Everything To <span class="text-orange">Read &amp; Revise</span></h2>
-    <div class="feature-grid">
-      <article class="card"><span class="ico ico-orange">📖</span><h3>NCERT digitised notes</h3><p>Class 6–12, chapter-wise, downloadable as PDF.</p></article>
-      <article class="card"><span class="ico ico-green">📰</span><h3>Current affairs archive</h3><p>Every monthly digest since 2019, searchable by topic.</p></article>
-      <article class="card"><span class="ico ico-blue">📑</span><h3>Previous year papers</h3><p>10 years of PYQs for every major exam, with solutions.</p></article>
-      <article class="card"><span class="ico ico-purple">🗂</span><h3>Toppers' handwritten notes</h3><p>Shared by past selections, organised by subject.</p></article>
-    </div>
-  </div>
-</section>
-
 <!-- ================= E-STORE ================= -->
 <section class="section section-tint" id="e-store">
   <div class="wrap">
     <p class="eyebrow eyebrow-pill">🛒 E-Store</p>
     <h2 class="section-title center-title">Notes, Books &amp; <span class="text-orange">Merchandise</span></h2>
-    <p class="section-sub">Printed notes, guidebooks and academy merch — the same idea as Allen's e-store, built for our students.</p>
+    <p class="section-sub">Printed notes, guidebooks and academy merch — ordered online, delivered to your door.</p>
     <div class="pc-grid">
+      {% for product in store_products %}
       <article class="pc-card">
-        <div class="pc-top"><span class="pc-icon pc-icon-grey">📓</span><span class="pc-rating">★ 4.7</span></div>
-        <h3>SSC CGL Complete Notes Set</h3>
-        <p>Printed, spiral-bound notes covering the full syllabus.</p>
-        <div class="pc-tags"><span>Printed</span><span>Ships in 3 days</span></div>
-        <div class="pc-meta"><span>₹499</span><span>4.2k sold</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">Buy Now</a>
+        {% if product.image %}
+          <img class="pc-thumb" src="{{ product.image.url }}" alt="">
+        {% else %}
+          <div class="pc-top"><span class="pc-icon pc-icon-grey">📦</span></div>
+        {% endif %}
+        <h3>{{ product.name }}</h3>
+        {% if product.description %}<p>{{ product.description|truncatechars:100 }}</p>{% endif %}
+        <div class="pc-meta">
+          <span>₹{{ product.current_price }}</span>
+          {% if product.original_price and product.original_price != product.current_price %}<span><s>₹{{ product.original_price }}</s></span>{% endif %}
+        </div>
+        {% if product.in_stock %}
+          <a class="btn-pc btn-pc-orange" href="{% url 'store_checkout' product.pk %}">Buy Now</a>
+        {% else %}
+          <span class="btn-pc btn-pc-orange" style="opacity:.5;pointer-events:none">Out of Stock</span>
+        {% endif %}
       </article>
-      <article class="pc-card">
-        <div class="pc-top"><span class="pc-icon pc-icon-grey">📘</span><span class="pc-rating">★ 4.8</span></div>
-        <h3>Banking Reasoning Guidebook</h3>
-        <p>320 pages, 1,000+ practice questions with solutions.</p>
-        <div class="pc-tags"><span>Printed</span><span>Ships in 3 days</span></div>
-        <div class="pc-meta"><span>₹349</span><span>2.9k sold</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">Buy Now</a>
-      </article>
-      <article class="pc-card">
-        <div class="pc-top"><span class="pc-icon pc-icon-grey">👕</span><span class="pc-rating">★ 4.9</span></div>
-        <h3>Academy T-Shirt</h3>
-        <p>Cotton, unisex sizes S–XXL. Wear it to the offline centre.</p>
-        <div class="pc-tags"><span>S–XXL</span><span>Ships in 5 days</span></div>
-        <div class="pc-meta"><span>₹399</span><span>860 sold</span></div>
-        <a class="btn-pc btn-pc-navy" href="#contact-us">Buy Now</a>
-      </article>
+      {% empty %}
+      <p class="panel-empty">No products added yet — check back soon.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -707,25 +696,39 @@
     <p class="eyebrow eyebrow-pill">💼 Careers</p>
     <h2 class="section-title center-title">Work With <span class="text-orange">Us</span></h2>
     <div class="career-grid">
+      {% for job in jobs %}
       <article class="career-card">
-        <div><h4>Faculty — Reasoning &amp; General Studies</h4><p>Lucknow centre · Full-time · 3+ years teaching experience</p></div>
-        <a class="link-arrow" href="#contact-us">Apply →</a>
+        <div>
+          <h4>{{ job.title }}</h4>
+          <p>{% if job.location %}{{ job.location }} · {% endif %}{{ job.get_job_type_display }}{% if job.experience_required %} · {{ job.experience_required }}{% endif %}</p>
+        </div>
+        <button type="button" class="link-arrow career-apply-btn" data-job-id="{{ job.pk }}" data-job-title="{{ job.title }}">Apply →</button>
       </article>
-      <article class="career-card">
-        <div><h4>Content Writer — Current Affairs</h4><p>Remote · Full-time · Strong writing in English &amp; Hindi</p></div>
-        <a class="link-arrow" href="#contact-us">Apply →</a>
-      </article>
-      <article class="career-card">
-        <div><h4>Video Editor</h4><p>Lucknow centre · Full-time · Experience editing lecture videos</p></div>
-        <a class="link-arrow" href="#contact-us">Apply →</a>
-      </article>
-      <article class="career-card">
-        <div><h4>Telecaller — Admissions</h4><p>Lucknow centre · Full-time · Fluent Hindi &amp; English</p></div>
-        <a class="link-arrow" href="#contact-us">Apply →</a>
-      </article>
+      {% empty %}
+      <p class="panel-empty">No openings right now — check back soon.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
+
+<div class="notif-modal" id="careerModal">
+  <div class="notif-modal-card">
+    <button type="button" class="notif-modal-close" id="careerModalClose" aria-label="Close">✕</button>
+    <p class="notif-modal-kicker">Apply for</p>
+    <h3 id="careerModalTitle">Position</h3>
+    <form class="admission-form career-modal-form" id="careerApplyForm" style="background:none;border:0;box-shadow:none;padding:0" enctype="multipart/form-data">
+      {% csrf_token %}
+      <label>Full name<input type="text" name="name" required placeholder="Your name"></label>
+      <label>Email<input type="email" name="email" required placeholder="you@example.com"></label>
+      <label>Phone<input type="tel" name="phone" required placeholder="10-digit mobile number"></label>
+      <label>Resume<input type="file" name="resume" accept=".pdf,.doc,.docx"></label>
+      <label>Cover note<textarea name="cover_note" rows="3" placeholder="Why should we hire you? (optional)"></textarea></label>
+      <button class="btn btn-primary btn-lg" type="submit">Submit Application</button>
+      <p class="form-error" id="careerApplyError" hidden>Something went wrong — please check your details and try again.</p>
+      <p class="form-success" id="careerApplySuccess" hidden>Thanks — we'll review your application and reach out if shortlisted.</p>
+    </form>
+  </div>
+</div>
 
 <!-- ================= ADMISSION FORM (OFFLINE) ================= -->
 <section class="section section-tint" id="admission">

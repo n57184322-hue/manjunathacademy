@@ -1,0 +1,71 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}User Applied{% endblock %}
+{% block page_title %}Career — User Applied{% endblock %}
+{% block page_sub %}Applications submitted through the Careers section{% endblock %}
+{% block nav_career %}is-active{% endblock %}
+{% block nav_career_open %}is-open{% endblock %}
+{% block nav_career_applications %}is-active{% endblock %}
+
+{% block extra_style %}
+.admission-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.cover-note{max-width:220px;white-space:normal!important;color:var(--muted);font-size:12.5px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Applications received</h2>
+      <p>{{ applications|length }} application{{ applications|length|pluralize }}</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if applications %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Applicant</th>
+            <th>Job</th>
+            <th>Contact</th>
+            <th>Resume</th>
+            <th>Cover note</th>
+            <th>Applied</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for app in applications %}
+          <tr>
+            <td class="panel-row-name">{{ app.name }}</td>
+            <td>{{ app.job.title }}</td>
+            <td>{{ app.email }}<br><a href="tel:{{ app.phone }}">{{ app.phone }}</a></td>
+            <td>{% if app.resume %}<a class="btn btn-ghost btn-sm" href="{{ app.resume.url }}" target="_blank" rel="noopener">View</a>{% else %}—{% endif %}</td>
+            <td class="cover-note">{{ app.cover_note|default:"—"|truncatechars:100 }}</td>
+            <td>{{ app.applied_at|date:"d M Y, h:i A" }}</td>
+            <td>
+              <div class="admission-actions">
+                <form method="post" action="{% url 'panel_career_application_delete' app.pk %}" onsubmit="return confirm('Delete this application?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">💼</span>No applications yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

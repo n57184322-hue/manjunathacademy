@@ -1,0 +1,76 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Store Products{% endblock %}
+{% block page_title %}Store products{% endblock %}
+{% block page_sub %}Books, notes and merchandise sold in the E-Store section{% endblock %}
+{% block nav_store %}is-active{% endblock %}
+{% block nav_store_open %}is-open{% endblock %}
+{% block nav_store_products %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:#F3F4F6}
+.gallery-cell{display:flex;align-items:center;gap:12px}
+.gallery-title-text{font-weight:700;color:var(--ink)}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Store products</h2>
+      <p>{{ products|length }} product{{ products|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_store_product_add' %}">+ Add product</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if products %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+          <tr>
+            <td>
+              <div class="gallery-cell">
+                {% if product.image %}<img class="gallery-thumb" src="{{ product.image.url }}" alt="">{% endif %}
+                <div class="gallery-title-text">{{ product.name }}</div>
+              </div>
+            </td>
+            <td>₹{{ product.current_price }}{% if product.original_price and product.original_price != product.current_price %} <s>₹{{ product.original_price }}</s>{% endif %}</td>
+            <td>{% if product.in_stock %}{{ product.stock }}{% else %}<span class="panel-badge panel-badge-muted">Out of stock</span>{% endif %}</td>
+            <td>{% if product.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_store_product_edit' product.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_store_product_delete' product.pk %}" onsubmit="return confirm('Delete this product?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🛒</span>No products yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

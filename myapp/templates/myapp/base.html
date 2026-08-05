@@ -1561,6 +1561,47 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  /* ---------- Career apply modal (saved to the database) ---------- */
+  const careerModal = document.getElementById('careerModal');
+  const careerApplyForm = document.getElementById('careerApplyForm');
+  if (careerModal && careerApplyForm) {
+    const careerModalTitle = document.getElementById('careerModalTitle');
+    const careerModalClose = document.getElementById('careerModalClose');
+    const careerSuccess = document.getElementById('careerApplySuccess');
+    const careerError = document.getElementById('careerApplyError');
+
+    document.querySelectorAll('.career-apply-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        careerModalTitle.textContent = btn.dataset.jobTitle;
+        careerApplyForm.dataset.jobId = btn.dataset.jobId;
+        careerSuccess.hidden = true;
+        careerError.hidden = true;
+        careerApplyForm.reset();
+        careerModal.classList.add('is-open');
+      });
+    });
+    if (careerModalClose) careerModalClose.addEventListener('click', () => careerModal.classList.remove('is-open'));
+    careerModal.addEventListener('click', (e) => { if (e.target === careerModal) careerModal.classList.remove('is-open'); });
+
+    careerApplyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      careerError.hidden = true;
+      careerSuccess.hidden = true;
+      const jobId = careerApplyForm.dataset.jobId;
+      fetch(`/career/${jobId}/apply/`, { method: 'POST', body: new FormData(careerApplyForm) })
+        .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (ok && data.ok) {
+            careerSuccess.hidden = false;
+            careerApplyForm.reset();
+          } else {
+            careerError.hidden = false;
+          }
+        })
+        .catch(() => { careerError.hidden = false; });
+    });
+  }
+
   /* ---------- Contact form (demo — no backend) ---------- */
   const contactForm = document.getElementById('contactForm');
   if (contactForm) {

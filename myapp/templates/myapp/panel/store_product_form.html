@@ -1,0 +1,91 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Product{% endblock %}
+{% block page_title %}{% if is_new %}Add product{% else %}Edit product{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_store %}is-active{% endblock %}
+{% block nav_store_open %}is-open{% endblock %}
+{% block nav_store_products %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.course-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.course-preview img{max-height:80px;max-width:160px;border-radius:8px;object-fit:cover}
+.course-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new product{% else %}Editing: {{ product.name }}{% endif %}</h2>
+      <p>Shown in the E-Store section on the homepage.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_store_product_list' %}">← Back to products</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Category</span>
+      {{ form.category }}
+    </label>
+
+    <label><span class="panel-label-text">Product name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Description</span>
+      {{ form.description }}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Original price (₹)</span>
+        {{ form.original_price }}
+      </label>
+      <label><span class="panel-label-text">Current price (₹)</span>
+        {{ form.current_price }}
+        {% if form.current_price.errors %}<ul class="panel-errors">{% for e in form.current_price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Product image</span>
+      {{ form.image }}
+      <p class="custom-help">{{ form.image.help_text }}</p>
+      {% if form.image.errors %}<ul class="panel-errors">{% for e in form.image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if product.image %}
+      <div class="course-preview">
+        <img src="{{ product.image.url }}" alt="Current image">
+        <span class="course-preview-label">Current image</span>
+      </div>
+    {% endif %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Stock</span>
+        {{ form.stock }}
+      </label>
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+    </div>
+
+    <label class="panel-form-check">{{ form.is_active }} Show in E-Store</label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add product{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_store_product_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

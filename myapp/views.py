@@ -4,13 +4,14 @@ from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
 from .forms import (
     AccountUpdateForm,
     AdmissionRegistrationForm,
     BannerSlideForm,
+    CareerApplicationForm,
     CategoryForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
@@ -20,11 +21,16 @@ from .forms import (
     EmailAuthenticationForm,
     GalleryImageForm,
     HeroSectionForm,
+    JobPostingForm,
     NavbarCustomizationForm,
     NotificationForm,
+    ProductForm,
     PWASettingsForm,
     QuestionForm,
+    RazorpaySettingsForm,
     SignupForm,
+    StoreCheckoutForm,
+    StoreOrderStatusForm,
 )
 from .models import (
     AdmissionRegistration,
@@ -39,13 +45,19 @@ from .models import (
     DailyUpdatePost,
     GalleryImage,
     HeroSection,
+    JobApplication,
+    JobPosting,
     Notification,
+    Product,
     PWASettings,
     Question,
+    RazorpaySettings,
     SiteSettings,
+    StoreOrder,
     TestAnswer,
     TestAttempt,
 )
+from .razorpay_utils import RazorpayError, create_order, verify_payment_signature
 
 
 def index(request):
@@ -55,6 +67,8 @@ def index(request):
     video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True)
     elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True)
     test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
+    store_products = Product.objects.filter(is_active=True)
+    jobs = JobPosting.objects.filter(is_active=True)
 
     return render(request, 'myapp/index.html', {
         'banner_slides': banner_slides,
@@ -62,6 +76,8 @@ def index(request):
         'video_courses': video_courses,
         'elibrary_items': elibrary_items,
         'test_series_categories': test_series_categories,
+        'store_products': store_products,
+        'jobs': jobs,
     })
 
 
@@ -183,10 +199,23 @@ def account_purchases(request):
     return render(request, 'myapp/account/purchases.html', {'enrollments': enrollments})
 
 
+def _get_or_create_free_enrollment(user, course):
+    """Returns the enrollment for a course, auto-granting access if it's free."""
+    enrollment = CourseEnrollment.objects.filter(user=user, course=course).first()
+    if course.is_free and (not enrollment or not enrollment.is_paid):
+        enrollment, _ = CourseEnrollment.objects.get_or_create(user=user, course=course)
+        if not enrollment.is_paid:
+            enrollment.grant_paid_access(amount_paid=0)
+    return enrollment
+
+
 @login_required(login_url='login')
 def course_detail(request, pk):
     course = get_object_or_404(Course, pk=pk, is_active=True)
-    enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+    enrollment = _get_or_create_free_enrollment(request.user, course)
+
+    if not enrollment or not enrollment.is_paid:
+        return render(request, 'myapp/course_checkout.html', {'course': course})
 
     if request.method == 'POST' and enrollment.has_access:
         enrollment.is_completed = 'mark_incomplete' not in request.POST
@@ -211,7 +240,10 @@ def _grade_answer(question, submitted):
 @login_required(login_url='login')
 def test_attempt_start(request, pk):
     course = get_object_or_404(Course, pk=pk, course_type=Course.TEST_SERIES, is_active=True)
-    enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+    enrollment = _get_or_create_free_enrollment(request.user, course)
+
+    if not enrollment or not enrollment.is_paid:
+        return render(request, 'myapp/course_checkout.html', {'course': course})
 
     if not enrollment.has_access:
         return render(request, 'myapp/test_expired.html', {'course': course, 'enrollment': enrollment})
@@ -265,6 +297,142 @@ def test_attempt_result(request, pk):
     attempt = get_object_or_404(TestAttempt, pk=pk, user=request.user)
     answers = attempt.answers.select_related('question')
     return render(request, 'myapp/test_attempt_result.html', {'attempt': attempt, 'answers': answers})
+
+
+@login_required(login_url='login')
+def razorpay_create_order(request):
+    if request.method != 'POST':
+        raise Http404
+
+    settings_obj = RazorpaySettings.load()
+    if not settings_obj.is_configured:
+        return JsonResponse({'ok': False, 'error': 'Online payments are not set up yet. Please contact support.'}, status=400)
+
+    content_type = request.POST.get('content_type')
+    object_id = request.POST.get('object_id')
+    timestamp = int(timezone.now().timestamp())
+
+    if content_type == 'course':
+        course = get_object_or_404(Course, pk=object_id, is_active=True)
+        amount = course.current_price
+        name = course.name
+        receipt = f'course_{course.pk}_{request.user.pk}_{timestamp}'
+    elif content_type == 'store':
+        order = get_object_or_404(StoreOrder, pk=object_id, user=request.user, status=StoreOrder.STATUS_PENDING)
+        amount = order.amount
+        name = order.product.name
+        receipt = f'store_{order.pk}_{timestamp}'
+    else:
+        raise Http404
+
+    try:
+        razorpay_order = create_order(settings_obj.key_id, settings_obj.key_secret, amount, receipt)
+    except RazorpayError as exc:
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=502)
+
+    return JsonResponse({
+        'ok': True,
+        'order_id': razorpay_order['id'],
+        'amount': razorpay_order['amount'],
+        'currency': razorpay_order['currency'],
+        'key_id': settings_obj.key_id,
+        'name': name,
+        'prefill_name': request.user.name,
+        'prefill_email': request.user.email,
+        'prefill_contact': request.user.number,
+    })
+
+
+@login_required(login_url='login')
+def razorpay_verify_payment(request):
+    if request.method != 'POST':
+        raise Http404
+
+    settings_obj = RazorpaySettings.load()
+    razorpay_order_id = request.POST.get('razorpay_order_id', '')
+    razorpay_payment_id = request.POST.get('razorpay_payment_id', '')
+    razorpay_signature = request.POST.get('razorpay_signature', '')
+    content_type = request.POST.get('content_type')
+    object_id = request.POST.get('object_id')
+
+    if not verify_payment_signature(settings_obj.key_secret, razorpay_order_id, razorpay_payment_id, razorpay_signature):
+        return JsonResponse({'ok': False, 'error': 'Payment verification failed.'}, status=400)
+
+    if content_type == 'course':
+        course = get_object_or_404(Course, pk=object_id)
+        enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+        enrollment.grant_paid_access(
+            amount_paid=course.current_price,
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+        )
+        if course.course_type == Course.TEST_SERIES:
+            redirect_url = reverse('test_attempt_start', args=[course.pk])
+        else:
+            redirect_url = reverse('course_detail', args=[course.pk])
+    elif content_type == 'store':
+        order = get_object_or_404(StoreOrder, pk=object_id, user=request.user)
+        order.status = StoreOrder.STATUS_PAID
+        order.razorpay_order_id = razorpay_order_id
+        order.razorpay_payment_id = razorpay_payment_id
+        order.save()
+        redirect_url = reverse('store_order_success', args=[order.pk])
+    else:
+        raise Http404
+
+    return JsonResponse({'ok': True, 'redirect_url': redirect_url})
+
+
+@login_required(login_url='login')
+def store_checkout(request, pk):
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+
+    if request.method == 'POST':
+        form = StoreCheckoutForm(request.POST)
+        if form.is_valid():
+            quantity = form.cleaned_data['quantity']
+            order = StoreOrder.objects.create(
+                user=request.user,
+                product=product,
+                quantity=quantity,
+                amount=product.current_price * quantity,
+                shipping_name=form.cleaned_data['shipping_name'],
+                shipping_phone=form.cleaned_data['shipping_phone'],
+                shipping_address=form.cleaned_data['shipping_address'],
+            )
+            return redirect('store_pay', pk=order.pk)
+    else:
+        form = StoreCheckoutForm(initial={'shipping_name': request.user.name, 'shipping_phone': request.user.number})
+
+    return render(request, 'myapp/store_checkout.html', {'product': product, 'form': form})
+
+
+@login_required(login_url='login')
+def store_pay(request, pk):
+    order = get_object_or_404(StoreOrder, pk=pk, user=request.user)
+    if order.status != StoreOrder.STATUS_PENDING:
+        return redirect('store_order_success', pk=order.pk)
+    return render(request, 'myapp/store_pay.html', {'order': order})
+
+
+@login_required(login_url='login')
+def store_order_success(request, pk):
+    order = get_object_or_404(StoreOrder, pk=pk, user=request.user)
+    return render(request, 'myapp/store_order_success.html', {'order': order})
+
+
+def career_apply(request, job_pk):
+    if request.method != 'POST':
+        raise Http404
+
+    job = get_object_or_404(JobPosting, pk=job_pk, is_active=True)
+    form = CareerApplicationForm(request.POST, request.FILES)
+    if form.is_valid():
+        application = form.save(commit=False)
+        application.job = job
+        application.save()
+        return JsonResponse({'ok': True})
+    return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
 
 
 def _is_staff(user):
@@ -825,6 +993,156 @@ def panel_question_delete(request, course_pk, pk):
         question.delete()
         messages.success(request, 'Question deleted.')
     return redirect('panel_question_list', course_pk=course.pk)
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_razorpay_settings(request):
+    settings_obj = RazorpaySettings.load()
+    if request.method == 'POST':
+        form = RazorpaySettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Razorpay settings saved.')
+            return redirect('panel_razorpay_settings')
+    else:
+        form = RazorpaySettingsForm(instance=settings_obj)
+
+    return render(request, 'myapp/panel/razorpay_settings.html', {'form': form, 'settings_obj': settings_obj})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_store_product_list(request):
+    products = Product.objects.all()
+    return render(request, 'myapp/panel/store_product_list.html', {'products': products})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_store_product_add(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Product added.')
+            return redirect('panel_store_product_list')
+    else:
+        form = ProductForm(initial={'order': Product.objects.count()})
+
+    return render(request, 'myapp/panel/store_product_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_store_product_edit(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Product updated.')
+            return redirect('panel_store_product_list')
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'myapp/panel/store_product_form.html', {'form': form, 'is_new': False, 'product': product})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_store_product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, 'Product deleted.')
+    return redirect('panel_store_product_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_store_orders(request):
+    orders = StoreOrder.objects.select_related('product', 'user').exclude(status=StoreOrder.STATUS_PENDING)
+    return render(request, 'myapp/panel/store_orders.html', {'orders': orders})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_store_order_update(request, pk):
+    order = get_object_or_404(StoreOrder, pk=pk)
+    if request.method == 'POST':
+        form = StoreOrderStatusForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Order status updated.')
+    return redirect('panel_store_orders')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_career_job_list(request):
+    jobs = JobPosting.objects.all()
+    return render(request, 'myapp/panel/career_job_list.html', {'jobs': jobs})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_career_job_add(request):
+    if request.method == 'POST':
+        form = JobPostingForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Job posting added.')
+            return redirect('panel_career_job_list')
+    else:
+        form = JobPostingForm(initial={'order': JobPosting.objects.count()})
+
+    return render(request, 'myapp/panel/career_job_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_career_job_edit(request, pk):
+    job = get_object_or_404(JobPosting, pk=pk)
+
+    if request.method == 'POST':
+        form = JobPostingForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Job posting updated.')
+            return redirect('panel_career_job_list')
+    else:
+        form = JobPostingForm(instance=job)
+
+    return render(request, 'myapp/panel/career_job_form.html', {'form': form, 'is_new': False, 'job': job})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_career_job_delete(request, pk):
+    job = get_object_or_404(JobPosting, pk=pk)
+    if request.method == 'POST':
+        job.delete()
+        messages.success(request, 'Job posting deleted.')
+    return redirect('panel_career_job_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_career_applications(request):
+    applications = JobApplication.objects.select_related('job')
+    return render(request, 'myapp/panel/career_applications.html', {'applications': applications})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_career_application_delete(request, pk):
+    application = get_object_or_404(JobApplication, pk=pk)
+    if request.method == 'POST':
+        application.delete()
+        messages.success(request, 'Application deleted.')
+    return redirect('panel_career_applications')
 
 
 

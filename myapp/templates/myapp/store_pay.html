@@ -1,0 +1,134 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Pay — {{ order.product.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}Complete payment for your order.{% endblock %}
+
+{% block extra_style %}
+.checkout-section{padding:64px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.checkout-card{max-width:480px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow-md)}
+.checkout-card h1{font-size:20px;margin:0 0 18px}
+.order-line{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line)}
+.order-line strong{color:var(--ink)}
+.checkout-price{font-size:26px;font-weight:800;margin:18px 0}
+.checkout-pay-btn{width:100%;justify-content:center;padding:15px;font-size:15.5px}
+.checkout-error{background:#FEF2F2;color:#DC2626;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;margin-top:14px;display:none}
+.checkout-error.is-visible{display:block}
+.checkout-secure{display:flex;align-items:center;gap:6px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
+{% endblock %}
+
+{% block content %}
+<section class="checkout-section">
+  <div class="wrap">
+    <div class="checkout-card">
+      <h1>Order #{{ order.pk }}</h1>
+      <div class="order-line"><span>{{ order.product.name }} × {{ order.quantity }}</span><strong>₹{{ order.amount }}</strong></div>
+      <div class="order-line"><span>Deliver to</span><strong>{{ order.shipping_name }}</strong></div>
+      <div class="order-line"><span>Address</span><strong>{{ order.shipping_address|truncatechars:60 }}</strong></div>
+      <p class="checkout-price">Total: ₹{{ order.amount }}</p>
+
+      {% csrf_token %}
+      <button type="button" class="btn btn-primary btn-lg checkout-pay-btn" id="payBtn" data-content-type="store" data-object-id="{{ order.pk }}">Pay ₹{{ order.amount }}</button>
+      <p class="checkout-error" id="payError"></p>
+      <p class="checkout-secure">🔒 Secured by Razorpay</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+  var payBtn = document.getElementById('payBtn');
+  var errorBox = document.getElementById('payError');
+  if (!payBtn) return;
+  var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  var originalLabel = payBtn.textContent;
+
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.classList.add('is-visible');
+  }
+
+  payBtn.addEventListener('click', function () {
+    payBtn.disabled = true;
+    payBtn.textContent = 'Please wait…';
+    errorBox.classList.remove('is-visible');
+
+    var body = new URLSearchParams({
+      content_type: payBtn.dataset.contentType,
+      object_id: payBtn.dataset.objectId,
+    });
+
+    fetch('{% url "razorpay_create_order" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: body,
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.ok) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = originalLabel;
+          return;
+        }
+
+        var rzp = new Razorpay({
+          key: data.key_id,
+          amount: data.amount,
+          currency: data.currency,
+          order_id: data.order_id,
+          name: 'Manjunath Academy',
+          description: data.name,
+          prefill: {
+            name: data.prefill_name,
+            email: data.prefill_email,
+            contact: data.prefill_contact,
+          },
+          theme: { color: '#F97316' },
+          handler: function (response) {
+            var verifyBody = new URLSearchParams({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              content_type: payBtn.dataset.contentType,
+              object_id: payBtn.dataset.objectId,
+            });
+            fetch('{% url "razorpay_verify_payment" %}', {
+              method: 'POST',
+              headers: { 'X-CSRFToken': csrfToken },
+              body: verifyBody,
+            })
+              .then(function (res) { return res.json(); })
+              .then(function (verifyData) {
+                if (verifyData.ok) {
+                  window.location.href = verifyData.redirect_url;
+                } else {
+                  showError(verifyData.error || 'Payment verification failed.');
+                }
+              });
+          },
+          modal: {
+            ondismiss: function () {
+              payBtn.disabled = false;
+              payBtn.textContent = originalLabel;
+            },
+          },
+        });
+        rzp.on('payment.failed', function () {
+          showError('Payment failed. Please try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = originalLabel;
+        });
+        rzp.open();
+      })
+      .catch(function () {
+        showError('Could not connect. Please try again.');
+        payBtn.disabled = false;
+        payBtn.textContent = originalLabel;
+      });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Razorpay Settings{% endblock %}
+{% block page_title %}Razorpay Settings{% endblock %}
+{% block page_sub %}Connect your Razorpay account so students can pay for test series, video courses, e-library items and store products{% endblock %}
+{% block nav_razorpay %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-field{margin-bottom:16px;max-width:420px}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink);width:100%}
+.custom-field input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.razorpay-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:8px 16px;border-radius:var(--r-pill);margin-bottom:22px}
+.razorpay-status-on{background:#ECFDF3;color:#15803D}
+.razorpay-status-off{background:#FEF2F2;color:#DC2626}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <span class="razorpay-status {% if settings_obj.is_configured %}razorpay-status-on{% else %}razorpay-status-off{% endif %}">
+    {% if settings_obj.is_configured %}✓ Payments are live{% else %}⚠ Payments not configured — checkout will show an error to students{% endif %}
+  </span>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="custom-field">
+      <label>Razorpay Key ID</label>
+      {{ form.key_id }}
+      <p class="custom-help">{{ form.key_id.help_text }}</p>
+      {% if form.key_id.errors %}<ul class="panel-errors">{% for e in form.key_id.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="custom-field">
+      <label>Razorpay Key Secret</label>
+      {{ form.key_secret }}
+      <p class="custom-help">{{ form.key_secret.help_text }}</p>
+      {% if form.key_secret.errors %}<ul class="panel-errors">{% for e in form.key_secret.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

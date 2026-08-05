@@ -1,0 +1,50 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Checkout — {{ product.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}Order {{ product.name }} from the Manjunath Academy store.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:64px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
+.auth-card{position:relative;overflow:hidden;max-width:560px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:var(--shadow-md)}
+.auth-card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--orange),#FBBF24)}
+.store-product-row{display:flex;gap:16px;align-items:center;margin-bottom:24px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.store-product-row img{width:72px;height:72px;border-radius:12px;object-fit:cover;flex:0 0 auto}
+.store-product-row h1{font-size:18px;margin:0 0 4px}
+.store-product-price{font-weight:800;color:var(--orange-deep)}
+.auth-form{display:flex;flex-direction:column;gap:16px}
+.auth-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:#374151}
+.auth-form input,.auth-form textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--ink)}
+.auth-form input:focus,.auth-form textarea:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.14)}
+.auth-errors{color:#DC2626;font-size:12.5px;margin:2px 0 0;padding:0;list-style:none}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap">
+    <div class="auth-card">
+      <div class="store-product-row">
+        {% if product.image %}<img src="{{ product.image.url }}" alt="">{% endif %}
+        <div>
+          <h1>{{ product.name }}</h1>
+          <span class="store-product-price">₹{{ product.current_price }}</span>
+        </div>
+      </div>
+
+      <form class="auth-form" method="post">
+        {% csrf_token %}
+        <label>Full name {{ form.shipping_name }}
+          {% if form.shipping_name.errors %}<ul class="auth-errors">{% for e in form.shipping_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+        <label>Phone number {{ form.shipping_phone }}
+          {% if form.shipping_phone.errors %}<ul class="auth-errors">{% for e in form.shipping_phone.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+        <label>Delivery address {{ form.shipping_address }}
+          {% if form.shipping_address.errors %}<ul class="auth-errors">{% for e in form.shipping_address.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+        <label style="max-width:120px">Quantity {{ form.quantity }}</label>
+        <button type="submit" class="btn btn-primary btn-lg">Continue to Payment →</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

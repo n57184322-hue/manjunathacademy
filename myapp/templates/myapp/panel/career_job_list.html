@@ -1,0 +1,70 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Post Job{% endblock %}
+{% block page_title %}Career — Post Job{% endblock %}
+{% block page_sub %}Job openings shown in the Careers section on the homepage{% endblock %}
+{% block nav_career %}is-active{% endblock %}
+{% block nav_career_open %}is-open{% endblock %}
+{% block nav_career_jobs %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Job postings</h2>
+      <p>{{ jobs|length }} job{{ jobs|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_career_job_add' %}">+ Post a job</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if jobs %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Location</th>
+            <th>Type</th>
+            <th>Applications</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for job in jobs %}
+          <tr>
+            <td class="panel-row-name">{{ job.title }}</td>
+            <td>{{ job.location|default:"—" }}</td>
+            <td>{{ job.get_job_type_display }}</td>
+            <td>{{ job.applications.count }}</td>
+            <td>{% if job.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_career_job_edit' job.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_career_job_delete' job.pk %}" onsubmit="return confirm('Delete this job posting?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">💼</span>No job postings yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

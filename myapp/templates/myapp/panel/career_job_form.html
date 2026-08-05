@@ -1,0 +1,70 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Post{% else %}Edit{% endif %} Job{% endblock %}
+{% block page_title %}{% if is_new %}Post a job{% else %}Edit job posting{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_career %}is-active{% endblock %}
+{% block nav_career_open %}is-open{% endblock %}
+{% block nav_career_jobs %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Post a new job{% else %}Editing: {{ job.title }}{% endif %}</h2>
+      <p>Shown in the Careers section on the homepage.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_career_job_list' %}">← Back to jobs</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Job title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Location</span>
+        {{ form.location }}
+      </label>
+      <label><span class="panel-label-text">Job type</span>
+        {{ form.job_type }}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Experience required</span>
+      {{ form.experience_required }}
+    </label>
+
+    <label><span class="panel-label-text">Description</span>
+      {{ form.description }}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show on homepage
+      </label>
+    </div>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Post job{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_career_job_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

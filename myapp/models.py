@@ -465,6 +465,10 @@ class Course(models.Model):
     class Meta:
         ordering = ['order', '-created_at']
 
+    @property
+    def is_free(self):
+        return not self.current_price or self.current_price <= 0
+
     def __str__(self):
         return self.name
 
@@ -475,6 +479,10 @@ class CourseEnrollment(models.Model):
     enrolled_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     is_completed = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False, help_text='True once payment is confirmed (or the course is free).')
+    amount_paid = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
 
     class Meta:
         unique_together = ('user', 'course')
@@ -493,6 +501,23 @@ class CourseEnrollment(models.Model):
             self.expires_at = dj_timezone.now() + timedelta(days=days)
         super().save(*args, **kwargs)
 
+    def grant_paid_access(self, amount_paid=0, razorpay_order_id='', razorpay_payment_id=''):
+        from datetime import timedelta
+
+        from django.utils import timezone as dj_timezone
+
+        self.is_paid = True
+        self.amount_paid = amount_paid
+        self.razorpay_order_id = razorpay_order_id
+        self.razorpay_payment_id = razorpay_payment_id
+        if self.course.enable_validity and self.course.validity_value:
+            if self.course.validity_unit == self.course.VALIDITY_DAYS:
+                days = self.course.validity_value
+            else:
+                days = self.course.validity_value * 30
+            self.expires_at = dj_timezone.now() + timedelta(days=days)
+        self.save()
+
     @property
     def is_expired(self):
         from django.utils import timezone as dj_timezone
@@ -501,7 +526,7 @@ class CourseEnrollment(models.Model):
 
     @property
     def has_access(self):
-        return not self.is_expired
+        return self.is_paid and not self.is_expired
 
     def __str__(self):
         return f'{self.user} — {self.course}'
@@ -573,3 +598,131 @@ class TestAnswer(models.Model):
 
     def __str__(self):
         return f'{self.attempt} — {self.question_id}'
+
+
+class RazorpaySettings(models.Model):
+    key_id = models.CharField(max_length=100, blank=True, verbose_name='Razorpay Key ID')
+    key_secret = models.CharField(max_length=100, blank=True, verbose_name='Razorpay Key Secret')
+
+    class Meta:
+        verbose_name = 'Razorpay settings'
+        verbose_name_plural = 'Razorpay settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def is_configured(self):
+        return bool(self.key_id and self.key_secret)
+
+    def __str__(self):
+        return 'Razorpay settings'
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=200)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    description = models.TextField(blank=True)
+    original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    current_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    image = models.ImageField(upload_to='store/', blank=True, null=True, help_text='Recommended size: 400×400px.')
+    stock = models.PositiveIntegerField(default=0, help_text='Units available. Buying is disabled at 0.')
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    @property
+    def in_stock(self):
+        return self.stock > 0
+
+    def __str__(self):
+        return self.name
+
+
+class StoreOrder(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_PAID = 'paid'
+    STATUS_SHIPPED = 'shipped'
+    STATUS_DELIVERED = 'delivered'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending payment'),
+        (STATUS_PAID, 'Paid'),
+        (STATUS_SHIPPED, 'Shipped'),
+        (STATUS_DELIVERED, 'Delivered'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='store_orders')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
+    quantity = models.PositiveIntegerField(default=1)
+    amount = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    shipping_name = models.CharField(max_length=150)
+    shipping_phone = models.CharField(max_length=15)
+    shipping_address = models.TextField()
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Order #{self.pk} — {self.product} × {self.quantity}'
+
+
+class JobPosting(models.Model):
+    FULL_TIME = 'full_time'
+    PART_TIME = 'part_time'
+    REMOTE = 'remote'
+    INTERNSHIP = 'internship'
+    JOB_TYPE_CHOICES = [
+        (FULL_TIME, 'Full-time'),
+        (PART_TIME, 'Part-time'),
+        (REMOTE, 'Remote'),
+        (INTERNSHIP, 'Internship'),
+    ]
+
+    title = models.CharField(max_length=200)
+    location = models.CharField(max_length=150, blank=True, help_text='e.g. Lucknow centre')
+    job_type = models.CharField(max_length=15, choices=JOB_TYPE_CHOICES, default=FULL_TIME)
+    experience_required = models.CharField(max_length=100, blank=True, help_text='e.g. 3+ years teaching experience')
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class JobApplication(models.Model):
+    job = models.ForeignKey(JobPosting, on_delete=models.CASCADE, related_name='applications')
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    resume = models.FileField(upload_to='career_resumes/', blank=True, null=True)
+    cover_note = models.TextField(blank=True)
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-applied_at']
+
+    def __str__(self):
+        return f'{self.name} — {self.job}'
