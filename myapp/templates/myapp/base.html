@@ -769,7 +769,6 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   transition:.15s ease;
 }
 .install-fab:hover{border-color:rgba(249,115,22,.45);transform:translateY(-2px)}
-.install-fab img{width:26px;height:26px;border-radius:8px;object-fit:cover;display:block}
 .install-fab-ico{font-size:20px;line-height:1}
 @media (max-width:620px){.install-fab{left:12px;bottom:12px;padding:9px 14px 9px 9px}.install-fab span:last-child{display:none}}
 .install-modal{
@@ -1648,7 +1647,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 {% if pwa_settings.is_enabled %}
 <button type="button" class="install-fab" id="installFab" hidden>
-  {% if pwa_settings.android_icon %}<img src="{{ pwa_settings.android_icon.url }}" alt="">{% else %}<span class="install-fab-ico">📲</span>{% endif %}
+  <span class="install-fab-ico">📲</span>
   <span>Install App</span>
 </button>
 <div class="install-modal" id="installModal">
