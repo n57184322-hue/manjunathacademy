@@ -276,7 +276,7 @@ class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
         fields = (
-            'category', 'name', 'original_price', 'current_price',
+            'category', 'name', 'test_type', 'original_price', 'current_price',
             'enable_folders', 'enable_validity', 'about', 'thumbnail',
             'order', 'is_active',
         )

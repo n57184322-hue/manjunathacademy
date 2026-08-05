@@ -442,6 +442,7 @@
           {% for course in test_series_courses %}
           <article class="ts-card" data-cat="{{ course.category_id|default:'' }}">
             {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="ts-badge">📝</span>{% endif %}
+            {% if course.test_type %}<span class="ts-type-tag">{{ course.get_test_type_display }}</span>{% endif %}
             <h4>{{ course.name }}</h4>
             <span class="ts-count">₹{{ course.current_price }}{% if course.original_price and course.original_price != course.current_price %} <s>₹{{ course.original_price }}</s>{% endif %}</span>
             <a class="btn-ts" href="#contact-us">Explore</a>

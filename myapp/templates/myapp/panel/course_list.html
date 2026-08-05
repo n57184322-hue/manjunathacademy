@@ -37,6 +37,7 @@
           <tr>
             <th>Order</th>
             <th>Course</th>
+            {% if course_type == 'test_series' %}<th>Test type</th>{% endif %}
             <th>Price</th>
             <th>Status</th>
             <th></th>
@@ -59,6 +60,7 @@
                 </div>
               </div>
             </td>
+            {% if course_type == 'test_series' %}<td>{{ course.get_test_type_display|default:"—" }}</td>{% endif %}
             <td>₹{{ course.current_price }} {% if course.original_price and course.original_price != course.current_price %}<s>₹{{ course.original_price }}</s>{% endif %}</td>
             <td>{% if course.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
             <td>

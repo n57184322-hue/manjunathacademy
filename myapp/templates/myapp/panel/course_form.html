@@ -37,6 +37,13 @@
       {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
 
+    {% if course_type == 'test_series' %}
+    <label><span class="panel-label-text">Test type</span>
+      {{ form.test_type }}
+      {% if form.test_type.errors %}<ul class="panel-errors">{% for e in form.test_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    {% endif %}
+
     <div class="panel-form-row course-form-row">
       <label><span class="panel-label-text">Original price (₹)</span>
         {{ form.original_price }}

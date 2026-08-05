@@ -427,9 +427,18 @@ class Course(models.Model):
         (ELIBRARY, 'E-Library'),
     ]
 
+    TEST_TYPE_CHOICES = [
+        ('mock_test', 'Mock Test'),
+        ('practice_test', 'Practice Test'),
+        ('sectional_test', 'Sectional Test'),
+        ('sample_papers', 'Sample Papers'),
+        ('previous_year_paper', 'Previous Year Paper'),
+    ]
+
     course_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
     name = models.CharField(max_length=200, verbose_name='Course name')
+    test_type = models.CharField(max_length=20, choices=TEST_TYPE_CHOICES, blank=True, help_text='Used for Test Series only — e.g. Mock Test, Practice Test.')
     original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     current_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     enable_folders = models.BooleanField(default=False, help_text='Turn on if this course is organized into folders/chapters')
