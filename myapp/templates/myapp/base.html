@@ -133,6 +133,17 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .notif-modal-card h3{font-size:19px;margin:0 0 12px}
 .notif-modal-card p{color:var(--muted);font-size:14.5px;margin:0 0 22px}
 .notif-modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.notif-modal-list-wrap{display:none}
+.notif-modal.list-mode .notif-modal-detail{display:none}
+.notif-modal.list-mode .notif-modal-list-wrap{display:block}
+.notif-modal-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;margin-right:-6px;padding-right:6px}
+.notif-modal-list-item{
+  display:block;width:100%;text-align:left;background:#FAFAF9;border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;font-size:13.5px;font-weight:600;color:var(--ink);
+  cursor:pointer;transition:.15s ease;font-family:inherit;
+}
+.notif-modal-list-item:hover{border-color:rgba(249,115,22,.4);background:var(--orange-soft)}
+.notif-modal-empty{color:var(--muted);font-size:14px}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -987,12 +998,19 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   <div class="notif-modal" id="notifModal">
     <div class="notif-modal-card">
       <button class="notif-modal-close" id="notifClose" aria-label="Close">✕</button>
-      <p class="notif-modal-kicker">Notification</p>
-      <h3 id="notifModalTitle">—</h3>
-      <p id="notifModalBody">—</p>
-      <div class="notif-modal-actions">
-        <a class="btn btn-primary" href="#contact-us">Apply / Register</a>
-        <a class="btn btn-ghost" href="#" id="notifOfficialLink">Official notification link</a>
+      <div class="notif-modal-detail" id="notifModalDetail">
+        <p class="notif-modal-kicker">Notification</p>
+        <h3 id="notifModalTitle">—</h3>
+        <p id="notifModalBody">—</p>
+        <div class="notif-modal-actions">
+          <a class="btn btn-primary" href="#contact-us">Apply / Register</a>
+          <a class="btn btn-ghost" href="#" id="notifOfficialLink">Official notification link</a>
+        </div>
+      </div>
+      <div class="notif-modal-list-wrap" id="notifModalListWrap">
+        <p class="notif-modal-kicker">All notifications</p>
+        <h3>Latest updates</h3>
+        <div class="notif-modal-list" id="notifModalList"></div>
       </div>
     </div>
   </div>
@@ -1168,6 +1186,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const notifClose = document.getElementById('notifClose');
   const notifViewAll = document.getElementById('notifViewAll');
   const notifOfficialLink = document.getElementById('notifOfficialLink');
+  const notifModalList = document.getElementById('notifModalList');
 
   function openNotif(title, detail, link) {
     if (!notifModal) return;
@@ -1182,6 +1201,28 @@ document.addEventListener('DOMContentLoaded', function () {
         notifOfficialLink.style.display = 'none';
       }
     }
+    notifModal.classList.remove('list-mode');
+    notifModal.classList.add('is-open');
+  }
+  function openNotifList() {
+    if (!notifModal || !notifModalList) return;
+    notifModalList.innerHTML = '';
+    if (notifItems.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'notif-modal-empty';
+      empty.textContent = 'No notifications right now — check back soon.';
+      notifModalList.appendChild(empty);
+    } else {
+      notifItems.forEach(item => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'notif-modal-list-item';
+        row.textContent = item.textContent.trim();
+        row.addEventListener('click', () => openNotif(item.textContent.trim(), item.dataset.detail || '', item.dataset.link || ''));
+        notifModalList.appendChild(row);
+      });
+    }
+    notifModal.classList.add('list-mode');
     notifModal.classList.add('is-open');
   }
   notifItems.forEach(item => {
@@ -1191,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   if (notifViewAll) {
-    notifViewAll.addEventListener('click', () => openNotif('All notifications', 'Every admission, job and exam notice from Manjunath Academy appears here as it is published.', ''));
+    notifViewAll.addEventListener('click', openNotifList);
   }
   if (notifClose) notifClose.addEventListener('click', () => notifModal.classList.remove('is-open'));
   if (notifModal) notifModal.addEventListener('click', (e) => { if (e.target === notifModal) notifModal.classList.remove('is-open'); });
