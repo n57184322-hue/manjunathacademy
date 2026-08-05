@@ -1,0 +1,77 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Admissions{% endblock %}
+{% block page_title %}Admissions{% endblock %}
+{% block page_sub %}Offline admission registrations submitted from the homepage{% endblock %}
+{% block nav_admissions %}is-active{% endblock %}
+
+{% block extra_style %}
+.admission-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-stats">
+  <div class="panel-stat panel-stat-1">
+    <span class="panel-stat-ico">🏫</span>
+    <div><div class="panel-stat-num">{{ stats.total }}</div><div class="panel-stat-label">Total registrations</div></div>
+  </div>
+  <div class="panel-stat panel-stat-3">
+    <span class="panel-stat-ico">🆕</span>
+    <div><div class="panel-stat-num">{{ stats.this_week }}</div><div class="panel-stat-label">This week</div></div>
+  </div>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Offline admission registrations</h2>
+      <p>{{ registrations|length }} registration{{ registrations|length|pluralize }}</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if registrations %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Course</th>
+            <th>Preferred batch</th>
+            <th>Submitted</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for reg in registrations %}
+          <tr>
+            <td class="panel-row-name">{{ reg.name }}</td>
+            <td><a href="tel:{{ reg.phone }}">{{ reg.phone }}</a></td>
+            <td>{{ reg.course }}</td>
+            <td>{{ reg.preferred_batch }}</td>
+            <td>{{ reg.created_at|date:"d M Y, h:i A" }}</td>
+            <td>
+              <div class="admission-actions">
+                <form method="post" action="{% url 'panel_admission_delete' reg.pk %}" onsubmit="return confirm('Delete this registration?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏫</span>No offline admission registrations yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

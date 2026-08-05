@@ -248,13 +248,16 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
 .menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-.back-bar{padding:16px 0 0}
-.back-btn{
-  display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
-  padding:8px 16px;border-radius:var(--r-pill);font-weight:700;font-size:13.5px;color:var(--ink);
-  cursor:pointer;transition:.15s ease;font-family:inherit;
+.back-fab{
+  position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:55;
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+  background:rgba(255,255,255,.7);backdrop-filter:blur(6px);
+  display:grid;place-items:center;color:var(--ink);cursor:pointer;padding:0;
+  opacity:.45;transition:opacity .2s ease,transform .2s ease,background .2s ease;
+  box-shadow:var(--shadow-sm);
 }
-.back-btn:hover{border-color:rgba(249,115,22,.45);color:var(--orange-deep);transform:translateX(-2px)}
+.back-fab:hover{opacity:1;background:#fff;transform:translateY(-50%) translateX(2px)}
+@media (max-width:620px){.back-fab{left:6px;width:32px;height:32px}}
 
 /* ============================================================
    SLIDING ADVERTISEMENT BANNER
@@ -710,6 +713,10 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   margin:4px 0 0;font-size:13.5px;font-weight:700;color:#15803D;background:#ECFDF3;
   padding:10px 14px;border-radius:10px;
 }
+.form-error{
+  margin:4px 0 0;font-size:13.5px;font-weight:700;color:#DC2626;background:#FEF2F2;
+  padding:10px 14px;border-radius:10px;
+}
 .contact-info{display:flex;flex-direction:column;gap:12px;margin:22px 0 26px}
 .contact-info li{display:flex;align-items:center;gap:10px;font-size:14px;color:#374151}
 .call-now{
@@ -1124,14 +1131,9 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 </header>
 
 {% if request.path != '/' %}
-<div class="back-bar">
-  <div class="wrap">
-    <button type="button" class="back-btn" id="backBtn">
-      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back
-    </button>
-  </div>
-</div>
+<button type="button" class="back-fab" id="backBtn" aria-label="Go back">
+  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
 {% endif %}
 
 {% block content %}{% endblock %}
@@ -1438,15 +1440,31 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ---------- Admission + Contact forms (demo — no backend) ---------- */
+  /* ---------- Admission form (saved to the database) ---------- */
   const admissionForm = document.getElementById('admissionForm');
   if (admissionForm) {
     admissionForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      document.getElementById('admissionSuccess').hidden = false;
-      admissionForm.reset();
+      const successMsg = document.getElementById('admissionSuccess');
+      const errorMsg = document.getElementById('admissionError');
+      errorMsg.hidden = true;
+      successMsg.hidden = true;
+
+      fetch(admissionForm.action, { method: 'POST', body: new FormData(admissionForm) })
+        .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+          if (ok && data.ok) {
+            successMsg.hidden = false;
+            admissionForm.reset();
+          } else {
+            errorMsg.hidden = false;
+          }
+        })
+        .catch(() => { errorMsg.hidden = false; });
     });
   }
+
+  /* ---------- Contact form (demo — no backend) ---------- */
   const contactForm = document.getElementById('contactForm');
   if (contactForm) {
     contactForm.addEventListener('submit', (e) => {

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from .models import (
+    AdmissionRegistration,
     BannerSlide,
     ChatbotQuestion,
     ChatbotSettings,
@@ -216,3 +217,9 @@ class DailyUpdatePostForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'placeholder': 'e.g. Union Budget 2026: Key Highlights'}),
             'body': forms.Textarea(attrs={'rows': 8, 'placeholder': 'Full article text'}),
         }
+
+
+class AdmissionRegistrationForm(forms.ModelForm):
+    class Meta:
+        model = AdmissionRegistration
+        fields = ('name', 'phone', 'course', 'preferred_batch')

@@ -2,13 +2,14 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 
 from .forms import (
     AccountUpdateForm,
+    AdmissionRegistrationForm,
     BannerSlideForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
@@ -21,6 +22,7 @@ from .forms import (
     SignupForm,
 )
 from .models import (
+    AdmissionRegistration,
     BannerSlide,
     ChatbotQuestion,
     ChatbotSettings,
@@ -45,6 +47,17 @@ def daily_updates_page(request, category):
     card = DailyUpdateCard.load(category)
     posts = DailyUpdatePost.objects.filter(category=category, is_active=True)
     return render(request, 'myapp/daily_updates_page.html', {'card': card, 'posts': posts})
+
+
+def admission_register(request):
+    if request.method != 'POST':
+        raise Http404
+
+    form = AdmissionRegistrationForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'ok': True})
+    return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
 
 
 def signup(request):
@@ -404,6 +417,28 @@ def panel_daily_post_delete(request, pk):
         post.delete()
         messages.success(request, 'Post deleted.')
     return redirect('panel_daily_updates')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_admissions(request):
+    registrations = AdmissionRegistration.objects.all()
+    week_ago = timezone.now() - timezone.timedelta(days=7)
+    stats = {
+        'total': registrations.count(),
+        'this_week': registrations.filter(created_at__gte=week_ago).count(),
+    }
+    return render(request, 'myapp/panel/admissions_list.html', {'registrations': registrations, 'stats': stats})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_admission_delete(request, pk):
+    registration = get_object_or_404(AdmissionRegistration, pk=pk)
+    if request.method == 'POST':
+        registration.delete()
+        messages.success(request, 'Registration deleted.')
+    return redirect('panel_admissions')
 
 
 

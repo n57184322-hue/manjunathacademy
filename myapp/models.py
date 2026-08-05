@@ -328,3 +328,28 @@ class DailyUpdatePost(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class AdmissionRegistration(models.Model):
+    COURSE_CHOICES = [
+        ('SSC & Railways', 'SSC & Railways'),
+        ('Banking & Insurance', 'Banking & Insurance'),
+        ('NEET & JEE foundation', 'NEET & JEE foundation'),
+    ]
+    BATCH_CHOICES = [
+        ('Morning', 'Morning'),
+        ('Afternoon', 'Afternoon'),
+        ('Evening', 'Evening'),
+    ]
+
+    name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=15)
+    course = models.CharField(max_length=50, choices=COURSE_CHOICES)
+    preferred_batch = models.CharField(max_length=20, choices=BATCH_CHOICES, default='Morning')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} — {self.course}'
