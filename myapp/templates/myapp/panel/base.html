@@ -256,6 +256,10 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
         <span class="panel-nav-ico">🏫</span> Admissions
       </a>
 
+      <a class="{% block nav_pwa %}{% endblock %}" href="{% url 'panel_pwa_settings' %}">
+        <span class="panel-nav-ico">📱</span> Apps
+      </a>
+
       <div class="panel-nav-group {% block nav_customization_open %}{% endblock %}" id="navCustomizationGroup">
         <button type="button" class="panel-nav-group-toggle {% block nav_customization %}{% endblock %}" id="navCustomizationToggle">
           <span class="panel-nav-ico">🎨</span> Customization

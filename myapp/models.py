@@ -353,3 +353,37 @@ class AdmissionRegistration(models.Model):
 
     def __str__(self):
         return f'{self.name} — {self.course}'
+
+
+class PWASettings(models.Model):
+    is_enabled = models.BooleanField(default=True, help_text='Show the "Install App" button on the site')
+    app_name = models.CharField(max_length=100, blank=True, default='Manjunath Academy', help_text='Full app name shown during install')
+    short_name = models.CharField(max_length=30, blank=True, default='Manjunath', help_text='Short name shown under the home screen icon (12 characters or less looks best)')
+    description = models.CharField(max_length=200, blank=True, default='Coaching for SSC, Railway, Banking, NEET & JEE exams.')
+    theme_color = models.CharField(max_length=7, blank=True, default='#F97316', help_text='Hex color, e.g. #F97316. Used for the browser/app toolbar color.')
+    background_color = models.CharField(max_length=7, blank=True, default='#FFFCFA', help_text='Hex color, e.g. #FFFCFA. Used for the splash screen background.')
+    android_icon = models.ImageField(upload_to='pwa/', blank=True, null=True, help_text='Square icon for Android/Chrome. Recommended: 512×512px PNG.')
+    ios_icon = models.ImageField(upload_to='pwa/', blank=True, null=True, help_text='Square icon for iOS/Safari home screen. Recommended: 180×180px PNG. Falls back to the Android icon if left empty.')
+
+    class Meta:
+        verbose_name = 'App (PWA) settings'
+        verbose_name_plural = 'App (PWA) settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def effective_ios_icon(self):
+        return self.ios_icon or self.android_icon
+
+    def __str__(self):
+        return 'App (PWA) settings'

@@ -1,4 +1,4 @@
-from .models import ChatbotQuestion, ChatbotSettings, DailyUpdateCard, HeroSection, Notification, SiteSettings
+from .models import ChatbotQuestion, ChatbotSettings, DailyUpdateCard, HeroSection, Notification, PWASettings, SiteSettings
 
 
 def site_settings(request):
@@ -10,4 +10,5 @@ def site_settings(request):
         'hero': HeroSection.load(),
         'daily_current_card': DailyUpdateCard.load(DailyUpdateCard.CURRENT_AFFAIRS),
         'daily_news_card': DailyUpdateCard.load(DailyUpdateCard.DAILY_NEWS),
+        'pwa_settings': PWASettings.load(),
     }

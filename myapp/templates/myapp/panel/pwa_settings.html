@@ -1,0 +1,96 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Apps{% endblock %}
+{% block page_title %}Apps{% endblock %}
+{% block page_sub %}Control the installable app version of the site — name, icons and colors for Android and iOS{% endblock %}
+{% block nav_pwa %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:28px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{width:64px;height:64px;border-radius:14px;object-fit:cover;display:block}
+.custom-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:26px 0}
+.custom-field{margin-bottom:16px}
+.custom-field:last-child{margin-bottom:0}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input[type="file"],.custom-field input[type="text"]{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:420px;
+}
+.custom-field input[type="color"]{
+  width:64px;height:42px;border:1px solid var(--line);border-radius:10px;padding:2px;cursor:pointer;background:#fff;
+}
+.custom-field input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#374151}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <label class="panel-form-check">{{ form.is_enabled }} Show the "Install App" button on the site</label>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>App details</h3>
+      <p class="custom-section-sub">Shown to visitors when they install the app.</p>
+      <div class="custom-field"><label>App name</label>{{ form.app_name }}</div>
+      <div class="custom-field"><label>Short name</label>{{ form.short_name }}<p class="custom-help">{{ form.short_name.help_text }}</p></div>
+      <div class="custom-field"><label>Description</label>{{ form.description }}</div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Colors</h3>
+      <div class="custom-row">
+        <div class="custom-field"><label>Theme color</label>{{ form.theme_color }}<p class="custom-help">{{ form.theme_color.help_text }}</p></div>
+        <div class="custom-field"><label>Background color</label>{{ form.background_color }}<p class="custom-help">{{ form.background_color.help_text }}</p></div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Icons</h3>
+      <div class="custom-field">
+        <label>Android / Chrome icon</label>
+        {{ form.android_icon }}
+        <p class="custom-help">{{ form.android_icon.help_text }}</p>
+        {% if form.android_icon.errors %}<ul class="panel-errors">{% for e in form.android_icon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if pwa.android_icon %}
+          <div class="custom-preview"><img src="{{ pwa.android_icon.url }}" alt=""><span class="custom-preview-label">Current icon</span></div>
+        {% endif %}
+      </div>
+      <div class="custom-field">
+        <label>iOS / Safari icon</label>
+        {{ form.ios_icon }}
+        <p class="custom-help">{{ form.ios_icon.help_text }}</p>
+        {% if form.ios_icon.errors %}<ul class="panel-errors">{% for e in form.ios_icon.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if pwa.ios_icon %}
+          <div class="custom-preview"><img src="{{ pwa.ios_icon.url }}" alt=""><span class="custom-preview-label">Current icon</span></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

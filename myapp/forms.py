@@ -11,6 +11,7 @@ from .models import (
     DailyUpdatePost,
     HeroSection,
     Notification,
+    PWASettings,
     SiteSettings,
 )
 
@@ -223,3 +224,18 @@ class AdmissionRegistrationForm(forms.ModelForm):
     class Meta:
         model = AdmissionRegistration
         fields = ('name', 'phone', 'course', 'preferred_batch')
+
+
+class PWASettingsForm(forms.ModelForm):
+    class Meta:
+        model = PWASettings
+        fields = (
+            'is_enabled',
+            'app_name', 'short_name', 'description',
+            'theme_color', 'background_color',
+            'android_icon', 'ios_icon',
+        )
+        widgets = {
+            'theme_color': forms.TextInput(attrs={'type': 'color'}),
+            'background_color': forms.TextInput(attrs={'type': 'color'}),
+        }

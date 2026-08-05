@@ -2,7 +2,7 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib import messages
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -19,6 +19,7 @@ from .forms import (
     HeroSectionForm,
     NavbarCustomizationForm,
     NotificationForm,
+    PWASettingsForm,
     SignupForm,
 )
 from .models import (
@@ -31,6 +32,7 @@ from .models import (
     DailyUpdatePost,
     HeroSection,
     Notification,
+    PWASettings,
     SiteSettings,
 )
 
@@ -38,6 +40,37 @@ from .models import (
 def index(request):
     banner_slides = BannerSlide.objects.filter(is_active=True)
     return render(request, 'myapp/index.html', {'banner_slides': banner_slides})
+
+
+def pwa_manifest(request):
+    pwa = PWASettings.load()
+    icons = []
+    if pwa.android_icon:
+        icons.append({'src': pwa.android_icon.url, 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any maskable'})
+        icons.append({'src': pwa.android_icon.url, 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any maskable'})
+
+    return JsonResponse({
+        'name': pwa.app_name,
+        'short_name': pwa.short_name,
+        'description': pwa.description,
+        'start_url': '/',
+        'scope': '/',
+        'display': 'standalone',
+        'background_color': pwa.background_color,
+        'theme_color': pwa.theme_color,
+        'icons': icons,
+    })
+
+
+def service_worker(request):
+    js = (
+        "self.addEventListener('install', function (e) { self.skipWaiting(); });\n"
+        "self.addEventListener('activate', function (e) { self.clients.claim(); });\n"
+        "self.addEventListener('fetch', function (e) {\n"
+        "  e.respondWith(fetch(e.request).catch(function () { return caches.match(e.request); }));\n"
+        "});\n"
+    )
+    return HttpResponse(js, content_type='application/javascript')
 
 
 def daily_updates_page(request, category):
@@ -439,6 +472,22 @@ def panel_admission_delete(request, pk):
         registration.delete()
         messages.success(request, 'Registration deleted.')
     return redirect('panel_admissions')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_pwa_settings(request):
+    pwa = PWASettings.load()
+    if request.method == 'POST':
+        form = PWASettingsForm(request.POST, request.FILES, instance=pwa)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'App settings saved.')
+            return redirect('panel_pwa_settings')
+    else:
+        form = PWASettingsForm(instance=pwa)
+
+    return render(request, 'myapp/panel/pwa_settings.html', {'form': form, 'pwa': pwa})
 
 
 

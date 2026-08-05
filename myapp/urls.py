@@ -12,6 +12,8 @@ urlpatterns = [
     path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
     path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
     path('admission/register/', views.admission_register, name='admission_register'),
+    path('manifest.json', views.pwa_manifest, name='pwa_manifest'),
+    path('sw.js', views.service_worker, name='service_worker'),
     path('panel/', views.panel_signups, name='panel_signups'),
     path('panel/signups/add/', views.panel_signup_add, name='panel_signup_add'),
     path('panel/customization/navbar/', views.panel_navbar_customization, name='panel_navbar_customization'),
@@ -34,4 +36,5 @@ urlpatterns = [
     path('panel/daily-updates/posts/<int:pk>/delete/', views.panel_daily_post_delete, name='panel_daily_post_delete'),
     path('panel/admissions/', views.panel_admissions, name='panel_admissions'),
     path('panel/admissions/<int:pk>/delete/', views.panel_admission_delete, name='panel_admission_delete'),
+    path('panel/apps/', views.panel_pwa_settings, name='panel_pwa_settings'),
 ]
