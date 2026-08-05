@@ -222,6 +222,10 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .nav-user-dropdown hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
 .nav-user-logout{color:#DC2626 !important}
 .nav-user-logout:hover{background:#FEF2F2 !important}
+.nav-guest-cta{
+  display:none;background:linear-gradient(135deg,var(--orange),var(--orange-deep));color:#fff;
+  font-size:13.5px;font-weight:800;padding:9px 18px;border-radius:var(--r-pill);white-space:nowrap;
+}
 
 .menu-toggle{
   display:none;margin-left:auto;width:44px;height:44px;border:1px solid var(--line);
@@ -881,9 +885,10 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .header-actions .btn{flex:1}
   .site-header{position:relative}
   .nav-user-menu{margin-left:auto;order:1}
-  .menu-toggle{order:2;margin-left:8px}
+  .header-inner:has(.nav-user-menu) .menu-toggle{order:2;margin-left:8px}
   .nav-user-trigger-text{display:none}
   .nav-user-trigger{padding:6px}
+  .nav-guest-cta{display:inline-flex;align-items:center;justify-content:center;margin-left:auto;order:2}
 
   .hero-grid,.about-grid{grid-template-columns:1fr;gap:52px}
   .hero{padding:48px 0 70px}
@@ -899,6 +904,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .ad-card{border-radius:24px 24px 24px 110px;min-height:320px}
   .ad-track{min-height:320px}
   .ad-slide{padding:26px 22px 46px;gap:8px}
+  .ad-title{font-size:clamp(13px,4.6vw,20px);white-space:nowrap;max-width:100%}
   .ad-controls{left:50%;right:auto;transform:translateX(-50%);bottom:18px}
   .section{padding:62px 0}
   .feature-grid,.faculty-grid,.course-grid,.res-grid,.footer-grid{grid-template-columns:1fr}
@@ -1060,6 +1066,10 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         {% endif %}
       </div>
     </nav>
+
+    {% if not user.is_authenticated %}
+      <a class="nav-guest-cta" href="{% url 'signup' %}">Join now</a>
+    {% endif %}
 
     {% if user.is_authenticated %}
       <div class="nav-user-menu" id="navUserMenu">
