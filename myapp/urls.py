@@ -42,4 +42,12 @@ urlpatterns = [
     path('panel/gallery/add/', views.panel_gallery_add, name='panel_gallery_add'),
     path('panel/gallery/<int:pk>/edit/', views.panel_gallery_edit, name='panel_gallery_edit'),
     path('panel/gallery/<int:pk>/delete/', views.panel_gallery_delete, name='panel_gallery_delete'),
+    path('panel/categories/', views.panel_category_list, name='panel_category_list'),
+    path('panel/categories/add/', views.panel_category_add, name='panel_category_add'),
+    path('panel/categories/<int:pk>/edit/', views.panel_category_edit, name='panel_category_edit'),
+    path('panel/categories/<int:pk>/delete/', views.panel_category_delete, name='panel_category_delete'),
+    path('panel/courses/<str:course_type>/', views.panel_course_list, name='panel_course_list'),
+    path('panel/courses/<str:course_type>/add/', views.panel_course_add, name='panel_course_add'),
+    path('panel/courses/<str:course_type>/<int:pk>/edit/', views.panel_course_edit, name='panel_course_edit'),
+    path('panel/courses/<str:course_type>/<int:pk>/delete/', views.panel_course_delete, name='panel_course_delete'),
 ]

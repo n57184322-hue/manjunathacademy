@@ -264,6 +264,22 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
         <span class="panel-nav-ico">🖼️</span> Gallery
       </a>
 
+      <a class="{% block nav_categories %}{% endblock %}" href="{% url 'panel_category_list' %}">
+        <span class="panel-nav-ico">🏷️</span> Categories
+      </a>
+
+      <a class="{% if course_type == 'test_series' %}is-active{% endif %}" href="{% url 'panel_course_list' 'test_series' %}">
+        <span class="panel-nav-ico">📝</span> Test Series
+      </a>
+
+      <a class="{% if course_type == 'video_course' %}is-active{% endif %}" href="{% url 'panel_course_list' 'video_course' %}">
+        <span class="panel-nav-ico">🎬</span> Video Courses
+      </a>
+
+      <a class="{% if course_type == 'elibrary' %}is-active{% endif %}" href="{% url 'panel_course_list' 'elibrary' %}">
+        <span class="panel-nav-ico">📚</span> E-Library
+      </a>
+
       <div class="panel-nav-group {% block nav_customization_open %}{% endblock %}" id="navCustomizationGroup">
         <button type="button" class="panel-nav-group-toggle {% block nav_customization %}{% endblock %}" id="navCustomizationToggle">
           <span class="panel-nav-ico">🎨</span> Customization

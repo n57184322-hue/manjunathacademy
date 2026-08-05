@@ -1,0 +1,82 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{{ type_label }}{% endblock %}
+{% block page_title %}{{ type_label }}{% endblock %}
+{% block page_sub %}Manage {{ type_label|lower }} shown on the homepage{% endblock %}
+
+{% block extra_style %}
+.course-thumb{width:64px;height:40px;border-radius:8px;object-fit:cover;background:#F3F4F6;flex:0 0 auto}
+.course-thumb-empty{width:64px;height:40px;border-radius:8px;background:#F3F4F6;display:grid;place-items:center;color:var(--muted);font-size:11px;flex:0 0 auto}
+.course-cell{display:flex;align-items:center;gap:12px}
+.course-title-text{font-weight:700;color:var(--ink)}
+.course-cat-text{font-size:12px;color:var(--muted)}
+.course-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{{ type_label }}</h2>
+      <p>{{ courses|length }} item{{ courses|length|pluralize }} — shown in order on the homepage</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_course_add' course_type %}">+ Add {{ type_label|lower }}</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if courses %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Course</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course in courses %}
+          <tr>
+            <td>{{ course.order }}</td>
+            <td>
+              <div class="course-cell">
+                {% if course.thumbnail %}
+                  <img class="course-thumb" src="{{ course.thumbnail.url }}" alt="">
+                {% else %}
+                  <span class="course-thumb-empty">No image</span>
+                {% endif %}
+                <div>
+                  <div class="course-title-text">{{ course.name }}</div>
+                  {% if course.category %}<div class="course-cat-text">{{ course.category.icon }} {{ course.category.name }}</div>{% endif %}
+                </div>
+              </div>
+            </td>
+            <td>₹{{ course.current_price }} {% if course.original_price and course.original_price != course.current_price %}<s>₹{{ course.original_price }}</s>{% endif %}</td>
+            <td>{% if course.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="course-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_course_edit' course_type course.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_course_delete' course_type course.pk %}" onsubmit="return confirm('Delete this course?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🗂️</span>No {{ type_label|lower }} added yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

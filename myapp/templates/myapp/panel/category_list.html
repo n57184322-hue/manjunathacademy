@@ -1,0 +1,64 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block page_sub %}Shared categories used by Test Series, Video Courses and E-Library{% endblock %}
+{% block nav_categories %}is-active{% endblock %}
+
+{% block extra_style %}
+.category-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>All categories</h2>
+      <p>{{ categories|length }} categor{{ categories|length|pluralize:"y,ies" }} — e.g. CBSE, ICSE, UP Board, SSC</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_category_add' %}">+ Add category</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if categories %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Category</th>
+            <th>Courses</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for category in categories %}
+          <tr>
+            <td>{{ category.order }}</td>
+            <td class="panel-row-name">{% if category.icon %}{{ category.icon }} {% endif %}{{ category.name }}</td>
+            <td>{{ category.courses.count }}</td>
+            <td>
+              <div class="category-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_category_edit' category.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_category_delete' category.pk %}" onsubmit="return confirm('Delete this category? Courses in it will become uncategorized.');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏷️</span>No categories yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

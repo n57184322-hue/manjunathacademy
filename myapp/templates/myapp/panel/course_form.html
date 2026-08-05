@@ -1,0 +1,94 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} {{ type_label }}{% endblock %}
+{% block page_title %}{% if is_new %}Add {{ type_label|lower }}{% else %}Edit {{ type_label|lower }}{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.course-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.course-preview img{max-height:80px;max-width:160px;border-radius:8px;object-fit:cover}
+.course-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new {{ type_label|lower }}{% else %}Editing: {{ course.name }}{% endif %}</h2>
+      <p>Category is shared across Test Series, Video Courses and E-Library.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_course_list' course_type %}">← Back to {{ type_label|lower }}</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Category</span>
+      {{ form.category }}
+      {% if form.category.errors %}<ul class="panel-errors">{% for e in form.category.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Course name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Original price (₹)</span>
+        {{ form.original_price }}
+        {% if form.original_price.errors %}<ul class="panel-errors">{% for e in form.original_price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Current price (₹)</span>
+        {{ form.current_price }}
+        {% if form.current_price.errors %}<ul class="panel-errors">{% for e in form.current_price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label class="panel-form-check">{{ form.enable_folders }} Enable folders</label>
+      <label class="panel-form-check">{{ form.enable_validity }} Enable validity</label>
+    </div>
+
+    <label><span class="panel-label-text">About course</span>
+      {{ form.about }}
+      {% if form.about.errors %}<ul class="panel-errors">{% for e in form.about.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Banner / thumbnail</span>
+      {{ form.thumbnail }}
+      <p class="custom-help">{{ form.thumbnail.help_text }}</p>
+      {% if form.thumbnail.errors %}<ul class="panel-errors">{% for e in form.thumbnail.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if course.thumbnail %}
+      <div class="course-preview">
+        <img src="{{ course.thumbnail.url }}" alt="Current thumbnail">
+        <span class="course-preview-label">Current thumbnail</span>
+      </div>
+    {% endif %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Order</span>
+        {{ form.order }}
+        <p class="custom-help">{{ form.order.help_text }}</p>
+      </label>
+      <label class="panel-form-check" style="margin-top:26px">
+        {{ form.is_active }} Show on homepage
+      </label>
+    </div>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add {{ type_label|lower }}{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_course_list' course_type %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

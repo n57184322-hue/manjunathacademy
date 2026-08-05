@@ -4,8 +4,10 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from .models import (
     AdmissionRegistration,
     BannerSlide,
+    Category,
     ChatbotQuestion,
     ChatbotSettings,
+    Course,
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
@@ -249,6 +251,38 @@ class GalleryImageForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'e.g. Annual Prize Distribution 2026'}),
             'caption': forms.TextInput(attrs={'placeholder': 'A short line about this photo'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
+        }
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ('name', 'icon', 'order')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. CBSE'}),
+            'icon': forms.TextInput(attrs={'placeholder': '📘'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'order': 'Lower numbers show first.',
+        }
+
+
+class CourseForm(forms.ModelForm):
+    class Meta:
+        model = Course
+        fields = (
+            'category', 'name', 'original_price', 'current_price',
+            'enable_folders', 'enable_validity', 'about', 'thumbnail',
+            'order', 'is_active',
+        )
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL Complete Test Series'}),
+            'about': forms.Textarea(attrs={'rows': 5, 'placeholder': 'What this course covers'}),
             'order': forms.NumberInput(attrs={'min': 0}),
         }
         help_texts = {

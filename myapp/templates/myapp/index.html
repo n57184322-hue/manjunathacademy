@@ -428,83 +428,27 @@
     <div class="ts-panel">
       <p class="ts-panel-title">Test Series</p>
 
-      <div class="ts-tabs">
-        <button class="ts-tab is-active">
-          <span class="ts-tab-ico">🚨</span>Defence &amp; Police
-        </button>
-        <button class="ts-tab"><span class="ts-tab-ico">👧</span>SSC</button>
-        <button class="ts-tab"><span class="ts-tab-ico">🚆</span>Railway</button>
-        <button class="ts-tab"><span class="ts-tab-ico">🏛</span>Government Exams</button>
-        <button class="ts-tab"><span class="ts-tab-ico">✓</span>CUET</button>
-        <button class="ts-tab"><span class="ts-tab-ico">👤</span>Civil Services</button>
+      {% if test_series_categories %}
+      <div class="ts-tabs" id="tsTabs">
+        <button class="ts-tab is-active" data-cat="all"><span class="ts-tab-ico">📚</span>All</button>
+        {% for cat in test_series_categories %}
+        <button class="ts-tab" data-cat="{{ cat.id }}">{% if cat.icon %}<span class="ts-tab-ico">{{ cat.icon }}</span>{% endif %}{{ cat.name }}</button>
+        {% endfor %}
       </div>
+      {% endif %}
 
-      <div class="ts-body">
-        <aside class="ts-sidebar">
-          <ul>
-            <li class="is-active">Indian Army</li>
-            <li>UPSC NDA</li>
-            <li>UPSC CDS</li>
-            <li>Territorial Army</li>
-            <li>Coast Guard</li>
-            <li>Sashastra Seema Bal (SSB)</li>
-            <li>Intelligence Bureau</li>
-            <li>Ind. Maritime - IMU CET (UG)</li>
-            <li>Central Industrial Security Force (CISF)</li>
-            <li>Central Reserve Police Force (CRPF)</li>
-            <li>Central Armed Police Forces CAPF (AC)</li>
-            <li>Border Security Force</li>
-            <li>Indian Air Force (IAF)</li>
-            <li>Indian Navy</li>
-            <li>UP Police (UPP)</li>
-            <li>Bihar Police</li>
-            <li>Delhi Police</li>
-            <li>Jharkhand Police</li>
-            <li>Puducherry Police</li>
-            <li>HP Police</li>
-            <li>Madhya Pradesh Police</li>
-            <li>Ladakh Police</li>
-            <li>Assam Police</li>
-          </ul>
-        </aside>
-
-        <div class="ts-grid">
-          <article class="ts-card">
-            <span class="ts-badge">⚔</span>
-            <h4>Border Roads Organisation (BRO)</h4>
-            <span class="ts-count">📖 5 Tests</span>
-            <a class="btn-ts" href="#contact">Explore</a>
+      <div class="ts-body ts-body-full">
+        <div class="ts-grid" id="tsGrid">
+          {% for course in test_series_courses %}
+          <article class="ts-card" data-cat="{{ course.category_id|default:'' }}">
+            {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="ts-badge">📝</span>{% endif %}
+            <h4>{{ course.name }}</h4>
+            <span class="ts-count">₹{{ course.current_price }}{% if course.original_price and course.original_price != course.current_price %} <s>₹{{ course.original_price }}</s>{% endif %}</span>
+            <a class="btn-ts" href="#contact-us">Explore</a>
           </article>
-          <article class="ts-card">
-            <span class="ts-badge">⚔</span>
-            <h4>Military Nursing Services (MNS)</h4>
-            <span class="ts-count">📖 96 Tests</span>
-            <a class="btn-ts" href="#contact">Explore</a>
-          </article>
-          <article class="ts-card">
-            <span class="ts-badge">⚔</span>
-            <h4>BRO Driver Mechanical</h4>
-            <span class="ts-count">📖 3 Tests</span>
-            <a class="btn-ts" href="#contact">Explore</a>
-          </article>
-          <article class="ts-card">
-            <span class="ts-badge">⚔</span>
-            <h4>Indian Army Sepoy Pharma</h4>
-            <span class="ts-count">📖 10 Tests</span>
-            <a class="btn-ts" href="#contact">Explore</a>
-          </article>
-          <article class="ts-card">
-            <span class="ts-badge ts-badge-dark">☠</span>
-            <h4>Agniveer Army</h4>
-            <span class="ts-count">📖 283 Tests</span>
-            <a class="btn-ts" href="#contact">Explore</a>
-          </article>
-          <article class="ts-card">
-            <span class="ts-badge">⚔</span>
-            <h4>Havildar (Surveyor Automated Cartographer)</h4>
-            <span class="ts-count">📖 20 Tests</span>
-            <a class="btn-ts" href="#contact">Explore</a>
-          </article>
+          {% empty %}
+          <p class="panel-empty">No test series added yet — check back soon.</p>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -518,30 +462,55 @@
     <h2 class="section-title center-title">Learn At Your Own <span class="text-orange">Pace</span></h2>
     <p class="section-sub">Recorded, chapter-wise video courses you can watch anytime, any number of times.</p>
     <div class="pc-grid">
+      {% for course in video_courses %}
       <article class="pc-card">
-        <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span><span class="pc-rating">4h 20m</span></div>
-        <h3>Quantitative Aptitude Masterclass</h3>
-        <p>Shortcut techniques and 120 solved examples for SSC &amp; Banking exams.</p>
-        <div class="pc-tags"><span>Hindi + English</span></div>
-        <div class="pc-meta"><span>🎬 68 videos</span><span>Free</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">Watch Free →</a>
+        {% if course.thumbnail %}
+          <img class="pc-thumb" src="{{ course.thumbnail.url }}" alt="">
+        {% else %}
+          <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span></div>
+        {% endif %}
+        <h3>{{ course.name }}</h3>
+        {% if course.about %}<p>{{ course.about|truncatechars:110 }}</p>{% endif %}
+        {% if course.category %}<div class="pc-tags"><span>{{ course.category.icon }} {{ course.category.name }}</span></div>{% endif %}
+        <div class="pc-meta">
+          <span>₹{{ course.current_price }}</span>
+          {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
+        </div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">View Course →</a>
       </article>
+      {% empty %}
+      <p class="panel-empty">No video courses added yet — check back soon.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ================= E-LIBRARY ================= -->
+<section class="section" id="e-library">
+  <div class="wrap">
+    <p class="eyebrow eyebrow-pill">📚 E-Library</p>
+    <h2 class="section-title center-title">Books &amp; Notes For <span class="text-orange">Every Exam</span></h2>
+    <p class="section-sub">Digital books, PYQ compilations and revision notes you can read anytime.</p>
+    <div class="pc-grid">
+      {% for item in elibrary_items %}
       <article class="pc-card">
-        <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span><span class="pc-rating">6h 05m</span></div>
-        <h3>Reasoning: Puzzles &amp; Seating</h3>
-        <p>Every puzzle type asked in the last 5 years, solved step by step.</p>
-        <div class="pc-tags"><span>Hindi + English</span></div>
-        <div class="pc-meta"><span>🎬 90 videos</span><span>Free</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">Watch Free →</a>
+        {% if item.thumbnail %}
+          <img class="pc-thumb" src="{{ item.thumbnail.url }}" alt="">
+        {% else %}
+          <div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>
+        {% endif %}
+        <h3>{{ item.name }}</h3>
+        {% if item.about %}<p>{{ item.about|truncatechars:110 }}</p>{% endif %}
+        {% if item.category %}<div class="pc-tags"><span>{{ item.category.icon }} {{ item.category.name }}</span></div>{% endif %}
+        <div class="pc-meta">
+          <span>₹{{ item.current_price }}</span>
+          {% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}
+        </div>
+        <a class="btn-pc btn-pc-orange" href="#contact-us">View Book →</a>
       </article>
-      <article class="pc-card">
-        <div class="pc-top"><span class="pc-icon pc-icon-grey">▶</span><span class="pc-rating">3h 40m</span></div>
-        <h3>NEET Biology: Human Physiology</h3>
-        <p>NCERT-mapped video lessons with diagram-based revision notes.</p>
-        <div class="pc-tags"><span>Hindi + English</span></div>
-        <div class="pc-meta"><span>🎬 52 videos</span><span>Free</span></div>
-        <a class="btn-pc btn-pc-orange" href="#contact-us">Watch Free →</a>
-      </article>
+      {% empty %}
+      <p class="panel-empty">No e-library items added yet — check back soon.</p>
+      {% endfor %}
     </div>
   </div>
 </section>

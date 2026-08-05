@@ -402,3 +402,46 @@ class GalleryImage(models.Model):
 
     def __str__(self):
         return self.title or f'Gallery image {self.pk}'
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    icon = models.CharField(max_length=10, blank=True, help_text='Optional emoji icon, e.g. 📘')
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name_plural = 'Categories'
+
+    def __str__(self):
+        return self.name
+
+
+class Course(models.Model):
+    TEST_SERIES = 'test_series'
+    VIDEO_COURSE = 'video_course'
+    ELIBRARY = 'elibrary'
+    TYPE_CHOICES = [
+        (TEST_SERIES, 'Test Series'),
+        (VIDEO_COURSE, 'Video Course'),
+        (ELIBRARY, 'E-Library'),
+    ]
+
+    course_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
+    name = models.CharField(max_length=200, verbose_name='Course name')
+    original_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    current_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    enable_folders = models.BooleanField(default=False, help_text='Turn on if this course is organized into folders/chapters')
+    enable_validity = models.BooleanField(default=False, help_text='Turn on if access to this course expires after a validity period')
+    about = models.TextField(blank=True, verbose_name='About course')
+    thumbnail = models.ImageField(upload_to='courses/', blank=True, null=True, help_text='Recommended size: 400×240px (16:10).')
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.name

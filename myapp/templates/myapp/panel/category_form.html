@@ -1,0 +1,50 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Category{% endblock %}
+{% block page_title %}{% if is_new %}Add category{% else %}Edit category{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_categories %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new category{% else %}Editing: {{ category.name }}{% endif %}</h2>
+      <p>Used across Test Series, Video Courses and E-Library.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_category_list' %}">← Back to categories</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Icon</span>
+      {{ form.icon }}
+      <p class="custom-help">{{ form.icon.help_text }}</p>
+    </label>
+
+    <label><span class="panel-label-text">Order</span>
+      {{ form.order }}
+      <p class="custom-help">{{ form.order.help_text }}</p>
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add category{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_category_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

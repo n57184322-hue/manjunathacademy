@@ -11,8 +11,10 @@ from .forms import (
     AccountUpdateForm,
     AdmissionRegistrationForm,
     BannerSlideForm,
+    CategoryForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
+    CourseForm,
     DailyUpdateCardForm,
     DailyUpdatePostForm,
     EmailAuthenticationForm,
@@ -26,8 +28,10 @@ from .forms import (
 from .models import (
     AdmissionRegistration,
     BannerSlide,
+    Category,
     ChatbotQuestion,
     ChatbotSettings,
+    Course,
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
@@ -41,7 +45,19 @@ from .models import (
 
 def index(request):
     banner_slides = BannerSlide.objects.filter(is_active=True)
-    return render(request, 'myapp/index.html', {'banner_slides': banner_slides})
+
+    test_series_courses = Course.objects.filter(course_type=Course.TEST_SERIES, is_active=True)
+    video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True)
+    elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True)
+    test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
+
+    return render(request, 'myapp/index.html', {
+        'banner_slides': banner_slides,
+        'test_series_courses': test_series_courses,
+        'video_courses': video_courses,
+        'elibrary_items': elibrary_items,
+        'test_series_categories': test_series_categories,
+    })
 
 
 def pwa_manifest(request):
@@ -544,6 +560,126 @@ def panel_gallery_delete(request, pk):
         image.delete()
         messages.success(request, 'Image deleted.')
     return redirect('panel_gallery_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_category_list(request):
+    categories = Category.objects.all()
+    return render(request, 'myapp/panel/category_list.html', {'categories': categories})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_category_add(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category added.')
+            return redirect('panel_category_list')
+    else:
+        form = CategoryForm(initial={'order': Category.objects.count()})
+
+    return render(request, 'myapp/panel/category_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_category_edit(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category updated.')
+            return redirect('panel_category_list')
+    else:
+        form = CategoryForm(instance=category)
+
+    return render(request, 'myapp/panel/category_form.html', {'form': form, 'is_new': False, 'category': category})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_category_delete(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, 'Category deleted.')
+    return redirect('panel_category_list')
+
+
+COURSE_TYPE_LABELS = dict(Course.TYPE_CHOICES)
+
+
+def _course_type_or_404(course_type):
+    if course_type not in COURSE_TYPE_LABELS:
+        raise Http404
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_course_list(request, course_type):
+    _course_type_or_404(course_type)
+    courses = Course.objects.filter(course_type=course_type)
+    return render(request, 'myapp/panel/course_list.html', {
+        'courses': courses,
+        'course_type': course_type,
+        'type_label': COURSE_TYPE_LABELS[course_type],
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_course_add(request, course_type):
+    _course_type_or_404(course_type)
+    if request.method == 'POST':
+        form = CourseForm(request.POST, request.FILES)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.course_type = course_type
+            course.save()
+            messages.success(request, 'Course added.')
+            return redirect('panel_course_list', course_type=course_type)
+    else:
+        form = CourseForm(initial={'order': Course.objects.filter(course_type=course_type).count()})
+
+    return render(request, 'myapp/panel/course_form.html', {
+        'form': form, 'is_new': True, 'course_type': course_type, 'type_label': COURSE_TYPE_LABELS[course_type],
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_course_edit(request, course_type, pk):
+    _course_type_or_404(course_type)
+    course = get_object_or_404(Course, pk=pk, course_type=course_type)
+
+    if request.method == 'POST':
+        form = CourseForm(request.POST, request.FILES, instance=course)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Course updated.')
+            return redirect('panel_course_list', course_type=course_type)
+    else:
+        form = CourseForm(instance=course)
+
+    return render(request, 'myapp/panel/course_form.html', {
+        'form': form, 'is_new': False, 'course': course, 'course_type': course_type, 'type_label': COURSE_TYPE_LABELS[course_type],
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_course_delete(request, course_type, pk):
+    _course_type_or_404(course_type)
+    course = get_object_or_404(Course, pk=pk, course_type=course_type)
+    if request.method == 'POST':
+        course.delete()
+        messages.success(request, 'Course deleted.')
+    return redirect('panel_course_list', course_type=course_type)
 
 
 
