@@ -244,6 +244,10 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
         <span class="panel-nav-ico">📢</span> Notifications
       </a>
 
+      <a class="{% block nav_chatbot %}{% endblock %}" href="{% url 'panel_chatbot_list' %}">
+        <span class="panel-nav-ico">💬</span> Chatbot
+      </a>
+
       <div class="panel-nav-group {% block nav_customization_open %}{% endblock %}" id="navCustomizationGroup">
         <button type="button" class="panel-nav-group-toggle {% block nav_customization %}{% endblock %}" id="navCustomizationToggle">
           <span class="panel-nav-ico">🎨</span> Customization

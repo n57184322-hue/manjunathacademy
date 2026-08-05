@@ -1,8 +1,10 @@
-from .models import Notification, SiteSettings
+from .models import ChatbotQuestion, ChatbotSettings, Notification, SiteSettings
 
 
 def site_settings(request):
     return {
         'site_settings': SiteSettings.load(),
         'top_notifications': Notification.objects.filter(is_active=True),
+        'chatbot_settings': ChatbotSettings.load(),
+        'chatbot_questions': ChatbotQuestion.objects.filter(is_active=True),
     }

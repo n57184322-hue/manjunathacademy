@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from .models import BannerSlide, CustomUser, Notification, SiteSettings
+from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, Notification, SiteSettings
 
 STATE_CHOICES = [
     ('', 'Select state'),
@@ -137,5 +137,25 @@ class NotificationForm(forms.ModelForm):
         help_texts = {
             'text': 'Shown in the scrolling ticker at the top of the site.',
             'link': 'Optional. Opens as the "Official notification link" button in the popup.',
+            'order': 'Lower numbers show first.',
+        }
+
+
+class ChatbotSettingsForm(forms.ModelForm):
+    class Meta:
+        model = ChatbotSettings
+        fields = ('is_enabled',)
+
+
+class ChatbotQuestionForm(forms.ModelForm):
+    class Meta:
+        model = ChatbotQuestion
+        fields = ('question', 'answer', 'order', 'is_active')
+        widgets = {
+            'question': forms.TextInput(attrs={'placeholder': 'e.g. What courses do you offer?'}),
+            'answer': forms.Textarea(attrs={'rows': 4, 'placeholder': 'The reply shown when a visitor taps this question'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
             'order': 'Lower numbers show first.',
         }

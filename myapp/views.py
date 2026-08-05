@@ -9,12 +9,14 @@ from django.utils import timezone
 from .forms import (
     AccountUpdateForm,
     BannerSlideForm,
+    ChatbotQuestionForm,
+    ChatbotSettingsForm,
     EmailAuthenticationForm,
     NavbarCustomizationForm,
     NotificationForm,
     SignupForm,
 )
-from .models import BannerSlide, CustomUser, Notification, SiteSettings
+from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, Notification, SiteSettings
 
 
 def index(request):
@@ -230,3 +232,62 @@ def panel_notification_delete(request, pk):
         notification.delete()
         messages.success(request, 'Notification deleted.')
     return redirect('panel_notification_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_chatbot_list(request):
+    settings_obj = ChatbotSettings.load()
+    if request.method == 'POST':
+        settings_form = ChatbotSettingsForm(request.POST, instance=settings_obj)
+        if settings_form.is_valid():
+            settings_form.save()
+            messages.success(request, 'Chatbot visibility updated.')
+            return redirect('panel_chatbot_list')
+    else:
+        settings_form = ChatbotSettingsForm(instance=settings_obj)
+
+    questions = ChatbotQuestion.objects.all()
+    return render(request, 'myapp/panel/chatbot_list.html', {'settings_form': settings_form, 'questions': questions})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_chatbot_question_add(request):
+    if request.method == 'POST':
+        form = ChatbotQuestionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question added.')
+            return redirect('panel_chatbot_list')
+    else:
+        form = ChatbotQuestionForm(initial={'order': ChatbotQuestion.objects.count()})
+
+    return render(request, 'myapp/panel/chatbot_question_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_chatbot_question_edit(request, pk):
+    question = get_object_or_404(ChatbotQuestion, pk=pk)
+
+    if request.method == 'POST':
+        form = ChatbotQuestionForm(request.POST, instance=question)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question updated.')
+            return redirect('panel_chatbot_list')
+    else:
+        form = ChatbotQuestionForm(instance=question)
+
+    return render(request, 'myapp/panel/chatbot_question_form.html', {'form': form, 'is_new': False, 'question': question})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_chatbot_question_delete(request, pk):
+    question = get_object_or_404(ChatbotQuestion, pk=pk)
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, 'Question deleted.')
+    return redirect('panel_chatbot_list')

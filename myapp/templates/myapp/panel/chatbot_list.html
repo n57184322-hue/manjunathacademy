@@ -1,0 +1,88 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Chatbot{% endblock %}
+{% block page_title %}Chatbot{% endblock %}
+{% block page_sub %}Control the chat widget's visibility and its preloaded questions{% endblock %}
+{% block nav_chatbot %}is-active{% endblock %}
+
+{% block extra_style %}
+.chatbot-cell{max-width:360px;white-space:normal}
+.chatbot-q-cell{font-weight:700;color:var(--ink)}
+.chatbot-a-cell{font-size:12.5px;color:var(--muted)}
+.chatbot-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#374151}
+.chatbot-settings-form{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card" style="margin-bottom:24px">
+  <div class="panel-card-head">
+    <div>
+      <h2>Visibility</h2>
+      <p>Show or hide the chat widget across the whole site.</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form class="chatbot-settings-form" method="post">
+    {% csrf_token %}
+    <label class="panel-form-check">
+      {{ settings_form.is_enabled }} Chat widget is visible on the site
+    </label>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+</div>
+
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Preloaded questions</h2>
+      <p>{{ questions|length }} question{{ questions|length|pluralize }} — shown in order inside the chat widget</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_chatbot_question_add' %}">+ Add question</a>
+  </div>
+
+  {% if questions %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for question in questions %}
+          <tr>
+            <td>{{ question.order }}</td>
+            <td class="chatbot-cell"><div class="chatbot-q-cell">{{ question.question }}</div></td>
+            <td class="chatbot-cell"><div class="chatbot-a-cell">{{ question.answer|truncatechars:80 }}</div></td>
+            <td>{% if question.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="chatbot-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_chatbot_question_edit' question.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_chatbot_question_delete' question.pk %}" onsubmit="return confirm('Delete this question?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">💬</span>No questions yet — the chat widget will show no quick questions.</p>
+  {% endif %}
+</div>
+{% endblock %}

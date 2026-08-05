@@ -126,3 +126,39 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class ChatbotSettings(models.Model):
+    is_enabled = models.BooleanField(default=True, help_text='Show or hide the chat widget on the site')
+
+    class Meta:
+        verbose_name = 'Chatbot settings'
+        verbose_name_plural = 'Chatbot settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return 'Chatbot settings'
+
+
+class ChatbotQuestion(models.Model):
+    order = models.PositiveIntegerField(default=0)
+    question = models.CharField(max_length=200)
+    answer = models.TextField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.question

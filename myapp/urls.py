@@ -21,4 +21,8 @@ urlpatterns = [
     path('panel/customization/notifications/add/', views.panel_notification_add, name='panel_notification_add'),
     path('panel/customization/notifications/<int:pk>/edit/', views.panel_notification_edit, name='panel_notification_edit'),
     path('panel/customization/notifications/<int:pk>/delete/', views.panel_notification_delete, name='panel_notification_delete'),
+    path('panel/chatbot/', views.panel_chatbot_list, name='panel_chatbot_list'),
+    path('panel/chatbot/questions/add/', views.panel_chatbot_question_add, name='panel_chatbot_question_add'),
+    path('panel/chatbot/questions/<int:pk>/edit/', views.panel_chatbot_question_edit, name='panel_chatbot_question_edit'),
+    path('panel/chatbot/questions/<int:pk>/delete/', views.panel_chatbot_question_delete, name='panel_chatbot_question_delete'),
 ]

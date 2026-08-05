@@ -1425,14 +1425,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ---------- Chatbot widget (preloaded questions) ---------- */
-  const CHAT_QA = {
-    courses: { q: 'What courses do you offer?', a: 'We offer SSC & Railways, Banking & Insurance, NEET & JEE foundation, plus CDS and AFCAT preparation — most content is free.' },
-    free: { q: 'How do I join for free?', a: 'Click "Join for Free" in the menu and create your account in under a minute — no fee required.' },
-    tests: { q: 'Do you have test series?', a: 'Yes — check the Test Series section for Defence, SSC, Railway, CUET and Civil Services, with real exam timing and All-India rank.' },
-    centre: { q: 'Where is the offline centre?', a: 'Our offline centre is in Hazratganj, Lucknow, Uttar Pradesh. Classes run Mon–Sat, 8 am – 8 pm.' },
-    contact: { q: 'How can I contact support?', a: 'Call +91 522 000 0000 or email hello@manjunathacademy.in — our team typically replies the same day.' },
-  };
-
   const chatFab = document.getElementById('chatFab');
   const chatPanel = document.getElementById('chatPanel');
   const chatClose = document.getElementById('chatClose');
@@ -1453,17 +1445,15 @@ document.addEventListener('DOMContentLoaded', function () {
     chatQuestions.addEventListener('click', (e) => {
       const btn = e.target.closest('.chat-q-btn');
       if (!btn) return;
-      const item = CHAT_QA[btn.dataset.q];
-      if (!item) return;
 
       const userMsg = document.createElement('div');
       userMsg.className = 'chat-msg chat-msg-user';
-      userMsg.textContent = item.q;
+      userMsg.textContent = btn.dataset.question || '';
       chatBody.appendChild(userMsg);
 
       const botMsg = document.createElement('div');
       botMsg.className = 'chat-msg chat-msg-bot';
-      botMsg.textContent = item.a;
+      botMsg.textContent = btn.dataset.answer || '';
       chatBody.appendChild(botMsg);
 
       chatBody.scrollTop = chatBody.scrollHeight;
@@ -1474,6 +1464,7 @@ document.addEventListener('DOMContentLoaded', function () {
 {% block extra_script %}{% endblock %}
 </script>
 
+{% if chatbot_settings.is_enabled %}
 <button class="chat-fab" id="chatFab" aria-label="Open chat with Manjunath Academy">💬</button>
 <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Manjunath Academy chat assistant">
   <div class="chat-head">
@@ -1486,12 +1477,11 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
   <div class="chat-questions" id="chatQuestions">
     <span class="chat-questions-label">Quick questions</span>
-    <button class="chat-q-btn" data-q="courses">What courses do you offer?</button>
-    <button class="chat-q-btn" data-q="free">How do I join for free?</button>
-    <button class="chat-q-btn" data-q="tests">Do you have test series?</button>
-    <button class="chat-q-btn" data-q="centre">Where is the offline centre?</button>
-    <button class="chat-q-btn" data-q="contact">How can I contact support?</button>
+    {% for question in chatbot_questions %}
+    <button class="chat-q-btn" data-question="{{ question.question }}" data-answer="{{ question.answer }}">{{ question.question }}</button>
+    {% endfor %}
   </div>
 </div>
+{% endif %}
 </body>
 </html>
