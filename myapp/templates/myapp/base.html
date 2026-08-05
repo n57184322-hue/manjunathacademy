@@ -978,10 +978,9 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   <div class="wrap notif-inner">
     <span class="notif-label">Latest Updates</span>
     <div class="notif-track" id="notifTrack">
-      <a class="notif-item" href="#" data-detail="New SSC CGL 2026 notification is out — 4,500+ vacancies. Apply on the official SSC portal before the last date. Tap for eligibility, exam dates and the official notification link.">📢 SSC CGL 2026 notification released — 4,500+ vacancies</a>
-      <a class="notif-item" href="#" data-detail="Manjunath Academy is hiring faculty for Reasoning and General Studies at the Lucknow centre. Tap to see the role details and how to apply.">💼 We're hiring: Faculty for Reasoning &amp; GS</a>
-      <a class="notif-item" href="#" data-detail="New offline batch for Banking &amp; Insurance starts 12 August at the Lucknow centre. Tap to register your name and details directly.">🏫 New offline batch starts 12 Aug — register now</a>
-      <a class="notif-item" href="#" data-detail="Railway RRB NTPC application window is open. Tap for the official link, eligibility and important dates.">📢 Railway RRB NTPC applications open</a>
+      {% for notification in top_notifications %}
+      <a class="notif-item" href="#" data-detail="{{ notification.detail }}" data-link="{{ notification.link }}">{{ notification.text }}</a>
+      {% endfor %}
     </div>
     <button class="notif-viewall" id="notifViewAll">View all</button>
   </div>
@@ -1168,21 +1167,31 @@ document.addEventListener('DOMContentLoaded', function () {
   const notifBody = document.getElementById('notifModalBody');
   const notifClose = document.getElementById('notifClose');
   const notifViewAll = document.getElementById('notifViewAll');
+  const notifOfficialLink = document.getElementById('notifOfficialLink');
 
-  function openNotif(title, detail) {
+  function openNotif(title, detail, link) {
     if (!notifModal) return;
     notifTitle.textContent = title;
     notifBody.textContent = detail;
+    if (notifOfficialLink) {
+      if (link) {
+        notifOfficialLink.href = link;
+        notifOfficialLink.style.display = '';
+      } else {
+        notifOfficialLink.href = '#';
+        notifOfficialLink.style.display = 'none';
+      }
+    }
     notifModal.classList.add('is-open');
   }
   notifItems.forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
-      openNotif(item.textContent.trim(), item.dataset.detail || '');
+      openNotif(item.textContent.trim(), item.dataset.detail || '', item.dataset.link || '');
     });
   });
   if (notifViewAll) {
-    notifViewAll.addEventListener('click', () => openNotif('All notifications', 'Every admission, job and exam notice from Manjunath Academy appears here as it is published.'));
+    notifViewAll.addEventListener('click', () => openNotif('All notifications', 'Every admission, job and exam notice from Manjunath Academy appears here as it is published.', ''));
   }
   if (notifClose) notifClose.addEventListener('click', () => notifModal.classList.remove('is-open'));
   if (notifModal) notifModal.addEventListener('click', (e) => { if (e.target === notifModal) notifModal.classList.remove('is-open'); });

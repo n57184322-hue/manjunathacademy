@@ -17,4 +17,8 @@ urlpatterns = [
     path('panel/customization/banner/add/', views.panel_banner_add, name='panel_banner_add'),
     path('panel/customization/banner/<int:pk>/edit/', views.panel_banner_edit, name='panel_banner_edit'),
     path('panel/customization/banner/<int:pk>/delete/', views.panel_banner_delete, name='panel_banner_delete'),
+    path('panel/customization/notifications/', views.panel_notification_list, name='panel_notification_list'),
+    path('panel/customization/notifications/add/', views.panel_notification_add, name='panel_notification_add'),
+    path('panel/customization/notifications/<int:pk>/edit/', views.panel_notification_edit, name='panel_notification_edit'),
+    path('panel/customization/notifications/<int:pk>/delete/', views.panel_notification_delete, name='panel_notification_delete'),
 ]

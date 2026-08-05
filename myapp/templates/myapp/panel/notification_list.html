@@ -1,0 +1,73 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_sub %}Manage the scrolling update ticker at the top of the site{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_notification_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.notif-cell{max-width:360px;white-space:normal}
+.notif-text-cell{font-weight:700;color:var(--ink)}
+.notif-link-cell{font-size:12.5px;color:var(--muted)}
+.notif-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Top ticker notifications</h2>
+      <p>{{ notifications|length }} notification{{ notifications|length|pluralize }} — shown in order at the top of every page</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_notification_add' %}">+ Add notification</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if notifications %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Notification</th>
+            <th>Link</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notification in notifications %}
+          <tr>
+            <td>{{ notification.order }}</td>
+            <td class="notif-cell">
+              <div class="notif-text-cell">{{ notification.text }}</div>
+            </td>
+            <td class="notif-link-cell">{{ notification.link|default:"—" }}</td>
+            <td>{% if notification.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="notif-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_notification_edit' notification.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_notification_delete' notification.pk %}" onsubmit="return confirm('Delete this notification?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">📢</span>No notifications yet — the ticker bar will be empty on the site.</p>
+  {% endif %}
+</div>
+{% endblock %}

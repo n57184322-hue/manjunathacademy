@@ -111,3 +111,18 @@ class BannerSlide(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Notification(models.Model):
+    order = models.PositiveIntegerField(default=0)
+    text = models.CharField(max_length=200, help_text='Short scrolling line, e.g. "SSC CGL 2026 notification released — 4,500+ vacancies"')
+    detail = models.TextField(blank=True, help_text='Longer text shown in the popup when a student taps this notification')
+    link = models.URLField(blank=True, help_text='Official link (apply page, PDF, etc). Shown as a button in the popup.')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.text

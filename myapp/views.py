@@ -6,8 +6,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-from .forms import AccountUpdateForm, BannerSlideForm, EmailAuthenticationForm, NavbarCustomizationForm, SignupForm
-from .models import BannerSlide, CustomUser, SiteSettings
+from .forms import (
+    AccountUpdateForm,
+    BannerSlideForm,
+    EmailAuthenticationForm,
+    NavbarCustomizationForm,
+    NotificationForm,
+    SignupForm,
+)
+from .models import BannerSlide, CustomUser, Notification, SiteSettings
 
 
 def index(request):
@@ -174,3 +181,52 @@ def panel_banner_delete(request, pk):
         slide.delete()
         messages.success(request, 'Banner slide deleted.')
     return redirect('panel_banner_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_notification_list(request):
+    notifications = Notification.objects.all()
+    return render(request, 'myapp/panel/notification_list.html', {'notifications': notifications})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_notification_add(request):
+    if request.method == 'POST':
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Notification added.')
+            return redirect('panel_notification_list')
+    else:
+        form = NotificationForm(initial={'order': Notification.objects.count()})
+
+    return render(request, 'myapp/panel/notification_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_notification_edit(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+
+    if request.method == 'POST':
+        form = NotificationForm(request.POST, instance=notification)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Notification updated.')
+            return redirect('panel_notification_list')
+    else:
+        form = NotificationForm(instance=notification)
+
+    return render(request, 'myapp/panel/notification_form.html', {'form': form, 'is_new': False, 'notification': notification})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_notification_delete(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    if request.method == 'POST':
+        notification.delete()
+        messages.success(request, 'Notification deleted.')
+    return redirect('panel_notification_list')

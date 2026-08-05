@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from .models import BannerSlide, CustomUser, SiteSettings
+from .models import BannerSlide, CustomUser, Notification, SiteSettings
 
 STATE_CHOICES = [
     ('', 'Select state'),
@@ -120,5 +120,22 @@ class BannerSlideForm(forms.ModelForm):
         help_texts = {
             'image': 'Recommended size: 1400×500px (wide photo). JPG or PNG, under 2MB.',
             'image_url': 'Used only if no image is uploaded above.',
+            'order': 'Lower numbers show first.',
+        }
+
+
+class NotificationForm(forms.ModelForm):
+    class Meta:
+        model = Notification
+        fields = ('text', 'detail', 'link', 'order', 'is_active')
+        widgets = {
+            'text': forms.TextInput(attrs={'placeholder': 'e.g. 📢 SSC CGL 2026 notification released — 4,500+ vacancies'}),
+            'detail': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Longer text shown when a student taps this notification'}),
+            'link': forms.URLInput(attrs={'placeholder': 'https://ssc.nic.in/...'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+        help_texts = {
+            'text': 'Shown in the scrolling ticker at the top of the site.',
+            'link': 'Optional. Opens as the "Official notification link" button in the popup.',
             'order': 'Lower numbers show first.',
         }
