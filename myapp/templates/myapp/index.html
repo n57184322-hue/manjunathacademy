@@ -444,8 +444,9 @@
             {% if course.thumbnail %}<img class="ts-card-thumb" src="{{ course.thumbnail.url }}" alt="">{% else %}<span class="ts-badge">📝</span>{% endif %}
             {% if course.test_type %}<span class="ts-type-tag">{{ course.get_test_type_display }}</span>{% endif %}
             <h4>{{ course.name }}</h4>
+            <span class="ts-count">📝 {{ course.questions.count }} question{{ course.questions.count|pluralize }}{% if course.duration_minutes %} · ⏱ {{ course.duration_minutes }}m{% endif %}</span>
             <span class="ts-count">₹{{ course.current_price }}{% if course.original_price and course.original_price != course.current_price %} <s>₹{{ course.original_price }}</s>{% endif %}</span>
-            <a class="btn-ts" href="#contact-us">Explore</a>
+            <a class="btn-ts" href="{% url 'test_attempt_start' course.pk %}">{% if course.questions.count %}Attempt Test{% else %}Explore{% endif %}</a>
           </article>
           {% empty %}
           <p class="panel-empty">No test series added yet — check back soon.</p>
@@ -472,7 +473,10 @@
         {% endif %}
         <h3>{{ course.name }}</h3>
         {% if course.about %}<p>{{ course.about|truncatechars:110 }}</p>{% endif %}
-        {% if course.category %}<div class="pc-tags"><span>{{ course.category.icon }} {{ course.category.name }}</span></div>{% endif %}
+        <div class="pc-tags">
+          {% if course.category %}<span>{{ course.category.icon }} {{ course.category.name }}</span>{% endif %}
+          {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+        </div>
         <div class="pc-meta">
           <span>₹{{ course.current_price }}</span>
           {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
@@ -501,8 +505,12 @@
           <div class="pc-top"><span class="pc-icon pc-icon-grey">📖</span></div>
         {% endif %}
         <h3>{{ item.name }}</h3>
+        {% if item.author %}<p style="margin-bottom:4px;font-weight:600;color:#374151">by {{ item.author }}</p>{% endif %}
         {% if item.about %}<p>{{ item.about|truncatechars:110 }}</p>{% endif %}
-        {% if item.category %}<div class="pc-tags"><span>{{ item.category.icon }} {{ item.category.name }}</span></div>{% endif %}
+        <div class="pc-tags">
+          {% if item.category %}<span>{{ item.category.icon }} {{ item.category.name }}</span>{% endif %}
+          {% if item.pages %}<span>📄 {{ item.pages }} pages</span>{% endif %}
+        </div>
         <div class="pc-meta">
           <span>₹{{ item.current_price }}</span>
           {% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}

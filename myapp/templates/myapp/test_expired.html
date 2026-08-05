@@ -1,0 +1,30 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Access Expired — {{ course.name }}{% endblock %}
+
+{% block extra_style %}
+.expired-section{padding:80px 0 120px;min-height:55vh}
+.expired-card{
+  max-width:480px;margin:0 auto;text-align:center;background:#fff;border:1px solid var(--line);
+  border-radius:24px;padding:44px 34px;box-shadow:var(--shadow-md);
+}
+.expired-icon{
+  width:56px;height:56px;border-radius:16px;background:#FEF2F2;color:#DC2626;
+  display:grid;place-items:center;font-size:26px;margin:0 auto 18px;
+}
+.expired-card h1{font-size:22px;margin:0 0 8px}
+.expired-card p{color:var(--muted);font-size:14.5px;margin:0 0 24px}
+{% endblock %}
+
+{% block content %}
+<section class="expired-section">
+  <div class="wrap">
+    <div class="expired-card">
+      <span class="expired-icon">⏳</span>
+      <h1>Access expired</h1>
+      <p>Your access to "{{ course.name }}" expired on {{ enrollment.expires_at|date:"d M Y" }}. Contact us to renew it.</p>
+      <a class="btn btn-primary btn-lg" href="{% url 'index' %}#contact-us">Contact Support</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

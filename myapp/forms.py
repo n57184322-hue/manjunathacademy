@@ -280,6 +280,7 @@ class CourseForm(forms.ModelForm):
             'category', 'name', 'test_type', 'original_price', 'current_price',
             'enable_validity', 'validity_value', 'validity_unit',
             'about', 'thumbnail', 'pdf_file', 'video_file',
+            'duration_minutes', 'author', 'pages',
             'order', 'is_active',
         )
         widgets = {
@@ -287,6 +288,9 @@ class CourseForm(forms.ModelForm):
             'about': forms.Textarea(attrs={'rows': 5, 'placeholder': 'What this course covers'}),
             'order': forms.NumberInput(attrs={'min': 0}),
             'validity_value': forms.NumberInput(attrs={'min': 1, 'placeholder': 'e.g. 6'}),
+            'duration_minutes': forms.NumberInput(attrs={'min': 1, 'placeholder': 'e.g. 60'}),
+            'author': forms.TextInput(attrs={'placeholder': 'e.g. R.S. Aggarwal'}),
+            'pages': forms.NumberInput(attrs={'min': 1, 'placeholder': 'e.g. 120'}),
         }
         help_texts = {
             'order': 'Lower numbers show first.',

@@ -29,6 +29,7 @@
 .purchase-status{font-size:12px;font-weight:800;padding:5px 12px;border-radius:var(--r-pill);white-space:nowrap}
 .purchase-status-active{background:#ECFDF3;color:#15803D}
 .purchase-status-expired{background:#FEF2F2;color:#DC2626}
+.purchase-status-done{background:#EFF6FF;color:#1D4ED8}
 {% endblock %}
 
 {% block content %}
@@ -37,7 +38,7 @@
     {% if enrollments %}
       <div class="purchases-list">
         {% for enrollment in enrollments %}
-        <a class="purchase-card" href="{% url 'course_detail' enrollment.course.pk %}">
+        <a class="purchase-card" href="{% if enrollment.course.course_type == 'test_series' %}{% url 'test_attempt_start' enrollment.course.pk %}{% else %}{% url 'course_detail' enrollment.course.pk %}{% endif %}">
           <div>
             <p class="purchase-name">{{ enrollment.course.name }}</p>
             <p class="purchase-meta">
@@ -45,10 +46,12 @@
               {% if enrollment.expires_at %} · Valid until {{ enrollment.expires_at|date:"d M Y" }}{% endif %}
             </p>
           </div>
-          {% if enrollment.has_access %}
-            <span class="purchase-status purchase-status-active">Active</span>
-          {% else %}
+          {% if not enrollment.has_access %}
             <span class="purchase-status purchase-status-expired">Expired</span>
+          {% elif enrollment.is_completed %}
+            <span class="purchase-status purchase-status-done">✓ Completed</span>
+          {% else %}
+            <span class="purchase-status purchase-status-active">Active</span>
           {% endif %}
         </a>
         {% endfor %}

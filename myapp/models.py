@@ -455,6 +455,9 @@ class Course(models.Model):
     thumbnail = models.ImageField(upload_to='courses/', blank=True, null=True, help_text='Recommended size: 400×240px (16:10).')
     pdf_file = models.FileField(upload_to='elibrary_pdfs/', blank=True, null=True, help_text='Used for E-Library only. Upload the book/notes as a PDF.')
     video_file = models.FileField(upload_to='course_videos/', blank=True, null=True, help_text='Used for Video Courses only. Upload the course video (MP4 recommended).')
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True, help_text='Video length in minutes (Video Course) or time limit in minutes (Test Series).')
+    author = models.CharField(max_length=150, blank=True, help_text='Used for E-Library only.')
+    pages = models.PositiveIntegerField(null=True, blank=True, help_text='Used for E-Library only — number of pages.')
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -471,6 +474,7 @@ class CourseEnrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(null=True, blank=True)
+    is_completed = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('user', 'course')
@@ -536,3 +540,36 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text[:60]
+
+
+class TestAttempt(models.Model):
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='test_attempts')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='attempts', limit_choices_to={'course_type': 'test_series'})
+    started_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    score = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    total_marks = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+    class Meta:
+        ordering = ['-started_at']
+
+    @property
+    def is_submitted(self):
+        return self.submitted_at is not None
+
+    def __str__(self):
+        return f'{self.user} — {self.course} ({self.score}/{self.total_marks})'
+
+
+class TestAnswer(models.Model):
+    attempt = models.ForeignKey(TestAttempt, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='+')
+    submitted_answer = models.CharField(max_length=300, blank=True)
+    is_correct = models.BooleanField(default=False)
+    marks_awarded = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+    class Meta:
+        unique_together = ('attempt', 'question')
+
+    def __str__(self):
+        return f'{self.attempt} — {self.question_id}'

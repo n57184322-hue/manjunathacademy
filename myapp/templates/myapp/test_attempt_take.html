@@ -1,0 +1,121 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ attempt.course.name }} — Manjunath Academy{% endblock %}
+
+{% block extra_style %}
+.test-hero{padding:40px 0 24px;background:var(--peach)}
+.test-hero-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.test-hero h1{font-size:clamp(22px,3vw,30px);margin:0 0 6px}
+.test-hero p{color:var(--muted);font-size:14px;margin:0}
+.test-timer{
+  background:#101012;color:#fff;font-weight:800;font-size:18px;padding:10px 20px;border-radius:var(--r-pill);
+  font-variant-numeric:tabular-nums;
+}
+.test-timer.is-low{background:#DC2626}
+.test-section{padding:40px 0 90px}
+.test-question-card{
+  max-width:760px;margin:0 auto 18px;background:#fff;border:1px solid var(--line);border-radius:18px;
+  padding:24px 26px;box-shadow:var(--shadow-sm);
+}
+.test-q-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.test-q-text{font-size:16px;font-weight:700;color:var(--ink);margin:0 0 16px}
+.test-options{display:flex;flex-direction:column;gap:10px}
+.test-option{
+  display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid var(--line);
+  border-radius:12px;cursor:pointer;font-size:14.5px;transition:.15s ease;
+}
+.test-option:has(input:checked){border-color:var(--orange);background:var(--orange-soft)}
+.test-option input{accent-color:var(--orange)}
+.test-input{
+  border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:14.5px;font-family:inherit;
+  width:100%;max-width:320px;
+}
+.test-submit-bar{max-width:760px;margin:0 auto;display:flex;justify-content:flex-end}
+{% endblock %}
+
+{% block content %}
+<section class="test-hero">
+  <div class="wrap test-hero-row">
+    <div>
+      <h1>{{ attempt.course.name }}</h1>
+      <p>{{ questions|length }} question{{ questions|length|pluralize }} · {{ attempt.course.category.name|default:"" }}</p>
+    </div>
+    {% if attempt.course.duration_minutes %}
+      <span class="test-timer" id="testTimer" data-duration="{{ attempt.course.duration_minutes }}" data-started="{{ attempt.started_at|date:'c' }}">--:--</span>
+    {% endif %}
+  </div>
+</section>
+
+<section class="test-section">
+  <div class="wrap">
+    <form method="post" id="testForm">
+      {% csrf_token %}
+      {% for question in questions %}
+      <div class="test-question-card">
+        <div class="test-q-meta"><span>Q{{ forloop.counter }} · {{ question.get_question_type_display }}</span><span>{{ question.marks }} mark{{ question.marks|pluralize }}</span></div>
+        <p class="test-q-text">{{ question.text }}</p>
+
+        {% if question.question_type == 'single' %}
+          <div class="test-options">
+            {% if question.option_a %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="A"> {{ question.option_a }}</label>{% endif %}
+            {% if question.option_b %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="B"> {{ question.option_b }}</label>{% endif %}
+            {% if question.option_c %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="C"> {{ question.option_c }}</label>{% endif %}
+            {% if question.option_d %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="D"> {{ question.option_d }}</label>{% endif %}
+          </div>
+        {% elif question.question_type == 'multiple' %}
+          <div class="test-options">
+            {% if question.option_a %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="A"> {{ question.option_a }}</label>{% endif %}
+            {% if question.option_b %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="B"> {{ question.option_b }}</label>{% endif %}
+            {% if question.option_c %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="C"> {{ question.option_c }}</label>{% endif %}
+            {% if question.option_d %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="D"> {{ question.option_d }}</label>{% endif %}
+          </div>
+        {% elif question.question_type == 'true_false' %}
+          <div class="test-options">
+            <label class="test-option"><input type="radio" name="q_{{ question.id }}" value="True"> True</label>
+            <label class="test-option"><input type="radio" name="q_{{ question.id }}" value="False"> False</label>
+          </div>
+        {% elif question.question_type == 'numeric' %}
+          <input class="test-input" type="number" step="any" name="q_{{ question.id }}" placeholder="Enter numeric answer">
+        {% else %}
+          <input class="test-input" type="text" name="q_{{ question.id }}" placeholder="Fill in the blank">
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <div class="test-submit-bar">
+        <button type="submit" class="btn btn-primary btn-lg">Submit Test</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var timerEl = document.getElementById('testTimer');
+  var form = document.getElementById('testForm');
+  if (!timerEl || !form) return;
+
+  var durationSeconds = parseInt(timerEl.dataset.duration, 10) * 60;
+  var startedAt = new Date(timerEl.dataset.started).getTime();
+  var submitted = false;
+
+  function tick() {
+    var elapsed = Math.floor((Date.now() - startedAt) / 1000);
+    var remaining = durationSeconds - elapsed;
+    if (remaining <= 0) {
+      timerEl.textContent = '00:00';
+      if (!submitted) { submitted = true; form.submit(); }
+      return;
+    }
+    var m = Math.floor(remaining / 60);
+    var s = remaining % 60;
+    timerEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    timerEl.classList.toggle('is-low', remaining <= 60);
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  form.addEventListener('submit', function () { submitted = true; });
+})();
+{% endblock %}

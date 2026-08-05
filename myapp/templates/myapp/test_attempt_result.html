@@ -1,0 +1,54 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Result — {{ attempt.course.name }}{% endblock %}
+
+{% block extra_style %}
+.result-hero{padding:56px 0 40px;background:var(--peach);text-align:center}
+.result-score{font-size:clamp(40px,7vw,64px);font-weight:800;font-family:"Archivo",sans-serif;color:var(--orange);margin:0}
+.result-score span{font-size:0.4em;color:var(--muted);font-weight:700}
+.result-hero h1{font-size:20px;margin:0 0 6px;color:var(--muted)}
+.result-section{padding:48px 0 90px}
+.result-card{
+  max-width:760px;margin:0 auto 16px;background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:20px 24px;box-shadow:var(--shadow-sm);
+}
+.result-card.is-correct{border-left:4px solid #16A34A}
+.result-card.is-wrong{border-left:4px solid #DC2626}
+.result-q-text{font-weight:700;margin:0 0 10px}
+.result-row{font-size:13.5px;color:#374151;margin:4px 0}
+.result-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border-radius:var(--r-pill)}
+.result-tag-correct{background:#ECFDF3;color:#15803D}
+.result-tag-wrong{background:#FEF2F2;color:#DC2626}
+.result-actions{max-width:760px;margin:24px auto 0;display:flex;gap:12px;justify-content:center}
+{% endblock %}
+
+{% block content %}
+<section class="result-hero">
+  <div class="wrap">
+    <h1>{{ attempt.course.name }}</h1>
+    <p class="result-score">{{ attempt.score }}<span>/{{ attempt.total_marks }}</span></p>
+  </div>
+</section>
+
+<section class="result-section">
+  <div class="wrap">
+    {% for answer in answers %}
+    <div class="result-card {% if answer.is_correct %}is-correct{% else %}is-wrong{% endif %}">
+      <p class="result-q-text">Q{{ forloop.counter }}. {{ answer.question.text }}</p>
+      <p class="result-row">Your answer: {{ answer.submitted_answer|default:"Not answered" }}</p>
+      <p class="result-row">Correct answer: {{ answer.question.correct_answer }}</p>
+      {% if answer.is_correct %}
+        <span class="result-tag result-tag-correct">Correct · +{{ answer.marks_awarded }}</span>
+      {% else %}
+        <span class="result-tag result-tag-wrong">Incorrect</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="result-actions">
+      <a class="btn btn-ghost btn-lg" href="{% url 'account_purchases' %}">My Purchases</a>
+      <a class="btn btn-primary btn-lg" href="{% url 'index' %}#test-series">Back to Test Series</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -43,6 +43,8 @@ from .models import (
     PWASettings,
     Question,
     SiteSettings,
+    TestAnswer,
+    TestAttempt,
 )
 
 
@@ -185,7 +187,84 @@ def account_purchases(request):
 def course_detail(request, pk):
     course = get_object_or_404(Course, pk=pk, is_active=True)
     enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+
+    if request.method == 'POST' and enrollment.has_access:
+        enrollment.is_completed = 'mark_incomplete' not in request.POST
+        enrollment.save()
+        return redirect('course_detail', pk=pk)
+
     return render(request, 'myapp/course_detail.html', {'course': course, 'enrollment': enrollment})
+
+
+def _grade_answer(question, submitted):
+    submitted = (submitted or '').strip()
+    correct = (question.correct_answer or '').strip()
+    if not submitted or not correct:
+        return False
+    if question.question_type == Question.MULTIPLE:
+        submitted_set = {part.strip().upper() for part in submitted.split(',') if part.strip()}
+        correct_set = {part.strip().upper() for part in correct.split(',') if part.strip()}
+        return submitted_set == correct_set
+    return submitted.strip().lower() == correct.strip().lower()
+
+
+@login_required(login_url='login')
+def test_attempt_start(request, pk):
+    course = get_object_or_404(Course, pk=pk, course_type=Course.TEST_SERIES, is_active=True)
+    enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
+
+    if not enrollment.has_access:
+        return render(request, 'myapp/test_expired.html', {'course': course, 'enrollment': enrollment})
+
+    if not course.questions.exists():
+        messages.info(request, 'No questions have been added to this test yet.')
+        return redirect('index')
+
+    attempt = TestAttempt.objects.filter(user=request.user, course=course, submitted_at__isnull=True).first()
+    if not attempt:
+        attempt = TestAttempt.objects.create(user=request.user, course=course)
+    return redirect('test_attempt_take', pk=attempt.pk)
+
+
+@login_required(login_url='login')
+def test_attempt_take(request, pk):
+    attempt = get_object_or_404(TestAttempt, pk=pk, user=request.user)
+    if attempt.is_submitted:
+        return redirect('test_attempt_result', pk=attempt.pk)
+
+    questions = attempt.course.questions.all()
+
+    if request.method == 'POST':
+        total_marks = 0
+        score = 0
+        for question in questions:
+            if question.question_type == Question.MULTIPLE:
+                submitted = ','.join(request.POST.getlist(f'q_{question.id}'))
+            else:
+                submitted = request.POST.get(f'q_{question.id}', '')
+            is_correct = _grade_answer(question, submitted)
+            marks_awarded = question.marks if is_correct else 0
+            TestAnswer.objects.update_or_create(
+                attempt=attempt, question=question,
+                defaults={'submitted_answer': submitted, 'is_correct': is_correct, 'marks_awarded': marks_awarded},
+            )
+            total_marks += question.marks
+            score += marks_awarded
+
+        attempt.total_marks = total_marks
+        attempt.score = score
+        attempt.submitted_at = timezone.now()
+        attempt.save()
+        return redirect('test_attempt_result', pk=attempt.pk)
+
+    return render(request, 'myapp/test_attempt_take.html', {'attempt': attempt, 'questions': questions})
+
+
+@login_required(login_url='login')
+def test_attempt_result(request, pk):
+    attempt = get_object_or_404(TestAttempt, pk=pk, user=request.user)
+    answers = attempt.answers.select_related('question')
+    return render(request, 'myapp/test_attempt_result.html', {'attempt': attempt, 'answers': answers})
 
 
 def _is_staff(user):

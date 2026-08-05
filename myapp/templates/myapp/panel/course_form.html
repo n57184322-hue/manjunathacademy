@@ -13,6 +13,13 @@
 .panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
 #validityFields{display:none}
 #validityFields.is-visible{display:grid}
+.file-field-box{
+  background:#FAFAF9;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;
+  font-size:13.5px;color:#374151;line-height:1.9;
+}
+.file-field-box a{color:var(--orange-deep);font-weight:700;text-decoration:underline;word-break:break-all}
+.file-field-box input[type="checkbox"]{accent-color:var(--orange);margin-right:5px}
+.file-field-box input[type="file"]{display:block;margin-top:6px;font-size:13.5px}
 @media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
 {% endblock %}
 
@@ -88,20 +95,34 @@
     {% endif %}
 
     {% if course_type == 'elibrary' %}
-    <label><span class="panel-label-text">PDF file</span>
-      {{ form.pdf_file }}
-      <p class="custom-help">{{ form.pdf_file.help_text }}</p>
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Author</span>{{ form.author }}</label>
+      <label><span class="panel-label-text">Pages</span>{{ form.pages }}</label>
+    </div>
+
+    <label><span class="panel-label-text">PDF file {% if is_new %}<span class="req">*</span>{% endif %}</span>
+      <div class="file-field-box">{{ form.pdf_file }}</div>
+      <p class="custom-help">{{ form.pdf_file.help_text }}{% if course.pdf_file %} Uploading a new file replaces the current one.{% endif %}</p>
       {% if form.pdf_file.errors %}<ul class="panel-errors">{% for e in form.pdf_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-      {% if course.pdf_file %}<p class="custom-help">Current file: {{ course.pdf_file.name }}</p>{% endif %}
     </label>
     {% endif %}
 
     {% if course_type == 'video_course' %}
-    <label><span class="panel-label-text">Video file</span>
-      {{ form.video_file }}
-      <p class="custom-help">{{ form.video_file.help_text }}</p>
+    <label><span class="panel-label-text">Duration (minutes)</span>
+      {{ form.duration_minutes }}
+    </label>
+
+    <label><span class="panel-label-text">Video file {% if is_new %}<span class="req">*</span>{% endif %}</span>
+      <div class="file-field-box">{{ form.video_file }}</div>
+      <p class="custom-help">{{ form.video_file.help_text }}{% if course.video_file %} Uploading a new file replaces the current one.{% endif %}</p>
       {% if form.video_file.errors %}<ul class="panel-errors">{% for e in form.video_file.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
-      {% if course.video_file %}<p class="custom-help">Current file: {{ course.video_file.name }}</p>{% endif %}
+    </label>
+    {% endif %}
+
+    {% if course_type == 'test_series' %}
+    <label><span class="panel-label-text">Time limit (minutes)</span>
+      {{ form.duration_minutes }}
+      <p class="custom-help">Optional — students see a live countdown and the test auto-submits when time runs out.</p>
     </label>
     {% endif %}
 

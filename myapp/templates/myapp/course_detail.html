@@ -7,6 +7,10 @@
 .course-detail-hero{padding:56px 0 40px;background:var(--peach)}
 .course-detail-hero h1{font-size:clamp(24px,3.6vw,38px);margin:0 0 10px}
 .course-detail-hero p{color:var(--muted);font-size:15px;max-width:60ch;margin:0}
+.course-detail-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.course-detail-meta span{
+  background:rgba(255,255,255,.7);padding:6px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:700;color:#7A1010;
+}
 .course-detail-section{padding:56px 0 90px}
 .course-detail-card{
   max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;
@@ -14,13 +18,19 @@
 }
 .course-detail-thumb{width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin-bottom:22px}
 .course-access-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
   padding:14px 18px;border-radius:12px;font-size:14px;font-weight:700;margin-bottom:22px;
 }
 .course-access-ok{background:#ECFDF3;color:#15803D}
 .course-access-expired{background:#FEF2F2;color:#DC2626}
-.course-media video{width:100%;border-radius:14px;display:block;background:#000}
-.course-pdf-frame{width:100%;height:70vh;border:1px solid var(--line);border-radius:14px}
+.course-media video{width:100%;border-radius:14px;display:block;background:#000;max-height:70vh}
+.course-pdf-frame{width:100%;height:75vh;border:1px solid var(--line);border-radius:14px}
 .course-detail-empty{text-align:center;color:var(--muted);padding:40px 0}
+.complete-btn{
+  background:none;border:1px solid currentColor;color:inherit;padding:6px 14px;border-radius:var(--r-pill);
+  font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;
+}
+.course-actions-row{display:flex;justify-content:flex-end;margin-top:18px}
 {% endblock %}
 
 {% block content %}
@@ -28,6 +38,11 @@
   <div class="wrap">
     <h1>{{ course.name }}</h1>
     {% if course.category %}<p>{{ course.category.icon }} {{ course.category.name }}</p>{% endif %}
+    <div class="course-detail-meta">
+      {% if course.author %}<span>✍️ {{ course.author }}</span>{% endif %}
+      {% if course.pages %}<span>📄 {{ course.pages }} pages</span>{% endif %}
+      {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+    </div>
   </div>
 </section>
 
@@ -37,23 +52,32 @@
       {% if course.thumbnail %}<img class="course-detail-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
 
       {% if enrollment.has_access %}
-        {% if enrollment.expires_at %}
-          <p class="course-access-banner course-access-ok">Your access is valid until {{ enrollment.expires_at|date:"d M Y" }}.</p>
-        {% endif %}
+        <div class="course-access-banner course-access-ok">
+          <span>{% if enrollment.expires_at %}Access valid until {{ enrollment.expires_at|date:"d M Y" }}{% else %}You have full access to this course{% endif %}</span>
+          <form method="post">
+            {% csrf_token %}
+            {% if enrollment.is_completed %}
+              <input type="hidden" name="mark_incomplete" value="1">
+              <button type="submit" class="complete-btn">✓ Completed — mark as not done</button>
+            {% else %}
+              <button type="submit" class="complete-btn">Mark as complete</button>
+            {% endif %}
+          </form>
+        </div>
 
         {% if course.about %}<p>{{ course.about }}</p>{% endif %}
 
         <div class="course-media">
           {% if course.course_type == 'video_course' %}
             {% if course.video_file %}
-              <video controls src="{{ course.video_file.url }}"></video>
+              <video controls {% if course.thumbnail %}poster="{{ course.thumbnail.url }}"{% endif %} src="{{ course.video_file.url }}"></video>
             {% else %}
               <p class="course-detail-empty">The video for this course hasn't been uploaded yet.</p>
             {% endif %}
           {% elif course.course_type == 'elibrary' %}
             {% if course.pdf_file %}
               <iframe class="course-pdf-frame" src="{{ course.pdf_file.url }}" title="{{ course.name }}"></iframe>
-              <p style="margin-top:12px"><a class="btn btn-ghost" href="{{ course.pdf_file.url }}" download>Download PDF</a></p>
+              <div class="course-actions-row"><a class="btn btn-ghost" href="{{ course.pdf_file.url }}" download>Download PDF</a></div>
             {% else %}
               <p class="course-detail-empty">The PDF for this book hasn't been uploaded yet.</p>
             {% endif %}
