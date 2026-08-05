@@ -12,11 +12,12 @@ from .forms import (
     ChatbotQuestionForm,
     ChatbotSettingsForm,
     EmailAuthenticationForm,
+    HeroSectionForm,
     NavbarCustomizationForm,
     NotificationForm,
     SignupForm,
 )
-from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, Notification, SiteSettings
+from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, HeroSection, Notification, SiteSettings
 
 
 def index(request):
@@ -291,6 +292,22 @@ def panel_chatbot_question_delete(request, pk):
         question.delete()
         messages.success(request, 'Question deleted.')
     return redirect('panel_chatbot_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_hero_section(request):
+    hero = HeroSection.load()
+    if request.method == 'POST':
+        form = HeroSectionForm(request.POST, request.FILES, instance=hero)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hero section updated.')
+            return redirect('panel_hero_section')
+    else:
+        form = HeroSectionForm(instance=hero)
+
+    return render(request, 'myapp/panel/hero_section.html', {'form': form, 'hero': hero})
 
 
 

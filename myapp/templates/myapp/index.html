@@ -59,22 +59,31 @@
   <div class="wrap hero-grid">
 
     <div class="hero-copy">
-      <p class="pill">New batches starting <span class="dot">•</span> Enroll free</p>
-      <h1>Crack Any<br><em>Govt Exam</em> with confidence</h1>
-      <p class="lede">Live classes, free PYQs, mock tests, expert guidance, doubt solving, and a focused roadmap for serious exam aspirants.</p>
+      <p class="pill">{{ hero.badge_text }} <span class="dot">•</span> {{ hero.badge_highlight }}</p>
+      <h1>{{ hero.heading_prefix }}<br><em>{{ hero.heading_highlight }}</em> {{ hero.heading_suffix }}</h1>
+      <p class="lede">{{ hero.subtitle }}</p>
       <div class="hero-btns">
-        <a class="btn btn-primary btn-lg" href="#admission">Start learning free</a>
-        <a class="btn btn-ghost btn-lg" href="#popular-courses">Browse courses</a>
+        {% if hero.primary_btn_text %}<a class="btn btn-primary btn-lg" href="{{ hero.primary_btn_link|default:'#' }}">{{ hero.primary_btn_text }}</a>{% endif %}
+        {% if hero.secondary_btn_text %}<a class="btn btn-ghost btn-lg" href="{{ hero.secondary_btn_link|default:'#' }}">{{ hero.secondary_btn_text }}</a>{% endif %}
       </div>
       <ul class="hero-stats">
-        <li><strong>12,400+</strong><span>Students taught</span></li>
-        <li><strong>820</strong><span>Final selections</span></li>
-        <li><strong>1,100+</strong><span>Free video lessons</span></li>
+        <li><strong>{{ hero.stat1_number }}</strong><span>{{ hero.stat1_label }}</span></li>
+        <li><strong>{{ hero.stat2_number }}</strong><span>{{ hero.stat2_label }}</span></li>
+        <li><strong>{{ hero.stat3_number }}</strong><span>{{ hero.stat3_label }}</span></li>
       </ul>
     </div>
 
     <div class="hero-visual">
       <div class="visual-card">
+        {% if hero.visual_type == 'image' and hero.visual_image %}
+          <img class="hero-visual-media" src="{{ hero.visual_image.url }}" alt="">
+        {% elif hero.visual_type == 'video' and hero.visual_video_url %}
+          {% if hero.visual_video_is_direct_file %}
+            <video class="hero-visual-media" src="{{ hero.visual_video_url }}" controls></video>
+          {% else %}
+            <iframe class="hero-visual-media" src="{{ hero.visual_video_embed_url }}" title="Hero video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          {% endif %}
+        {% else %}
         <svg viewBox="0 0 520 420" class="illus" role="img" aria-label="Student studying with a laptop">
           <rect width="520" height="420" rx="26" fill="#F5E7D8"/>
           <circle cx="120" cy="150" r="118" fill="#F0D9C4" opacity=".7"/>
@@ -103,16 +112,17 @@
           <!-- arm -->
           <path d="M236 300c22 6 34 20 34 40" stroke="#E9B08C" stroke-width="16" fill="none" stroke-linecap="round"/>
         </svg>
+        {% endif %}
       </div>
 
       <div class="float-card float-success">
-        <span class="badge-round">98%</span>
-        <span class="float-text"><strong>Success Rate</strong>Govt exam selections</span>
+        <span class="badge-round">{{ hero.badge1_value }}</span>
+        <span class="float-text"><strong>{{ hero.badge1_title }}</strong>{{ hero.badge1_subtitle }}</span>
       </div>
 
       <div class="float-card float-access">
-        <span class="badge-square">AI</span>
-        <span class="float-text"><strong>Free Access</strong>Mock tests &amp; guidance</span>
+        <span class="badge-square">{{ hero.badge2_value }}</span>
+        <span class="float-text"><strong>{{ hero.badge2_title }}</strong>{{ hero.badge2_subtitle }}</span>
       </div>
     </div>
 

@@ -1,0 +1,181 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Hero Section{% endblock %}
+{% block page_title %}Hero Section{% endblock %}
+{% block page_sub %}Edit the homepage hero — headline, buttons, stats and the right-side visual{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_hero_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-section{margin-bottom:28px}
+.custom-section:last-child{margin-bottom:0}
+.custom-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.custom-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.custom-radio-row{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.custom-radio{
+  display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 16px;cursor:pointer;font-size:13.5px;font-weight:600;transition:.15s ease;
+}
+.custom-radio:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-deep)}
+.custom-radio input{accent-color:var(--orange)}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.custom-preview{display:flex;align-items:center;gap:14px;margin-top:12px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.custom-preview img{max-height:100px;max-width:200px;display:block;border-radius:8px;object-fit:cover}
+.custom-preview-label{font-size:12.5px;color:var(--muted)}
+.custom-divider{border:0;border-top:1px solid var(--line);margin:26px 0}
+.custom-field{margin-bottom:16px}
+.custom-field:last-child{margin-bottom:0}
+.custom-field label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
+.custom-field input[type="file"],.custom-field input[type="text"],.custom-field input[type="url"]{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:420px;
+}
+.custom-field textarea{
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;
+  color:var(--ink);width:100%;max-width:520px;resize:vertical;
+}
+.custom-field input:focus,.custom-field textarea:focus{outline:2px solid var(--orange);outline-offset:1px}
+.custom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:520px}
+#heroImageField,#heroVideoField{display:none}
+#heroImageField.is-visible,#heroVideoField.is-visible{display:block}
+@media (max-width:560px){.custom-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="custom-section">
+      <h3>Badge pill</h3>
+      <p class="custom-section-sub">The small rounded label above the headline.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>Text</label>{{ form.badge_text }}</div>
+        <div class="custom-field"><label>Highlight (after the dot)</label>{{ form.badge_highlight }}</div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Headline</h3>
+      <p class="custom-section-sub">The middle part is shown in orange.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>First line</label>{{ form.heading_prefix }}</div>
+        <div class="custom-field"><label>Highlighted part</label>{{ form.heading_highlight }}</div>
+      </div>
+      <div class="custom-field"><label>Rest of the headline</label>{{ form.heading_suffix }}</div>
+      <div class="custom-field"><label>Subtitle</label>{{ form.subtitle }}</div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Buttons</h3>
+      <div class="custom-row">
+        <div class="custom-field"><label>Primary button text</label>{{ form.primary_btn_text }}</div>
+        <div class="custom-field"><label>Primary button link</label>{{ form.primary_btn_link }}</div>
+      </div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Secondary button text</label>{{ form.secondary_btn_text }}</div>
+        <div class="custom-field"><label>Secondary button link</label>{{ form.secondary_btn_link }}</div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Stats row</h3>
+      <div class="custom-row">
+        <div class="custom-field"><label>Stat 1 number</label>{{ form.stat1_number }}</div>
+        <div class="custom-field"><label>Stat 1 label</label>{{ form.stat1_label }}</div>
+      </div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Stat 2 number</label>{{ form.stat2_number }}</div>
+        <div class="custom-field"><label>Stat 2 label</label>{{ form.stat2_label }}</div>
+      </div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Stat 3 number</label>{{ form.stat3_number }}</div>
+        <div class="custom-field"><label>Stat 3 label</label>{{ form.stat3_label }}</div>
+      </div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Floating badges</h3>
+      <p class="custom-section-sub">The two small cards that float over the right-side visual.</p>
+      <div class="custom-row">
+        <div class="custom-field"><label>Badge 1 value</label>{{ form.badge1_value }}</div>
+        <div class="custom-field"><label>Badge 1 title</label>{{ form.badge1_title }}</div>
+      </div>
+      <div class="custom-field"><label>Badge 1 subtitle</label>{{ form.badge1_subtitle }}</div>
+      <div class="custom-row">
+        <div class="custom-field"><label>Badge 2 value</label>{{ form.badge2_value }}</div>
+        <div class="custom-field"><label>Badge 2 title</label>{{ form.badge2_title }}</div>
+      </div>
+      <div class="custom-field"><label>Badge 2 subtitle</label>{{ form.badge2_subtitle }}</div>
+    </div>
+
+    <hr class="custom-divider">
+
+    <div class="custom-section">
+      <h3>Right-side visual</h3>
+      <p class="custom-section-sub">Choose the default illustration, or replace it with your own image or video.</p>
+
+      <div class="custom-radio-row" id="heroVisualTypeRow">
+        {% for radio in form.visual_type %}
+          <label class="custom-radio">{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+      </div>
+
+      <div id="heroImageField" class="custom-field">
+        <label>Image</label>
+        {{ form.visual_image }}
+        <p class="custom-help">{{ form.visual_image.help_text }}</p>
+        {% if form.visual_image.errors %}<ul class="panel-errors">{% for e in form.visual_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% if hero.visual_image %}
+          <div class="custom-preview">
+            <img src="{{ hero.visual_image.url }}" alt="Current hero image">
+            <span class="custom-preview-label">Current image</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div id="heroVideoField" class="custom-field">
+        <label>Video link</label>
+        {{ form.visual_video_url }}
+        <p class="custom-help">{{ form.visual_video_url.help_text }}</p>
+        {% if form.visual_video_url.errors %}<ul class="panel-errors">{% for e in form.visual_video_url.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+    </div>
+
+    <div class="panel-form-actions" style="margin-top:24px">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var radios = document.querySelectorAll('#heroVisualTypeRow input[type="radio"]');
+  var imageField = document.getElementById('heroImageField');
+  var videoField = document.getElementById('heroVideoField');
+
+  function syncVisibility() {
+    var checked = document.querySelector('#heroVisualTypeRow input[type="radio"]:checked');
+    var value = checked ? checked.value : '';
+    imageField.classList.toggle('is-visible', value === 'image');
+    videoField.classList.toggle('is-visible', value === 'video');
+  }
+
+  radios.forEach(function (r) { r.addEventListener('change', syncVisibility); });
+  syncVisibility();
+})();
+{% endblock %}

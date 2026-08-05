@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, Notification, SiteSettings
+from .models import BannerSlide, ChatbotQuestion, ChatbotSettings, CustomUser, HeroSection, Notification, SiteSettings
 
 STATE_CHOICES = [
     ('', 'Select state'),
@@ -158,4 +158,29 @@ class ChatbotQuestionForm(forms.ModelForm):
         }
         help_texts = {
             'order': 'Lower numbers show first.',
+        }
+
+
+class HeroSectionForm(forms.ModelForm):
+    class Meta:
+        model = HeroSection
+        fields = (
+            'badge_text', 'badge_highlight',
+            'heading_prefix', 'heading_highlight', 'heading_suffix',
+            'subtitle',
+            'primary_btn_text', 'primary_btn_link',
+            'secondary_btn_text', 'secondary_btn_link',
+            'stat1_number', 'stat1_label',
+            'stat2_number', 'stat2_label',
+            'stat3_number', 'stat3_label',
+            'badge1_value', 'badge1_title', 'badge1_subtitle',
+            'badge2_value', 'badge2_title', 'badge2_subtitle',
+            'visual_type', 'visual_image', 'visual_video_url',
+        )
+        widgets = {
+            'subtitle': forms.Textarea(attrs={'rows': 3}),
+            'visual_type': forms.RadioSelect(),
+            'primary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #admission or a full https:// URL'}),
+            'secondary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #popular-courses or a full https:// URL'}),
+            'visual_video_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/watch?v=...'}),
         }

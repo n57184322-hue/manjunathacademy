@@ -13,6 +13,7 @@ urlpatterns = [
     path('panel/', views.panel_signups, name='panel_signups'),
     path('panel/signups/add/', views.panel_signup_add, name='panel_signup_add'),
     path('panel/customization/navbar/', views.panel_navbar_customization, name='panel_navbar_customization'),
+    path('panel/customization/hero/', views.panel_hero_section, name='panel_hero_section'),
     path('panel/customization/banner/', views.panel_banner_list, name='panel_banner_list'),
     path('panel/customization/banner/add/', views.panel_banner_add, name='panel_banner_add'),
     path('panel/customization/banner/<int:pk>/edit/', views.panel_banner_edit, name='panel_banner_edit'),
