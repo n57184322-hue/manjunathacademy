@@ -1,0 +1,58 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Signups{% endblock %}
+{% block page_title %}Signups{% endblock %}
+{% block nav_signups %}is-active{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>All signups</h2>
+      <p>{{ users|length }} user{{ users|length|pluralize }} registered</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_signup_add' %}">+ Add user</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if users %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Number</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>State</th>
+            <th>City</th>
+            <th>Role</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.number }}</td>
+            <td>{{ u.age|default:"—" }}</td>
+            <td>{{ u.get_gender_display|default:"—" }}</td>
+            <td>{{ u.state|default:"—" }}</td>
+            <td>{{ u.city|default:"—" }}</td>
+            <td>{% if u.is_superuser %}<span class="panel-badge">Admin</span>{% else %}Student{% endif %}</td>
+            <td>{{ u.date_joined|date:"d M Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty">No signups yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
