@@ -6,19 +6,31 @@
 {% block extra_style %}
 .auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
 .auth-card{
-  max-width:420px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:24px;
-  padding:36px 34px;box-shadow:var(--shadow-md);
+  position:relative;overflow:hidden;max-width:420px;margin:0 auto;background:#fff;border:1px solid var(--line);
+  border-radius:24px;padding:38px 34px 34px;box-shadow:var(--shadow-md);
 }
-.auth-card h1{font-size:clamp(24px,3vw,30px);font-weight:800;margin:0 0 6px}
-.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 28px}
+.auth-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+}
+.auth-icon{
+  width:46px;height:46px;border-radius:14px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:21px;margin-bottom:16px;
+}
+.auth-card h1{font-size:clamp(23px,3vw,28px);font-weight:800;margin:0 0 6px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px}
 .auth-form{display:flex;flex-direction:column;gap:16px}
 .auth-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:#374151}
 .auth-form input{
   border:1px solid var(--line);border-radius:10px;padding:11px 12px;
   font-size:14px;font-family:inherit;color:var(--ink);
+  transition:border-color .15s ease,box-shadow .15s ease;
 }
-.auth-form input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.auth-form input:focus{
+  outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.14);
+}
 .auth-errors{color:#DC2626;font-size:12.5px;margin:2px 0 0;padding:0;list-style:none}
+.auth-form label:has(.auth-errors) input{border-color:#DC2626}
 .auth-footer{text-align:center;margin-top:20px;font-size:13.5px;color:var(--muted)}
 .auth-footer a{color:var(--orange);font-weight:700}
 {% endblock %}
@@ -27,8 +39,8 @@
 <section class="auth-section">
   <div class="wrap">
     <div class="auth-card">
-      <p class="eyebrow eyebrow-pill">👋 Welcome back</p>
-      <h1>Log in</h1>
+      <span class="auth-icon">👋</span>
+      <h1>Welcome back</h1>
       <p class="auth-sub">Log in to continue your preparation.</p>
 
       <form class="auth-form" method="post" novalidate>

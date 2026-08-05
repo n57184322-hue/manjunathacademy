@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
-from .forms import SignupForm
+from .forms import EmailAuthenticationForm, SignupForm
 from .models import CustomUser
 
 
@@ -30,6 +30,7 @@ def signup(request):
 
 class CustomLoginView(LoginView):
     template_name = 'myapp/login.html'
+    form_class = EmailAuthenticationForm
     redirect_authenticated_user = True
 
     def get_success_url(self):

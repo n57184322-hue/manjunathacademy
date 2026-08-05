@@ -17,46 +17,46 @@
   <form class="panel-form" method="post" novalidate>
     {% csrf_token %}
 
-    <label>Name <span class="req">*</span>
+    <label><span class="panel-label-text">Name <span class="req">*</span></span>
       {{ form.name }}
       {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
 
     <div class="panel-form-row">
-      <label>Email <span class="req">*</span>
+      <label><span class="panel-label-text">Email <span class="req">*</span></span>
         {{ form.email }}
         {% if form.email.errors %}<ul class="panel-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
       </label>
-      <label>Phone number <span class="req">*</span>
+      <label><span class="panel-label-text">Phone number <span class="req">*</span></span>
         {{ form.number }}
         {% if form.number.errors %}<ul class="panel-errors">{% for e in form.number.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
       </label>
     </div>
 
     <div class="panel-form-row">
-      <label>Age
+      <label><span class="panel-label-text">Age</span>
         {{ form.age }}
       </label>
-      <label>Gender
+      <label><span class="panel-label-text">Gender</span>
         {{ form.gender }}
       </label>
     </div>
 
     <div class="panel-form-row">
-      <label>State
+      <label><span class="panel-label-text">State</span>
         {{ form.state }}
       </label>
-      <label>City
+      <label><span class="panel-label-text">City</span>
         {{ form.city }}
       </label>
     </div>
 
-    <label>Password <span class="req">*</span>
+    <label><span class="panel-label-text">Password <span class="req">*</span></span>
       {{ form.password1 }}
       {% if form.password1.errors %}<ul class="panel-errors">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>
 
-    <label>Confirm password <span class="req">*</span>
+    <label><span class="panel-label-text">Confirm password <span class="req">*</span></span>
       {{ form.password2 }}
       {% if form.password2.errors %}<ul class="panel-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
     </label>

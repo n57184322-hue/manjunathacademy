@@ -103,7 +103,9 @@ table.panel-table tr:last-child td{border-bottom:0}
 .panel-form{display:flex;flex-direction:column;gap:16px;max-width:640px}
 .panel-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .panel-form label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700;color:#374151}
-.panel-form .req{color:var(--orange)}
+.panel-label-text{display:inline-flex;align-items:center;gap:4px}
+.req{color:#DC2626;font-weight:800}
+.panel-form label:has(.panel-errors) input{border-color:#DC2626}
 .panel-form input,.panel-form select{
   border:1px solid var(--line);border-radius:10px;padding:11px 12px;
   font-size:14px;font-family:inherit;color:var(--ink);
