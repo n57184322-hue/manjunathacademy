@@ -1248,3 +1248,63 @@ class ReferralSignup(models.Model):
 
     def __str__(self):
         return f'{self.referral_code.user} referred {self.referred_user}'
+
+
+class Classroom(models.Model):
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    test_course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name='classrooms',
+        limit_choices_to={'course_type': 'test_series'},
+        help_text='The existing uploaded test this classroom will conduct',
+    )
+    is_free = models.BooleanField(default=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0, help_text='Amount a student pays to join, if not free')
+    start_time = models.DateTimeField(null=True, blank=True, help_text='When the test opens. Leave blank to open immediately.')
+    end_time = models.DateTimeField(null=True, blank=True, help_text='When the test closes. Leave blank for no end time.')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+
+    def status_label(self):
+        from django.utils import timezone as dj_timezone
+
+        if not self.is_active:
+            return 'inactive'
+        now = dj_timezone.now()
+        if self.start_time and now < self.start_time:
+            return 'upcoming'
+        if self.end_time and now > self.end_time:
+            return 'closed'
+        return 'open'
+
+    @property
+    def is_open_now(self):
+        return self.is_active and self.status_label() == 'open'
+
+
+class ClassroomMember(models.Model):
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='members')
+    student = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='classroom_memberships')
+    is_paid = models.BooleanField(default=False)
+    amount_paid = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-added_at']
+        unique_together = ('classroom', 'student')
+
+    def save(self, *args, **kwargs):
+        if self.classroom.is_free:
+            self.is_paid = True
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.student} in {self.classroom}'

@@ -12,6 +12,9 @@ urlpatterns = [
     path('account/coupons/', views.account_coupons, name='account_coupons'),
     path('account/certificates/', views.account_certificates, name='account_certificates'),
     path('account/refer-earn/', views.account_refer_earn, name='account_refer_earn'),
+    path('account/classrooms/', views.account_classrooms, name='account_classrooms'),
+    path('classroom/<int:pk>/pay/', views.classroom_pay, name='classroom_pay'),
+    path('classroom/<int:pk>/start/', views.classroom_test_start, name='classroom_test_start'),
     path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
     path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
     path('gallery/', views.gallery_page, name='gallery_page'),
@@ -113,6 +116,13 @@ urlpatterns = [
     path('panel/bundles/add/', views.panel_bundle_add, name='panel_bundle_add'),
     path('panel/bundles/<int:pk>/edit/', views.panel_bundle_edit, name='panel_bundle_edit'),
     path('panel/bundles/<int:pk>/delete/', views.panel_bundle_delete, name='panel_bundle_delete'),
+
+    path('panel/classrooms/', views.panel_classroom_list, name='panel_classroom_list'),
+    path('panel/classrooms/add/', views.panel_classroom_add, name='panel_classroom_add'),
+    path('panel/classrooms/<int:pk>/edit/', views.panel_classroom_edit, name='panel_classroom_edit'),
+    path('panel/classrooms/<int:pk>/delete/', views.panel_classroom_delete, name='panel_classroom_delete'),
+    path('panel/classrooms/<int:pk>/students/', views.panel_classroom_students, name='panel_classroom_students'),
+    path('panel/classrooms/<int:pk>/students/<int:member_pk>/remove/', views.panel_classroom_member_remove, name='panel_classroom_member_remove'),
 
     path('panel/refer-earn/', views.panel_refer_earn, name='panel_refer_earn'),
     path('panel/coupons/', views.panel_coupon_list, name='panel_coupon_list'),

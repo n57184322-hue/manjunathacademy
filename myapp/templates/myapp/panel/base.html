@@ -262,6 +262,9 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
       <a class="{% block nav_bundles %}{% endblock %}" href="{% url 'panel_bundle_list' %}">
         <span class="panel-nav-ico">🎁</span> Bundles
       </a>
+      <a class="{% block nav_classrooms %}{% endblock %}" href="{% url 'panel_classroom_list' %}">
+        <span class="panel-nav-ico">🏫</span> Classrooms
+      </a>
 
       <p class="panel-nav-label">Commerce</p>
       <div class="panel-nav-group {% block nav_store_open %}{% endblock %}">

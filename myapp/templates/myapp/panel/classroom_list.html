@@ -1,0 +1,83 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Classrooms{% endblock %}
+{% block page_title %}Classroom Assistance{% endblock %}
+{% block page_sub %}Pick students from your signups, group them into a classroom, and conduct one of your existing tests{% endblock %}
+{% block nav_classrooms %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.cert-number{font-size:12px;color:var(--muted)}
+.status-open{color:#15803D;font-weight:700}
+.status-upcoming{color:#B45309;font-weight:700}
+.status-closed{color:#DC2626;font-weight:700}
+.status-inactive{color:var(--muted);font-weight:700}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Classrooms</h2>
+      <p>{{ classrooms|length }} classroom{{ classrooms|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_classroom_add' %}">+ Create classroom</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if classrooms %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Classroom</th>
+            <th>Test</th>
+            <th>Students</th>
+            <th>Fee</th>
+            <th>Timing</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for classroom in classrooms %}
+          <tr>
+            <td class="panel-row-name">{{ classroom.name }}</td>
+            <td>{{ classroom.test_course.name }}</td>
+            <td>{{ classroom.member_count }}</td>
+            <td>{% if classroom.is_free %}Free{% else %}₹{{ classroom.price }}{% endif %}</td>
+            <td>
+              {% if classroom.start_time %}From {{ classroom.start_time|date:"d M, h:i A" }}<br>{% endif %}
+              {% if classroom.end_time %}Till {{ classroom.end_time|date:"d M, h:i A" }}{% elif not classroom.start_time %}<span class="cert-number">Always open</span>{% endif %}
+            </td>
+            <td>
+              {% with status=classroom.status_label %}
+                <span class="status-{{ status }}">{{ status|capfirst }}</span>
+              {% endwith %}
+            </td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_classroom_students' classroom.pk %}">Students</a>
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_classroom_edit' classroom.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_classroom_delete' classroom.pk %}" onsubmit="return confirm('Delete this classroom? Members will lose access.');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏫</span>No classrooms yet. Create one to group students and conduct a test.</p>
+  {% endif %}
+</div>
+{% endblock %}

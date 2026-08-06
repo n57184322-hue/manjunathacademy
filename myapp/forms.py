@@ -9,6 +9,7 @@ from .models import (
     Certificate,
     ChatbotQuestion,
     ChatbotSettings,
+    Classroom,
     Coupon,
     Course,
     CustomUser,
@@ -603,6 +604,55 @@ class BundleForm(forms.ModelForm):
         help_texts = {
             'order': 'Lower numbers show first.',
         }
+
+
+class StudentMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return f'{obj.name} — {obj.email}'
+
+
+class ClassroomForm(forms.ModelForm):
+    start_time = forms.DateTimeField(
+        required=False, input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+    )
+    end_time = forms.DateTimeField(
+        required=False, input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+    )
+
+    class Meta:
+        model = Classroom
+        fields = ('name', 'description', 'test_course', 'is_free', 'price', 'start_time', 'end_time', 'is_active')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL Weekend Batch — Mock Test 3'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Optional notes for this classroom'}),
+            'price': forms.NumberInput(attrs={'min': 0, 'step': '0.01'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        ids = set(
+            Course.objects.filter(course_type=Course.TEST_SERIES, questions__isnull=False)
+            .values_list('pk', flat=True)
+        )
+        if self.instance and self.instance.pk:
+            ids.add(self.instance.test_course_id)
+        self.fields['test_course'].queryset = Course.objects.filter(pk__in=ids).order_by('name')
+
+
+class ClassroomAddStudentsForm(forms.Form):
+    students = StudentMultipleChoiceField(
+        queryset=CustomUser.objects.none(),
+        widget=forms.SelectMultiple(attrs={'size': 12}),
+        required=True,
+        label='Select students to add',
+    )
+
+    def __init__(self, *args, **kwargs):
+        exclude_ids = kwargs.pop('exclude_ids', [])
+        super().__init__(*args, **kwargs)
+        self.fields['students'].queryset = CustomUser.objects.filter(is_active=True).exclude(pk__in=exclude_ids).order_by('name')
 
 
 class QuizQuestionForm(forms.ModelForm):

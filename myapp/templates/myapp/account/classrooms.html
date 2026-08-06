@@ -1,0 +1,87 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}My Classrooms — Manjunath Academy{% endblock %}
+{% block meta_description %}Classrooms you've been added to at Manjunath Academy.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.auth-card{
+  position:relative;overflow:hidden;max-width:480px;margin:0 auto;background:#fff;border:1px solid var(--line);
+  border-radius:24px;padding:44px 34px;box-shadow:var(--shadow-md);text-align:center;
+}
+.auth-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+}
+.auth-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:26px;margin:0 auto 18px;
+}
+.auth-card h1{font-size:clamp(22px,3vw,26px);font-weight:800;margin:0 0 8px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;max-width:36ch;margin-inline:auto}
+.classroom-list{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.classroom-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow-sm)}
+.classroom-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.classroom-name{font-weight:800;color:var(--ink);font-size:16px;margin:0 0 4px}
+.classroom-meta{font-size:13px;color:var(--muted);margin:0}
+.classroom-badge{font-size:11.5px;font-weight:800;padding:5px 12px;border-radius:var(--r-pill);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.badge-open{background:#ECFDF3;color:#15803D}
+.badge-upcoming{background:#FFFBEB;color:#B45309}
+.badge-closed{background:#FEF2F2;color:#DC2626}
+.badge-inactive{background:#F3F4F6;color:var(--muted)}
+.classroom-timing{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.classroom-actions{margin-top:16px}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap">
+    {% if rows %}
+      <div class="classroom-list">
+        {% for row in rows %}
+        <div class="classroom-card">
+          <div class="classroom-card-top">
+            <div>
+              <p class="classroom-name">{{ row.classroom.name }}</p>
+              <p class="classroom-meta">{{ row.classroom.test_course.name }}</p>
+            </div>
+            <span class="classroom-badge badge-{{ row.status }}">{{ row.status }}</span>
+          </div>
+
+          <p class="classroom-timing">
+            {% if row.classroom.start_time %}Opens {{ row.classroom.start_time|date:"d M Y, h:i A" }}{% endif %}
+            {% if row.classroom.end_time %} · Closes {{ row.classroom.end_time|date:"d M Y, h:i A" }}{% endif %}
+            {% if not row.classroom.start_time and not row.classroom.end_time %}No fixed timing — open anytime{% endif %}
+          </p>
+
+          <div class="classroom-actions">
+            {% if row.attempt and row.attempt.is_submitted %}
+              <a class="btn btn-primary" href="{% url 'test_attempt_result' row.attempt.pk %}">View result</a>
+            {% elif row.attempt %}
+              <a class="btn btn-primary" href="{% url 'test_attempt_take' row.attempt.pk %}">Continue test</a>
+            {% elif not row.member.is_paid %}
+              <a class="btn btn-primary" href="{% url 'classroom_pay' row.classroom.pk %}">Pay ₹{{ row.classroom.price }} to join</a>
+            {% elif row.status == 'open' %}
+              <a class="btn btn-primary" href="{% url 'classroom_test_start' row.classroom.pk %}">Start test</a>
+            {% elif row.status == 'upcoming' %}
+              <span class="classroom-meta">Test opens {{ row.classroom.start_time|date:"d M Y, h:i A" }}</span>
+            {% elif row.status == 'closed' %}
+              <span class="classroom-meta">This test window has closed.</span>
+            {% else %}
+              <span class="classroom-meta">This classroom is not active right now.</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="auth-card">
+        <span class="auth-icon">🏫</span>
+        <h1>My classrooms</h1>
+        <p class="auth-sub">You haven't been added to any classroom yet. Once your teacher adds you, it'll show up here.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'index' %}">Browse Courses</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

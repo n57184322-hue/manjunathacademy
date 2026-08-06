@@ -1,0 +1,44 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ classroom.name }} — Manjunath Academy{% endblock %}
+
+{% block extra_style %}
+.expired-section{padding:80px 0 120px;min-height:55vh}
+.expired-card{
+  max-width:480px;margin:0 auto;text-align:center;background:#fff;border:1px solid var(--line);
+  border-radius:24px;padding:44px 34px;box-shadow:var(--shadow-md);
+}
+.expired-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:26px;margin:0 auto 18px;
+}
+.expired-card h1{font-size:22px;margin:0 0 8px}
+.expired-card p{color:var(--muted);font-size:14.5px;margin:0 0 24px}
+{% endblock %}
+
+{% block content %}
+<section class="expired-section">
+  <div class="wrap">
+    <div class="expired-card">
+      {% if status == 'upcoming' %}
+        <span class="expired-icon">⏳</span>
+        <h1>Not started yet</h1>
+        <p>"{{ classroom.name }}" opens on {{ classroom.start_time|date:"d M Y, h:i A" }}. Come back then to start the test.</p>
+      {% elif status == 'closed' %}
+        <span class="expired-icon">🔒</span>
+        <h1>Test window closed</h1>
+        <p>"{{ classroom.name }}" closed on {{ classroom.end_time|date:"d M Y, h:i A" }}. Contact your teacher if you missed it.</p>
+      {% elif status == 'no_questions' %}
+        <span class="expired-icon">📝</span>
+        <h1>Test not ready yet</h1>
+        <p>No questions have been added to this test yet. Please check back later.</p>
+      {% else %}
+        <span class="expired-icon">🚫</span>
+        <h1>Not available</h1>
+        <p>"{{ classroom.name }}" is not active right now.</p>
+      {% endif %}
+      <a class="btn btn-primary btn-lg" href="{% url 'account_classrooms' %}">Back to My Classrooms</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

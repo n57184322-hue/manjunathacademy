@@ -1,0 +1,73 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Create{% else %}Edit{% endif %} Classroom{% endblock %}
+{% block page_title %}{% if is_new %}Create classroom{% else %}Edit classroom{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_classrooms %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Create a new classroom{% else %}Editing: {{ classroom.name }}{% endif %}</h2>
+      <p>Pick one of your existing test series — students you add to this classroom will attempt this test.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_classroom_list' %}">← Back to classrooms</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Classroom name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Description</span>
+      {{ form.description }}
+    </label>
+
+    <label><span class="panel-label-text">Test to conduct <span class="req">*</span></span>
+      {{ form.test_course }}
+      <p class="custom-help">Only existing Test Series with questions already uploaded show up here.</p>
+      {% if form.test_course.errors %}<ul class="panel-errors">{% for e in form.test_course.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Opens at</span>
+        {{ form.start_time }}
+        <p class="custom-help">Leave blank to open immediately</p>
+      </label>
+      <label><span class="panel-label-text">Closes at</span>
+        {{ form.end_time }}
+        <p class="custom-help">Leave blank for no end time</p>
+      </label>
+    </div>
+
+    <label class="panel-form-check">{{ form.is_free }} This classroom is free</label>
+
+    <label><span class="panel-label-text">Fee (₹)</span>
+      {{ form.price }}
+      <p class="custom-help">Only used if "This classroom is free" is unchecked. Students pay this to join.</p>
+    </label>
+
+    <label class="panel-form-check">{{ form.is_active }} Classroom is active</label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Create classroom{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_classroom_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

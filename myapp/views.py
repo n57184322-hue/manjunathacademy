@@ -20,6 +20,8 @@ from .forms import (
     CertificateForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
+    ClassroomAddStudentsForm,
+    ClassroomForm,
     CouponForm,
     CourseForm,
     DailyUpdateCardForm,
@@ -58,6 +60,8 @@ from .models import (
     Certificate,
     ChatbotQuestion,
     ChatbotSettings,
+    Classroom,
+    ClassroomMember,
     Coupon,
     CouponRedemption,
     Course,
@@ -324,6 +328,46 @@ def account_refer_earn(request):
     return render(request, 'myapp/account/refer_earn.html', {'referral': referral, 'signups': signups, 'signup_url': signup_url})
 
 
+@login_required(login_url='login')
+def account_classrooms(request):
+    memberships = ClassroomMember.objects.filter(student=request.user).select_related('classroom', 'classroom__test_course')
+    rows = []
+    for member in memberships:
+        attempt = TestAttempt.objects.filter(user=request.user, course=member.classroom.test_course).first()
+        rows.append({'member': member, 'classroom': member.classroom, 'status': member.classroom.status_label(), 'attempt': attempt})
+    return render(request, 'myapp/account/classrooms.html', {'rows': rows})
+
+
+@login_required(login_url='login')
+def classroom_pay(request, pk):
+    member = get_object_or_404(ClassroomMember, classroom_id=pk, student=request.user)
+    if member.classroom.is_free or member.is_paid:
+        return redirect('account_classrooms')
+    return render(request, 'myapp/classroom_pay.html', {'member': member, 'classroom': member.classroom})
+
+
+@login_required(login_url='login')
+def classroom_test_start(request, pk):
+    member = get_object_or_404(ClassroomMember, classroom_id=pk, student=request.user)
+    classroom = member.classroom
+
+    if not member.is_paid:
+        return redirect('classroom_pay', pk=classroom.pk)
+
+    status = classroom.status_label()
+    if status != 'open':
+        return render(request, 'myapp/classroom_gate.html', {'classroom': classroom, 'status': status})
+
+    course = classroom.test_course
+    if not course.questions.exists():
+        return render(request, 'myapp/classroom_gate.html', {'classroom': classroom, 'status': 'no_questions'})
+
+    attempt = TestAttempt.objects.filter(user=request.user, course=course, submitted_at__isnull=True).first()
+    if not attempt:
+        attempt = TestAttempt.objects.create(user=request.user, course=course)
+    return redirect('test_attempt_take', pk=attempt.pk)
+
+
 def _get_or_create_free_enrollment(user, course):
     """Returns the enrollment for a course, auto-granting access if it's free."""
     enrollment = CourseEnrollment.objects.filter(user=user, course=course).first()
@@ -435,6 +479,9 @@ def _get_purchase_base(content_type, object_id, user):
     if content_type == 'bundle':
         obj = get_object_or_404(Bundle, pk=object_id, is_active=True)
         return obj, obj.current_price, obj.name
+    if content_type == 'classroom':
+        obj = get_object_or_404(ClassroomMember, classroom_id=object_id, student=user)
+        return obj, obj.classroom.price, obj.classroom.name
     return None, None, None
 
 
@@ -525,6 +572,13 @@ def razorpay_create_order(request):
         amount = bundle.current_price
         name = bundle.name
         receipt = f'bundle_{bundle.pk}_{request.user.pk}_{timestamp}'
+    elif content_type == 'classroom':
+        member = get_object_or_404(ClassroomMember, classroom_id=object_id, student=request.user)
+        if member.classroom.is_free or member.is_paid:
+            raise Http404
+        amount = member.classroom.price
+        name = member.classroom.name
+        receipt = f'classroom_{member.classroom.pk}_{request.user.pk}_{timestamp}'
     else:
         raise Http404
 
@@ -629,6 +683,17 @@ def razorpay_verify_payment(request):
                 enrollment.grant_paid_access(amount_paid=0, razorpay_order_id=razorpay_order_id, razorpay_payment_id=razorpay_payment_id)
         record_redemption(coupon, discount, base_amount, amount_paid, bundle.pk)
         redirect_url = reverse('bundle_success', args=[bundle.pk])
+    elif content_type == 'classroom':
+        member = get_object_or_404(ClassroomMember, classroom_id=object_id, student=request.user)
+        base_amount = member.classroom.price
+        amount_paid, coupon, discount = resolve_amount(base_amount)
+        member.is_paid = True
+        member.amount_paid = amount_paid
+        member.razorpay_order_id = razorpay_order_id
+        member.razorpay_payment_id = razorpay_payment_id
+        member.save()
+        record_redemption(coupon, discount, base_amount, amount_paid, member.classroom.pk)
+        redirect_url = reverse('account_classrooms')
     else:
         raise Http404
 
@@ -1793,6 +1858,84 @@ def panel_bundle_delete(request, pk):
         bundle.delete()
         messages.success(request, 'Bundle deleted.')
     return redirect('panel_bundle_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_classroom_list(request):
+    classrooms = Classroom.objects.select_related('test_course').annotate(member_count=Count('members'))
+    return render(request, 'myapp/panel/classroom_list.html', {'classrooms': classrooms})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_classroom_add(request):
+    if request.method == 'POST':
+        form = ClassroomForm(request.POST)
+        if form.is_valid():
+            classroom = form.save()
+            messages.success(request, 'Classroom created. Now add students to it.')
+            return redirect('panel_classroom_students', pk=classroom.pk)
+    else:
+        form = ClassroomForm()
+
+    return render(request, 'myapp/panel/classroom_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_classroom_edit(request, pk):
+    classroom = get_object_or_404(Classroom, pk=pk)
+
+    if request.method == 'POST':
+        form = ClassroomForm(request.POST, instance=classroom)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Classroom updated.')
+            return redirect('panel_classroom_list')
+    else:
+        form = ClassroomForm(instance=classroom)
+
+    return render(request, 'myapp/panel/classroom_form.html', {'form': form, 'is_new': False, 'classroom': classroom})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_classroom_delete(request, pk):
+    classroom = get_object_or_404(Classroom, pk=pk)
+    if request.method == 'POST':
+        classroom.delete()
+        messages.success(request, 'Classroom deleted.')
+    return redirect('panel_classroom_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_classroom_students(request, pk):
+    classroom = get_object_or_404(Classroom, pk=pk)
+    members = classroom.members.select_related('student').order_by('-added_at')
+
+    if request.method == 'POST':
+        form = ClassroomAddStudentsForm(request.POST, exclude_ids=members.values_list('student_id', flat=True))
+        if form.is_valid():
+            for student in form.cleaned_data['students']:
+                ClassroomMember.objects.get_or_create(classroom=classroom, student=student)
+            messages.success(request, 'Students added.')
+            return redirect('panel_classroom_students', pk=classroom.pk)
+    else:
+        form = ClassroomAddStudentsForm(exclude_ids=members.values_list('student_id', flat=True))
+
+    return render(request, 'myapp/panel/classroom_students.html', {'classroom': classroom, 'members': members, 'form': form})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_classroom_member_remove(request, pk, member_pk):
+    member = get_object_or_404(ClassroomMember, pk=member_pk, classroom_id=pk)
+    if request.method == 'POST':
+        member.delete()
+        messages.success(request, 'Student removed from classroom.')
+    return redirect('panel_classroom_students', pk=pk)
 
 
 @login_required(login_url='login')
