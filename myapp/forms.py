@@ -16,6 +16,7 @@ from .models import (
     DailyUpdateCard,
     DailyUpdatePost,
     EligibilityCriteria,
+    ExamCalendarEvent,
     ExtraPage,
     FAQItem,
     FeeInvoice,
@@ -25,6 +26,7 @@ from .models import (
     JobApplication,
     JobPosting,
     Notification,
+    NotificationProviderSettings,
     Product,
     PWASettings,
     Question,
@@ -33,6 +35,7 @@ from .models import (
     ReferralCode,
     ResultHighlight,
     SiteSettings,
+    SSOSettings,
     StaffMember,
     StoreOrder,
     Transaction,
@@ -321,6 +324,9 @@ class CourseForm(forms.ModelForm):
             'duration_minutes': forms.NumberInput(attrs={'min': 1, 'placeholder': 'e.g. 60'}),
             'author': forms.TextInput(attrs={'placeholder': 'e.g. R.S. Aggarwal'}),
             'pages': forms.NumberInput(attrs={'min': 1, 'placeholder': 'e.g. 120'}),
+            'thumbnail': forms.FileInput(),
+            'pdf_file': forms.FileInput(),
+            'video_file': forms.FileInput(),
         }
         help_texts = {
             'order': 'Lower numbers show first.',
@@ -343,6 +349,50 @@ class QuestionForm(forms.ModelForm):
             'marks': forms.NumberInput(attrs={'min': 1}),
             'order': forms.NumberInput(attrs={'min': 0}),
         }
+
+
+class NotificationProviderSettingsForm(forms.ModelForm):
+    class Meta:
+        model = NotificationProviderSettings
+        fields = (
+            'sms_provider_name', 'sms_api_url', 'sms_api_key', 'sms_sender_id',
+            'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_use_tls',
+            'smtp_from_email', 'smtp_from_name',
+        )
+        widgets = {
+            'sms_provider_name': forms.TextInput(attrs={'placeholder': 'e.g. MSG91, Fast2SMS, Twilio'}),
+            'sms_api_url': forms.URLInput(attrs={'placeholder': 'https://api.yourprovider.com/send'}),
+            'sms_api_key': forms.PasswordInput(attrs={'placeholder': 'API key / auth token', 'autocomplete': 'off'}, render_value=True),
+            'sms_sender_id': forms.TextInput(attrs={'placeholder': 'e.g. MNJACD'}),
+            'smtp_host': forms.TextInput(attrs={'placeholder': 'smtp.gmail.com'}),
+            'smtp_port': forms.NumberInput(attrs={'placeholder': '587'}),
+            'smtp_username': forms.TextInput(attrs={'placeholder': 'you@example.com', 'autocomplete': 'off'}),
+            'smtp_password': forms.PasswordInput(attrs={'placeholder': 'App password', 'autocomplete': 'off'}, render_value=True),
+            'smtp_from_email': forms.EmailInput(attrs={'placeholder': 'no-reply@yourdomain.com'}),
+            'smtp_from_name': forms.TextInput(attrs={'placeholder': 'Manjunath Academy'}),
+        }
+
+
+class SSOSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SSOSettings
+        fields = (
+            'google_enabled', 'google_client_id', 'google_client_secret',
+            'facebook_enabled', 'facebook_app_id', 'facebook_app_secret',
+        )
+        widgets = {
+            'google_client_id': forms.TextInput(attrs={'placeholder': 'xxxxxxxxxx.apps.googleusercontent.com', 'autocomplete': 'off'}),
+            'google_client_secret': forms.PasswordInput(attrs={'placeholder': 'Google client secret', 'autocomplete': 'off'}, render_value=True),
+            'facebook_app_id': forms.TextInput(attrs={'placeholder': 'Facebook App ID', 'autocomplete': 'off'}),
+            'facebook_app_secret': forms.PasswordInput(attrs={'placeholder': 'Facebook App secret', 'autocomplete': 'off'}, render_value=True),
+        }
+
+
+class SSOCompleteSignupForm(forms.Form):
+    number = forms.CharField(
+        max_length=15, label='Phone number',
+        widget=forms.TextInput(attrs={'placeholder': '10-digit mobile number', 'autocomplete': 'off'}),
+    )
 
 
 class RazorpaySettingsForm(forms.ModelForm):
@@ -680,6 +730,20 @@ class ExtraPageForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'Leave blank to use the default title'}),
             'content': forms.Textarea(attrs={'rows': 22, 'placeholder': 'Separate paragraphs with a blank line. Start a line with "- " for a bullet point.'}),
+        }
+
+
+class ExamCalendarEventForm(forms.ModelForm):
+    class Meta:
+        model = ExamCalendarEvent
+        fields = ('exam_name', 'category', 'description', 'event_date', 'official_link', 'order', 'is_active')
+        widgets = {
+            'exam_name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL 2026 Tier 1 Exam'}),
+            'category': forms.TextInput(attrs={'placeholder': 'e.g. SSC, Banking, Railways'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'e.g. Tier 1 exam date, admit card release, last date to apply'}),
+            'event_date': forms.DateInput(attrs={'type': 'date'}),
+            'official_link': forms.URLInput(attrs={'placeholder': 'https://...'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
         }
 
 

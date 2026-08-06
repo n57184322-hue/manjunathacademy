@@ -14,6 +14,13 @@
 .btn-sm{padding:8px 14px;font-size:13px}
 .btn-danger{background:#FEF2F2;color:#DC2626}
 .btn-danger:hover{background:#DC2626;color:#fff}
+.video-modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,15,20,.72);z-index:200;align-items:center;justify-content:center;padding:24px}
+.video-modal-overlay.is-open{display:flex}
+.video-modal-box{background:#000;border-radius:16px;max-width:900px;width:100%;position:relative;overflow:hidden}
+.video-modal-box video{width:100%;max-height:80vh;display:block}
+.video-modal-title{position:absolute;top:0;left:0;right:44px;padding:12px 16px;color:#fff;font-size:13.5px;font-weight:700;background:linear-gradient(180deg,rgba(0,0,0,.6),transparent);z-index:2}
+.video-modal-close{position:absolute;top:8px;right:8px;z-index:3;width:32px;height:32px;border-radius:10px;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:16px;cursor:pointer}
+.video-modal-close:hover{background:rgba(255,255,255,.3)}
 {% endblock %}
 
 {% block content %}
@@ -68,6 +75,20 @@
                 {% if course_type == 'test_series' %}
                   <a class="btn btn-ghost btn-sm" href="{% url 'panel_question_list' course.pk %}">Questions ({{ course.questions.count }})</a>
                 {% endif %}
+                {% if course_type == 'video_course' %}
+                  {% if course.video_file %}
+                    <button type="button" class="btn btn-ghost btn-sm preview-video-btn" data-video-url="{{ course.video_file.url }}" data-video-name="{{ course.name }}">▶ Preview video</button>
+                  {% else %}
+                    <span class="panel-badge panel-badge-muted">No video uploaded</span>
+                  {% endif %}
+                {% endif %}
+                {% if course_type == 'elibrary' %}
+                  {% if course.pdf_file %}
+                    <a class="btn btn-ghost btn-sm" href="{{ course.pdf_file.url }}" target="_blank" rel="noopener">📄 Preview PDF</a>
+                  {% else %}
+                    <span class="panel-badge panel-badge-muted">No PDF uploaded</span>
+                  {% endif %}
+                {% endif %}
                 <a class="btn btn-ghost btn-sm" href="{% url 'panel_course_edit' course_type course.pk %}">Edit</a>
                 <form method="post" action="{% url 'panel_course_delete' course_type course.pk %}" onsubmit="return confirm('Delete this course?');">
                   {% csrf_token %}
@@ -84,4 +105,45 @@
     <p class="panel-empty"><span class="panel-empty-ico">🗂️</span>No {{ type_label|lower }} added yet.</p>
   {% endif %}
 </div>
+
+{% if course_type == 'video_course' %}
+<div class="video-modal-overlay" id="videoModalOverlay">
+  <div class="video-modal-box">
+    <span class="video-modal-title" id="videoModalTitle"></span>
+    <button type="button" class="video-modal-close" id="videoModalClose">✕</button>
+    <video id="videoModalPlayer" controls></video>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var overlay = document.getElementById('videoModalOverlay');
+  if (!overlay) return;
+  var player = document.getElementById('videoModalPlayer');
+  var title = document.getElementById('videoModalTitle');
+  var closeBtn = document.getElementById('videoModalClose');
+
+  function closeModal() {
+    overlay.classList.remove('is-open');
+    player.pause();
+    player.removeAttribute('src');
+    player.load();
+  }
+
+  document.querySelectorAll('.preview-video-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      player.src = btn.dataset.videoUrl;
+      title.textContent = btn.dataset.videoName || '';
+      overlay.classList.add('is-open');
+      player.play().catch(function () {});
+    });
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+})();
 {% endblock %}

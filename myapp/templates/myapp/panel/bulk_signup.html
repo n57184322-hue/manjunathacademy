@@ -1,0 +1,73 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Bulk Sign Up{% endblock %}
+{% block page_title %}Bulk Sign Up{% endblock %}
+{% block page_sub %}Import multiple students at once from a CSV file{% endblock %}
+{% block nav_signups %}is-active{% endblock %}
+
+{% block extra_style %}
+.bulk-instructions{background:#FAFAF9;border:1px dashed var(--line);border-radius:14px;padding:18px 20px;margin-bottom:24px;font-size:13.5px;color:#374151;line-height:1.8}
+.bulk-instructions code{background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:12.5px}
+.bulk-upload-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.status-created{color:#15803D;font-weight:800}
+.status-skipped{color:#DC2626;font-weight:800}
+.gen-password{font-family:monospace;background:#FAFAF9;border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Bulk sign up from CSV</h2>
+      <p>Upload a CSV file to create many student accounts at once.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_signups' %}">← Back to signups</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <div class="bulk-instructions">
+    Your CSV needs a header row with these columns: <code>name</code>, <code>email</code>, <code>number</code> (required),
+    and optionally <code>age</code>, <code>gender</code>, <code>state</code>, <code>city</code>, <code>password</code>.
+    If <code>password</code> is left blank, a random one is generated and shown below so you can share it with the student.
+    Rows with a missing name/email/number, or an email that's already registered, are skipped.
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="bulk-upload-row">
+    {% csrf_token %}
+    <input type="file" name="csv_file" accept=".csv" required>
+    <button type="submit" class="btn btn-primary">Upload &amp; import</button>
+  </form>
+
+  {% if results %}
+    <div class="panel-table-wrap" style="margin-top:26px">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Row</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          <tr>
+            <td>{{ r.row }}</td>
+            <td>{{ r.email|default:"—" }}</td>
+            <td>
+              {% if r.status == 'created' %}<span class="status-created">Created</span>{% else %}<span class="status-skipped">Skipped</span>{% endif %}
+            </td>
+            <td>
+              {% if r.status == 'created' %}Password: <span class="gen-password">{{ r.password }}</span>{% else %}{{ r.reason }}{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -142,6 +142,23 @@ class Notification(models.Model):
         return self.text
 
 
+class ExamCalendarEvent(models.Model):
+    exam_name = models.CharField(max_length=200)
+    category = models.CharField(max_length=100, blank=True, help_text='e.g. SSC, Banking, Railways')
+    description = models.TextField(blank=True, help_text='What this date is for — exam date, admit card release, application deadline, etc.')
+    event_date = models.DateField()
+    official_link = models.URLField(blank=True, help_text='Official notification / apply link, if available')
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['event_date', 'order']
+
+    def __str__(self):
+        return f'{self.exam_name} — {self.event_date}'
+
+
 class ChatbotSettings(models.Model):
     is_enabled = models.BooleanField(default=True, help_text='Show or hide the chat widget on the site')
 
@@ -1308,3 +1325,103 @@ class ClassroomMember(models.Model):
 
     def __str__(self):
         return f'{self.student} in {self.classroom}'
+
+
+class NotificationProviderSettings(models.Model):
+    sms_provider_name = models.CharField(max_length=100, blank=True, help_text='e.g. MSG91, Twilio, Fast2SMS — just a label shown in the admin panel.')
+    sms_api_url = models.URLField(blank=True, help_text='The HTTP endpoint your SMS provider gives you for sending a message via POST.')
+    sms_api_key = models.CharField(max_length=255, blank=True)
+    sms_sender_id = models.CharField(max_length=30, blank=True, help_text='Sender ID / from name shown to the recipient, if your provider needs one.')
+
+    smtp_host = models.CharField(max_length=200, blank=True)
+    smtp_port = models.PositiveIntegerField(null=True, blank=True, default=587)
+    smtp_username = models.CharField(max_length=200, blank=True)
+    smtp_password = models.CharField(max_length=200, blank=True)
+    smtp_use_tls = models.BooleanField(default=True)
+    smtp_from_email = models.EmailField(blank=True)
+    smtp_from_name = models.CharField(max_length=100, blank=True, default='Manjunath Academy')
+
+    class Meta:
+        verbose_name = 'SMS & Email settings'
+        verbose_name_plural = 'SMS & Email settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def sms_configured(self):
+        return bool(self.sms_api_url and self.sms_api_key)
+
+    @property
+    def smtp_configured(self):
+        return bool(self.smtp_host and self.smtp_username)
+
+    def __str__(self):
+        return 'SMS & Email settings'
+
+
+class OTPRequest(models.Model):
+    CHANNEL_CHOICES = (('email', 'Email'), ('sms', 'SMS'))
+
+    target = models.CharField(max_length=255, help_text='Email address or phone number the OTP was sent to.')
+    channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES)
+    code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def is_valid_now(self):
+        from django.utils import timezone as dj_timezone
+        return (not self.is_verified) and dj_timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f'{self.channel} OTP for {self.target}'
+
+
+class SSOSettings(models.Model):
+    google_enabled = models.BooleanField(default=False)
+    google_client_id = models.CharField(max_length=255, blank=True)
+    google_client_secret = models.CharField(max_length=255, blank=True)
+
+    facebook_enabled = models.BooleanField(default=False)
+    facebook_app_id = models.CharField(max_length=255, blank=True)
+    facebook_app_secret = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = 'SSO settings'
+        verbose_name_plural = 'SSO settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def google_active(self):
+        return bool(self.google_enabled and self.google_client_id and self.google_client_secret)
+
+    @property
+    def facebook_active(self):
+        return bool(self.facebook_enabled and self.facebook_app_id and self.facebook_app_secret)
+
+    def __str__(self):
+        return 'SSO settings'

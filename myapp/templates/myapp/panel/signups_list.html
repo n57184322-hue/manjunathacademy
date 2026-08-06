@@ -32,7 +32,10 @@
       <h2>All signups</h2>
       <p>{{ users|length }} user{{ users|length|pluralize }} registered</p>
     </div>
-    <a class="btn btn-primary" href="{% url 'panel_signup_add' %}">+ Add user</a>
+    <div style="display:flex;gap:10px">
+      <a class="btn btn-ghost" href="{% url 'panel_bulk_signup' %}">⬆ Bulk sign up</a>
+      <a class="btn btn-primary" href="{% url 'panel_signup_add' %}">+ Add user</a>
+    </div>
   </div>
 
   {% if messages %}

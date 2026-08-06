@@ -1153,21 +1153,24 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 
     <nav class="primary-nav" id="primaryNav" aria-label="Primary">
       <ul>
-        <li><a class="is-active" href="#top">Home</a></li>
-        <li><a href="#popular-courses">Courses <span class="tag-free">Free</span></a></li>
-        <li><a href="#test-series">Test Series</a></li>
-        <li><a href="#quiz">Quiz</a></li>
-        <li><a href="#e-store">E-Store</a></li>
-        <li><a href="#results">Results</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact-us">Contact</a></li>
+        <li><a class="{% if request.path == '/' %}is-active{% endif %}" href="{% url 'index' %}" id="navHomeLink">Home</a></li>
+        <li><a href="{% url 'index' %}#popular-courses">Courses</a></li>
+        <li><a href="{% url 'index' %}#test-series">Test Series</a></li>
+        <li><a href="{% url 'index' %}#quiz">Quiz Game</a></li>
+        <li><a href="{% url 'index' %}#e-store">E-Store</a></li>
+        <li><a href="{% url 'index' %}#results">Results</a></li>
+        <li><a href="{% url 'index' %}#about">About</a></li>
+        <li><a href="{% url 'contact_us_page' %}">Contact</a></li>
         <li class="nav-more" id="navMore">
           <button type="button" class="nav-more-toggle" id="navMoreToggle" aria-haspopup="true" aria-expanded="false">
             More
             <svg class="nav-more-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="nav-more-dropdown" id="navMoreDropdown">
-            <a href="{% url 'gallery_page' %}">🖼️ Gallery</a>
+            <a href="{% url 'index' %}#video-courses">Video Courses</a>
+            <a href="{% url 'index' %}#e-library">E-Library</a>
+            <a href="{% url 'contact_us_page' %}">Contact Us</a>
+            <a href="{% url 'gallery_page' %}">Gallery</a>
           </div>
         </li>
       </ul>
@@ -1252,7 +1255,7 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
     </div>
     <div>
       <h4>Resources</h4>
-      <ul><li><a href="#results">PYQ library</a></li><li><a href="#results">Current affairs</a></li><li><a href="#test-series">Exam calendar</a></li><li><a href="{% url 'eligibility_check' %}">Eligibility check</a></li></ul>
+      <ul><li><a href="#results">PYQ library</a></li><li><a href="#results">Current affairs</a></li><li><a href="{% url 'exam_calendar_page' %}">Exam calendar</a></li><li><a href="{% url 'eligibility_check' %}">Eligibility check</a></li></ul>
     </div>
     <div>
       <h4>Reach us</h4>
@@ -1316,6 +1319,15 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         window.location.href = '{% url "index" %}';
       }
+    });
+  }
+
+  /* ---------- 0a-3. Home link: scroll to top if already home ---------- */
+  const homeLink = document.getElementById('navHomeLink');
+  if (homeLink && window.location.pathname === '/') {
+    homeLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 

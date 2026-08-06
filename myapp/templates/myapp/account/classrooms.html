@@ -30,6 +30,7 @@
 .badge-closed{background:#FEF2F2;color:#DC2626}
 .badge-inactive{background:#F3F4F6;color:var(--muted)}
 .classroom-timing{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.not-available-pill{display:inline-flex;align-items:center;font-size:12px;font-weight:800;padding:6px 16px;border-radius:999px;background:#F3F4F6;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .classroom-actions{margin-top:16px}
 {% endblock %}
 
@@ -79,7 +80,7 @@
         <span class="auth-icon">🏫</span>
         <h1>My classrooms</h1>
         <p class="auth-sub">You haven't been added to any classroom yet. Once your teacher adds you, it'll show up here.</p>
-        <a class="btn btn-primary btn-lg" href="{% url 'index' %}">Browse Courses</a>
+        <span class="not-available-pill">Not available</span>
       </div>
     {% endif %}
   </div>

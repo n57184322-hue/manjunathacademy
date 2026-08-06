@@ -1,0 +1,90 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}SMS & Email Settings{% endblock %}
+{% block page_title %}SMS &amp; Email Settings{% endblock %}
+{% block page_sub %}Configure an SMS provider and/or SMTP so the site can send OTPs and notifications{% endblock %}
+{% block nav_sms_email %}is-active{% endblock %}
+
+{% block extra_style %}
+.provider-section{margin-bottom:30px}
+.provider-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.provider-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.provider-status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:var(--r-pill);margin-bottom:16px}
+.provider-status-on{background:#ECFDF3;color:#15803D}
+.provider-status-off{background:#F3F4F6;color:#6B7280}
+.test-otp-box{background:#FAFAF9;border:1px dashed var(--line);border-radius:14px;padding:18px 20px;margin-top:28px}
+.test-otp-box h3{font-size:14.5px;font-weight:800;margin:0 0 4px}
+.test-otp-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.test-otp-row input[type="text"]{flex:1;min-width:200px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit}
+.test-otp-row select{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" class="panel-form" novalidate>
+    {% csrf_token %}
+
+    <div class="provider-section">
+      <h3>SMS provider</h3>
+      <p class="provider-section-sub">Used to send OTPs by text message. Works with any provider that accepts a simple JSON POST request.</p>
+      <span class="provider-status {% if settings_obj.sms_configured %}provider-status-on{% else %}provider-status-off{% endif %}">
+        {% if settings_obj.sms_configured %}✓ SMS provider configured{% else %}Not configured — SMS OTPs will fail until this is set up{% endif %}
+      </span>
+
+      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <label><span class="panel-label-text">Provider name</span>{{ form.sms_provider_name }}</label>
+        <label><span class="panel-label-text">Sender ID</span>{{ form.sms_sender_id }}</label>
+      </div>
+      <label style="margin-top:14px;display:block"><span class="panel-label-text">API URL</span>{{ form.sms_api_url }}</label>
+      <label style="margin-top:14px;display:block"><span class="panel-label-text">API key</span>{{ form.sms_api_key }}</label>
+    </div>
+
+    <div class="provider-section">
+      <h3>SMTP (Email)</h3>
+      <p class="provider-section-sub">Used to send OTPs and other emails. If left blank, the site falls back to its default email sending.</p>
+      <span class="provider-status {% if settings_obj.smtp_configured %}provider-status-on{% else %}provider-status-off{% endif %}">
+        {% if settings_obj.smtp_configured %}✓ SMTP configured{% else %}Not configured — using the site's default email sending{% endif %}
+      </span>
+
+      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+        <label><span class="panel-label-text">SMTP host</span>{{ form.smtp_host }}</label>
+        <label><span class="panel-label-text">Port</span>{{ form.smtp_port }}</label>
+      </div>
+      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <label><span class="panel-label-text">Username</span>{{ form.smtp_username }}</label>
+        <label><span class="panel-label-text">Password</span>{{ form.smtp_password }}</label>
+      </div>
+      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <label><span class="panel-label-text">From email</span>{{ form.smtp_from_email }}</label>
+        <label><span class="panel-label-text">From name</span>{{ form.smtp_from_name }}</label>
+      </div>
+      <label class="panel-form-check" style="margin-top:14px">{{ form.smtp_use_tls }} Use TLS</label>
+    </div>
+
+    <div class="panel-form-actions">
+      <button type="submit" name="action" value="save" class="btn btn-primary">Save settings</button>
+    </div>
+  </form>
+
+  <div class="test-otp-box">
+    <h3>Send a test OTP</h3>
+    <p class="provider-section-sub">Try your configuration right now — enter an email address or phone number and send a test code.</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="send_test_otp">
+      <div class="test-otp-row">
+        <select name="test_channel">
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+        </select>
+        <input type="text" name="test_target" placeholder="Email address or phone number" required>
+        <button type="submit" class="btn btn-ghost">Send test OTP</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

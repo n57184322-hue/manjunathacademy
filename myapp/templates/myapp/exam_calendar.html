@@ -1,0 +1,81 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Exam Calendar — Manjunath Academy{% endblock %}
+{% block meta_description %}Track upcoming exam dates, admit card releases and application deadlines in one place.{% endblock %}
+
+{% block extra_style %}
+.legal-section{padding:70px 0 110px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.cal-intro{max-width:640px;margin:0 auto 36px;text-align:center;color:var(--muted);font-size:14.5px}
+.cal-list{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.cal-section-label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:32px 0 14px}
+.cal-section-label:first-child{margin-top:0}
+.cal-card{
+  display:flex;align-items:center;gap:20px;background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:18px 22px;box-shadow:var(--shadow-sm);
+}
+.cal-date{
+  flex:0 0 auto;width:64px;text-align:center;background:var(--orange-soft);color:var(--orange-deep);
+  border-radius:12px;padding:8px 4px;
+}
+.cal-date .day{font-size:20px;font-weight:800;line-height:1.1;font-family:"Archivo",sans-serif}
+.cal-date .mon{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.cal-body{flex:1;min-width:0}
+.cal-name{font-weight:700;color:var(--ink);margin:0 0 4px}
+.cal-cat{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:var(--r-pill);background:#F3F4F6;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+.cal-desc{font-size:13.5px;color:#374151;margin:0}
+.cal-link{flex:0 0 auto}
+.cal-past .cal-card{opacity:.65}
+@media (max-width:560px){.cal-card{flex-wrap:wrap}}
+{% endblock %}
+
+{% block content %}
+<section class="legal-section">
+  <div class="wrap">
+    <h1 class="section-title center-title" style="text-align:center;margin:0 auto 14px">Exam <span class="text-orange">Calendar</span></h1>
+    <p class="cal-intro">Keep track of upcoming exam dates, admit card releases and application deadlines — all in one organized, easy-to-access place.</p>
+
+    <p class="cal-section-label">Upcoming</p>
+    {% if upcoming %}
+      <div class="cal-list">
+        {% for event in upcoming %}
+        <div class="cal-card">
+          <div class="cal-date">
+            <div class="day">{{ event.event_date|date:"d" }}</div>
+            <div class="mon">{{ event.event_date|date:"M Y" }}</div>
+          </div>
+          <div class="cal-body">
+            {% if event.category %}<span class="cal-cat">{{ event.category }}</span>{% endif %}
+            <p class="cal-name">{{ event.exam_name }}</p>
+            {% if event.description %}<p class="cal-desc">{{ event.description }}</p>{% endif %}
+          </div>
+          {% if event.official_link %}
+            <a class="btn btn-ghost btn-sm cal-link" href="{{ event.official_link }}" target="_blank" rel="noopener">Details</a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="text-align:center;color:var(--muted)">No upcoming exam dates have been added yet. Check back soon.</p>
+    {% endif %}
+
+    {% if past %}
+      <p class="cal-section-label">Recently passed</p>
+      <div class="cal-list cal-past">
+        {% for event in past %}
+        <div class="cal-card">
+          <div class="cal-date">
+            <div class="day">{{ event.event_date|date:"d" }}</div>
+            <div class="mon">{{ event.event_date|date:"M Y" }}</div>
+          </div>
+          <div class="cal-body">
+            {% if event.category %}<span class="cal-cat">{{ event.category }}</span>{% endif %}
+            <p class="cal-name">{{ event.exam_name }}</p>
+            {% if event.description %}<p class="cal-desc">{{ event.description }}</p>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

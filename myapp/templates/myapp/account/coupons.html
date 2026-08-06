@@ -19,6 +19,7 @@
 }
 .auth-card h1{font-size:clamp(22px,3vw,26px);font-weight:800;margin:0 0 8px}
 .auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;max-width:36ch;margin-inline:auto}
+.not-available-pill{display:inline-flex;align-items:center;font-size:12px;font-weight:800;padding:6px 16px;border-radius:999px;background:#F3F4F6;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .coupons-wrap{max-width:640px;margin:0 auto}
 .coupons-heading{font-size:18px;font-weight:800;color:var(--ink);margin:0 0 14px}
 .coupons-list{display:flex;flex-direction:column;gap:14px;margin:0 0 36px}
@@ -73,7 +74,7 @@
         <span class="auth-icon">🏷️</span>
         <h1>My coupons</h1>
         <p class="auth-sub">No coupons are available right now. Check back later for discount offers.</p>
-        <a class="btn btn-primary btn-lg" href="{% url 'index' %}">Browse Courses</a>
+        <span class="not-available-pill">Not available</span>
       </div>
     {% endif %}
 

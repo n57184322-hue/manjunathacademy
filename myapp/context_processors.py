@@ -1,4 +1,4 @@
-from .models import ChatbotQuestion, ChatbotSettings, DailyUpdateCard, HeroSection, Notification, PWASettings, SiteSettings
+from .models import ChatbotQuestion, ChatbotSettings, DailyUpdateCard, HeroSection, Notification, PWASettings, SiteSettings, SSOSettings
 
 
 def site_settings(request):
@@ -11,4 +11,5 @@ def site_settings(request):
         'daily_current_card': DailyUpdateCard.load(DailyUpdateCard.CURRENT_AFFAIRS),
         'daily_news_card': DailyUpdateCard.load(DailyUpdateCard.DAILY_NEWS),
         'pwa_settings': PWASettings.load(),
+        'sso_settings': SSOSettings.load(),
     }

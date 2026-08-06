@@ -1,3 +1,8 @@
+import csv
+import io
+import secrets
+import uuid
+
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, PasswordChangeView
@@ -29,6 +34,7 @@ from .forms import (
     EligibilityCheckForm,
     EligibilityCriteriaForm,
     EmailAuthenticationForm,
+    ExamCalendarEventForm,
     ExtraPageForm,
     FAQItemForm,
     FeeInvoiceForm,
@@ -39,7 +45,10 @@ from .forms import (
     JobPostingForm,
     NavbarCustomizationForm,
     NotificationForm,
+    NotificationProviderSettingsForm,
     ProductForm,
+    SSOCompleteSignupForm,
+    SSOSettingsForm,
     PWASettingsForm,
     QuestionForm,
     QuizQuestionForm,
@@ -71,6 +80,7 @@ from .models import (
     DailyUpdatePost,
     EligibilityCriteria,
     EligibilitySubmission,
+    ExamCalendarEvent,
     ExtraPage,
     FAQItem,
     FeeInvoice,
@@ -80,6 +90,8 @@ from .models import (
     JobApplication,
     JobPosting,
     Notification,
+    NotificationProviderSettings,
+    OTPRequest,
     Product,
     PWASettings,
     Question,
@@ -89,6 +101,7 @@ from .models import (
     ReferralSignup,
     ResultHighlight,
     SiteSettings,
+    SSOSettings,
     StaffAttendance,
     StaffMember,
     StoreOrder,
@@ -98,6 +111,9 @@ from .models import (
 )
 from .certificate_utils import generate_certificate_image
 from .razorpay_utils import RazorpayError, create_order, verify_payment_signature
+from .otp_utils import send_otp
+from . import sso_utils
+from .sso_utils import SSOError
 
 
 def index(request):
@@ -192,6 +208,13 @@ def faq_page(request):
     return render(request, 'myapp/faq_page.html', {'faqs': faqs})
 
 
+def exam_calendar_page(request):
+    today = timezone.localdate()
+    upcoming = ExamCalendarEvent.objects.filter(is_active=True, event_date__gte=today)
+    past = ExamCalendarEvent.objects.filter(is_active=True, event_date__lt=today).order_by('-event_date')[:20]
+    return render(request, 'myapp/exam_calendar.html', {'upcoming': upcoming, 'past': past})
+
+
 def admission_register(request):
     if request.method != 'POST':
         raise Http404
@@ -248,6 +271,84 @@ class CustomLoginView(LoginView):
         if self.request.user.is_staff:
             return '/panel/'
         return super().get_success_url()
+
+
+def _sso_post_login_redirect(user):
+    return redirect('panel_signups' if user.is_staff else 'index')
+
+
+def sso_start(request, provider):
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    settings_obj = SSOSettings.load()
+    redirect_uri = request.build_absolute_uri(reverse('sso_callback', args=[provider]))
+    state = uuid.uuid4().hex
+    request.session['sso_state'] = state
+
+    if provider == 'google' and settings_obj.google_active:
+        return redirect(sso_utils.google_auth_url(settings_obj, redirect_uri, state))
+    if provider == 'facebook' and settings_obj.facebook_active:
+        return redirect(sso_utils.facebook_auth_url(settings_obj, redirect_uri, state))
+
+    messages.error(request, 'This sign-in option is not available right now.')
+    return redirect('login')
+
+
+def sso_callback(request, provider):
+    if provider not in ('google', 'facebook'):
+        raise Http404()
+
+    settings_obj = SSOSettings.load()
+    error = request.GET.get('error')
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+    expected_state = request.session.pop('sso_state', None)
+
+    if error or not code or not state or state != expected_state:
+        messages.error(request, 'Sign-in was cancelled or could not be verified. Please try again.')
+        return redirect('login')
+
+    redirect_uri = request.build_absolute_uri(reverse('sso_callback', args=[provider]))
+    try:
+        if provider == 'google':
+            profile = sso_utils.google_fetch_profile(settings_obj, redirect_uri, code)
+        else:
+            profile = sso_utils.facebook_fetch_profile(settings_obj, redirect_uri, code)
+    except SSOError as exc:
+        messages.error(request, str(exc))
+        return redirect('login')
+
+    existing_user = CustomUser.objects.filter(email__iexact=profile['email']).first()
+    if existing_user:
+        auth_login(request, existing_user)
+        return _sso_post_login_redirect(existing_user)
+
+    request.session['pending_sso_profile'] = {'email': profile['email'], 'name': profile['name'], 'provider': provider}
+    return redirect('sso_complete_signup')
+
+
+def sso_complete_signup(request):
+    pending = request.session.get('pending_sso_profile')
+    if not pending:
+        return redirect('signup')
+
+    if request.method == 'POST':
+        form = SSOCompleteSignupForm(request.POST)
+        if form.is_valid():
+            user = CustomUser.objects.create_user(
+                email=pending['email'],
+                name=pending['name'],
+                number=form.cleaned_data['number'],
+                password=None,
+            )
+            del request.session['pending_sso_profile']
+            auth_login(request, user)
+            return _sso_post_login_redirect(user)
+    else:
+        form = SSOCompleteSignupForm()
+
+    return render(request, 'myapp/sso_complete_signup.html', {'form': form, 'pending': pending})
 
 
 def logout_view(request):
@@ -970,6 +1071,62 @@ def panel_signup_add(request):
 
 @login_required(login_url='login')
 @user_passes_test(_is_staff, login_url='login')
+def panel_bulk_signup(request):
+    results = None
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        results = []
+        if not csv_file:
+            messages.error(request, 'Please choose a CSV file to upload.')
+        elif not csv_file.name.lower().endswith('.csv'):
+            messages.error(request, 'Please upload a .csv file.')
+        else:
+            try:
+                decoded = csv_file.read().decode('utf-8-sig')
+            except UnicodeDecodeError:
+                messages.error(request, 'Could not read that file. Please save it as a UTF-8 CSV and try again.')
+                decoded = None
+
+            if decoded is not None:
+                reader = csv.DictReader(io.StringIO(decoded))
+                reader.fieldnames = [(f or '').strip().lower() for f in (reader.fieldnames or [])]
+                created_count = 0
+                for i, raw_row in enumerate(reader, start=2):
+                    row = {(k or '').strip().lower(): (v or '').strip() for k, v in raw_row.items()}
+                    name = row.get('name', '')
+                    email = row.get('email', '')
+                    number = row.get('number', '') or row.get('phone', '')
+
+                    if not (name and email and number):
+                        results.append({'row': i, 'email': email, 'status': 'skipped', 'reason': 'Missing name, email or number.'})
+                        continue
+                    if CustomUser.objects.filter(email__iexact=email).exists():
+                        results.append({'row': i, 'email': email, 'status': 'skipped', 'reason': 'Email already registered.'})
+                        continue
+
+                    password = row.get('password') or secrets.token_urlsafe(6)
+                    try:
+                        age_value = int(row['age']) if row.get('age', '').isdigit() else None
+                        CustomUser.objects.create_user(
+                            email=email, name=name, number=number, password=password,
+                            age=age_value, gender=row.get('gender', ''),
+                            state=row.get('state', ''), city=row.get('city', ''),
+                        )
+                        created_count += 1
+                        results.append({'row': i, 'email': email, 'status': 'created', 'reason': '', 'password': password})
+                    except Exception as exc:
+                        results.append({'row': i, 'email': email, 'status': 'skipped', 'reason': str(exc)})
+
+                if created_count:
+                    messages.success(request, f'{created_count} student{"s" if created_count != 1 else ""} imported successfully.')
+                elif results:
+                    messages.error(request, 'No students were imported. See the details below.')
+
+    return render(request, 'myapp/panel/bulk_signup.html', {'results': results})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
 def panel_navbar_customization(request):
     site_settings = SiteSettings.load()
     if request.method == 'POST':
@@ -1511,6 +1668,59 @@ def panel_razorpay_settings(request):
 
 @login_required(login_url='login')
 @user_passes_test(_is_staff, login_url='login')
+def panel_notification_provider_settings(request):
+    settings_obj = NotificationProviderSettings.load()
+    test_result = None
+    if request.method == 'POST':
+        if request.POST.get('action') == 'send_test_otp':
+            target = request.POST.get('test_target', '').strip()
+            channel = request.POST.get('test_channel', 'email')
+            if target:
+                ok, detail, otp = send_otp(settings_obj, target, channel)
+                test_result = {'ok': ok, 'detail': detail, 'target': target, 'channel': channel}
+                if ok:
+                    messages.success(request, f'Test OTP sent to {target}. {detail}')
+                else:
+                    messages.error(request, f'Could not send test OTP. {detail}')
+            form = NotificationProviderSettingsForm(instance=settings_obj)
+        else:
+            form = NotificationProviderSettingsForm(request.POST, instance=settings_obj)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'SMS & Email settings saved.')
+                return redirect('panel_notification_provider_settings')
+    else:
+        form = NotificationProviderSettingsForm(instance=settings_obj)
+
+    return render(request, 'myapp/panel/notification_provider_settings.html', {
+        'form': form, 'settings_obj': settings_obj, 'test_result': test_result,
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_sso_settings(request):
+    settings_obj = SSOSettings.load()
+    if request.method == 'POST':
+        form = SSOSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'SSO settings saved.')
+            return redirect('panel_sso_settings')
+    else:
+        form = SSOSettingsForm(instance=settings_obj)
+
+    google_redirect_uri = request.build_absolute_uri(reverse('sso_callback', args=['google']))
+    facebook_redirect_uri = request.build_absolute_uri(reverse('sso_callback', args=['facebook']))
+
+    return render(request, 'myapp/panel/sso_settings.html', {
+        'form': form, 'settings_obj': settings_obj,
+        'google_redirect_uri': google_redirect_uri, 'facebook_redirect_uri': facebook_redirect_uri,
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
 def panel_store_product_list(request):
     products = Product.objects.all()
     return render(request, 'myapp/panel/store_product_list.html', {'products': products})
@@ -1695,6 +1905,55 @@ def panel_extra_page_edit(request, page_key):
         form = ExtraPageForm(instance=page_obj)
 
     return render(request, 'myapp/panel/extra_page_form.html', {'form': form, 'page_obj': page_obj, 'label': valid_keys[page_key]})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_exam_calendar_list(request):
+    events = ExamCalendarEvent.objects.all()
+    return render(request, 'myapp/panel/exam_calendar_list.html', {'events': events})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_exam_calendar_add(request):
+    if request.method == 'POST':
+        form = ExamCalendarEventForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Exam calendar event added.')
+            return redirect('panel_exam_calendar_list')
+    else:
+        form = ExamCalendarEventForm(initial={'order': ExamCalendarEvent.objects.count()})
+
+    return render(request, 'myapp/panel/exam_calendar_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_exam_calendar_edit(request, pk):
+    event = get_object_or_404(ExamCalendarEvent, pk=pk)
+
+    if request.method == 'POST':
+        form = ExamCalendarEventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Exam calendar event updated.')
+            return redirect('panel_exam_calendar_list')
+    else:
+        form = ExamCalendarEventForm(instance=event)
+
+    return render(request, 'myapp/panel/exam_calendar_form.html', {'form': form, 'is_new': False, 'event': event})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_exam_calendar_delete(request, pk):
+    event = get_object_or_404(ExamCalendarEvent, pk=pk)
+    if request.method == 'POST':
+        event.delete()
+        messages.success(request, 'Exam calendar event deleted.')
+    return redirect('panel_exam_calendar_list')
 
 
 @login_required(login_url='login')

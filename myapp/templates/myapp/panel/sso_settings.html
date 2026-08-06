@@ -1,0 +1,67 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}SSO Login Settings{% endblock %}
+{% block page_title %}SSO Login Settings{% endblock %}
+{% block page_sub %}Let students sign in with Google or Facebook{% endblock %}
+{% block nav_sso %}is-active{% endblock %}
+
+{% block extra_style %}
+.provider-section{margin-bottom:30px}
+.provider-section h3{font-size:15px;font-weight:800;margin:0 0 4px}
+.provider-section-sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+.provider-status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:var(--r-pill);margin-bottom:16px}
+.provider-status-on{background:#ECFDF3;color:#15803D}
+.provider-status-off{background:#F3F4F6;color:#6B7280}
+.redirect-uri-box{background:#FAFAF9;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;font-size:12.5px;color:#374151;word-break:break-all;margin-bottom:16px}
+.redirect-uri-box strong{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-weight:800}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <form method="post" class="panel-form" novalidate>
+    {% csrf_token %}
+
+    <div class="provider-section">
+      <h3>Google Sign-In</h3>
+      <p class="provider-section-sub">Create OAuth credentials in Google Cloud Console → APIs &amp; Services → Credentials, then paste them below.</p>
+      <span class="provider-status {% if settings_obj.google_active %}provider-status-on{% else %}provider-status-off{% endif %}">
+        {% if settings_obj.google_active %}✓ Google sign-in is live{% else %}Not active yet{% endif %}
+      </span>
+      <div class="redirect-uri-box">
+        <strong>Authorized redirect URI</strong>
+        {{ google_redirect_uri }}
+      </div>
+      <label class="panel-form-check">{{ form.google_enabled }} Enable Google sign-in</label>
+      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <label><span class="panel-label-text">Client ID</span>{{ form.google_client_id }}</label>
+        <label><span class="panel-label-text">Client secret</span>{{ form.google_client_secret }}</label>
+      </div>
+    </div>
+
+    <div class="provider-section">
+      <h3>Facebook Login</h3>
+      <p class="provider-section-sub">Create an app at developers.facebook.com → My Apps, add "Facebook Login", then paste the App ID/secret below.</p>
+      <span class="provider-status {% if settings_obj.facebook_active %}provider-status-on{% else %}provider-status-off{% endif %}">
+        {% if settings_obj.facebook_active %}✓ Facebook login is live{% else %}Not active yet{% endif %}
+      </span>
+      <div class="redirect-uri-box">
+        <strong>Valid OAuth redirect URI</strong>
+        {{ facebook_redirect_uri }}
+      </div>
+      <label class="panel-form-check">{{ form.facebook_enabled }} Enable Facebook login</label>
+      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+        <label><span class="panel-label-text">App ID</span>{{ form.facebook_app_id }}</label>
+        <label><span class="panel-label-text">App secret</span>{{ form.facebook_app_secret }}</label>
+      </div>
+    </div>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Save settings</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
