@@ -15,14 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('myapp.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# django.conf.urls.static.static() no-ops when DEBUG=False, which is exactly
+# the Railway production setting — so it's bypassed here and wired directly
+# to Django's serve view. There's no separate object storage/CDN configured
+# for user uploads (logo, course thumbnails, banners, etc.), so this is the
+# only thing that makes /media/... URLs resolve in production.
+urlpatterns += [
+    re_path(r'^%s(?P<path>.*)$' % settings.MEDIA_URL.lstrip('/'), serve, {'document_root': settings.MEDIA_ROOT}),
+]
