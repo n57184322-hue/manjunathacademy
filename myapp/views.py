@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, PasswordChangeView
 from decimal import Decimal
 
 from django.contrib import messages
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -232,6 +232,31 @@ class AccountPasswordChangeView(PasswordChangeView):
 def account_purchases(request):
     enrollments = request.user.enrollments.select_related('course', 'course__category')
     return render(request, 'myapp/account/purchases.html', {'enrollments': enrollments})
+
+
+@login_required(login_url='login')
+def account_coupons(request):
+    redemptions = list(CouponRedemption.objects.filter(user=request.user).select_related('coupon').order_by('-created_at'))
+    times_used_by_coupon = {}
+    for redemption in redemptions:
+        times_used_by_coupon[redemption.coupon_id] = times_used_by_coupon.get(redemption.coupon_id, 0) + 1
+
+    coupons = Coupon.objects.filter(Q(is_active=True) | Q(pk__in=times_used_by_coupon.keys())).distinct()
+
+    coupon_rows = []
+    status_order = {'available': 0, 'used': 1, 'expired': 2}
+    for coupon in coupons:
+        times_used = times_used_by_coupon.get(coupon.pk, 0)
+        if times_used >= coupon.per_user_limit:
+            status = 'used'
+        elif not coupon.is_valid_now():
+            status = 'expired'
+        else:
+            status = 'available'
+        coupon_rows.append({'coupon': coupon, 'status': status})
+    coupon_rows.sort(key=lambda row: status_order[row['status']])
+
+    return render(request, 'myapp/account/coupons.html', {'coupon_rows': coupon_rows, 'redemptions': redemptions})
 
 
 def _get_or_create_free_enrollment(user, course):

@@ -9,6 +9,7 @@ urlpatterns = [
     path('account/edit/', views.account_edit, name='account_edit'),
     path('account/password/', views.AccountPasswordChangeView.as_view(), name='account_password'),
     path('account/purchases/', views.account_purchases, name='account_purchases'),
+    path('account/coupons/', views.account_coupons, name='account_coupons'),
     path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
     path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
     path('gallery/', views.gallery_page, name='gallery_page'),

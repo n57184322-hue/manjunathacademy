@@ -1,0 +1,96 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}My Coupons — Manjunath Academy{% endblock %}
+{% block meta_description %}View coupons you can use and coupons you've already redeemed.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.auth-card{
+  position:relative;overflow:hidden;max-width:480px;margin:0 auto;background:#fff;border:1px solid var(--line);
+  border-radius:24px;padding:44px 34px;box-shadow:var(--shadow-md);text-align:center;
+}
+.auth-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+}
+.auth-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:26px;margin:0 auto 18px;
+}
+.auth-card h1{font-size:clamp(22px,3vw,26px);font-weight:800;margin:0 0 8px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;max-width:36ch;margin-inline:auto}
+.coupons-wrap{max-width:640px;margin:0 auto}
+.coupons-heading{font-size:18px;font-weight:800;color:var(--ink);margin:0 0 14px}
+.coupons-list{display:flex;flex-direction:column;gap:14px;margin:0 0 36px}
+.coupon-card{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;
+  border:1px solid var(--line);border-radius:16px;padding:18px 22px;box-shadow:var(--shadow-sm);
+}
+.coupon-card-code{font-weight:800;letter-spacing:.02em;color:var(--ink);background:#FFF7ED;border:1px dashed #FDBA74;border-radius:8px;padding:4px 11px;font-size:13.5px;display:inline-block;margin:0 0 6px}
+.coupon-card-desc{font-size:13.5px;color:#374151;margin:0 0 4px}
+.coupon-card-meta{font-size:12.5px;color:var(--muted);margin:0}
+.coupon-status{font-size:12px;font-weight:800;padding:5px 12px;border-radius:var(--r-pill);white-space:nowrap}
+.coupon-status-available{background:#ECFDF3;color:#15803D}
+.coupon-status-used{background:#EFF6FF;color:#1D4ED8}
+.coupon-status-expired{background:#FEF2F2;color:#DC2626}
+.coupon-history-item{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#FAFAF9;border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.coupon-history-code{font-weight:700;color:var(--ink);font-size:13.5px}
+.coupon-history-meta{font-size:12.5px;color:var(--muted);margin:2px 0 0}
+.coupon-history-saved{font-weight:800;color:#15803D;font-size:13.5px;white-space:nowrap}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap coupons-wrap">
+    {% if coupon_rows %}
+      <p class="coupons-heading">Coupons</p>
+      <div class="coupons-list">
+        {% for row in coupon_rows %}
+        <div class="coupon-card">
+          <div>
+            <span class="coupon-card-code">{{ row.coupon.code }}</span>
+            <p class="coupon-card-desc">
+              {% if row.coupon.discount_type == 'percentage' %}{{ row.coupon.discount_value|floatformat:0 }}% off{% if row.coupon.max_discount_amount %} (up to ₹{{ row.coupon.max_discount_amount }}){% endif %}{% else %}₹{{ row.coupon.discount_value }} off{% endif %}
+              on {{ row.coupon.get_applies_to_display|lower }}
+            </p>
+            <p class="coupon-card-meta">
+              {% if row.coupon.min_order_amount %}Min order ₹{{ row.coupon.min_order_amount }} · {% endif %}
+              {% if row.coupon.valid_until %}Valid till {{ row.coupon.valid_until|date:"d M Y" }}{% else %}No expiry{% endif %}
+            </p>
+          </div>
+          {% if row.status == 'available' %}
+            <span class="coupon-status coupon-status-available">Available</span>
+          {% elif row.status == 'used' %}
+            <span class="coupon-status coupon-status-used">✓ Used</span>
+          {% else %}
+            <span class="coupon-status coupon-status-expired">Expired</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="auth-card">
+        <span class="auth-icon">🏷️</span>
+        <h1>My coupons</h1>
+        <p class="auth-sub">No coupons are available right now. Check back later for discount offers.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'index' %}">Browse Courses</a>
+      </div>
+    {% endif %}
+
+    {% if redemptions %}
+      <p class="coupons-heading">Redemption history</p>
+      <div class="coupons-list">
+        {% for redemption in redemptions %}
+        <div class="coupon-history-item">
+          <div>
+            <p class="coupon-history-code">{{ redemption.coupon.code }}</p>
+            <p class="coupon-history-meta">Used on {{ redemption.created_at|date:"d M Y" }}</p>
+          </div>
+          <span class="coupon-history-saved">Saved ₹{{ redemption.discount_amount }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
