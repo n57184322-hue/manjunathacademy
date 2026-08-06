@@ -1,0 +1,56 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ product.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ product.description|truncatechars:150 }}{% endblock %}
+
+{% block extra_style %}
+.pd-section{padding:52px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%)}
+.pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;max-width:920px;margin:0 auto;align-items:start}
+.pd-thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:20px;background:#F3F1EE;box-shadow:var(--shadow-sm)}
+.pd-thumb-empty{width:100%;aspect-ratio:1/1;border-radius:20px;background:#F3F1EE;display:grid;place-items:center;font-size:60px}
+.pd-info h1{font-size:clamp(22px,3vw,28px);margin:0 0 8px}
+.pd-cat{font-size:12.5px;font-weight:800;color:var(--orange-deep);text-transform:uppercase;letter-spacing:.05em;margin:0 0 14px}
+.pd-price-row{display:flex;align-items:baseline;gap:10px;margin:0 0 18px}
+.pd-price{font-size:28px;font-weight:800;color:var(--ink)}
+.pd-price-old{font-size:15px;color:var(--muted);text-decoration:line-through}
+.pd-stock{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;padding:5px 14px;border-radius:var(--r-pill);margin-bottom:18px}
+.pd-stock-in{background:#ECFDF3;color:#15803D}
+.pd-stock-out{background:#FEF2F2;color:#DC2626}
+.pd-desc{color:#374151;font-size:14.5px;line-height:1.8;white-space:pre-line;margin:0 0 24px}
+.pd-actions{display:flex;gap:12px;flex-wrap:wrap}
+@media (max-width:760px){.pd-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="pd-section">
+  <div class="wrap pd-grid">
+    <div>
+      {% if product.image %}
+        <img class="pd-thumb" src="{{ product.image.url }}" alt="{{ product.name }}">
+      {% else %}
+        <div class="pd-thumb-empty">📦</div>
+      {% endif %}
+    </div>
+    <div class="pd-info">
+      {% if product.category %}<p class="pd-cat">{{ product.category.icon }} {{ product.category.name }}</p>{% endif %}
+      <h1>{{ product.name }}</h1>
+      <div class="pd-price-row">
+        <span class="pd-price">₹{{ product.current_price }}</span>
+        {% if product.original_price and product.original_price != product.current_price %}<span class="pd-price-old">₹{{ product.original_price }}</span>{% endif %}
+      </div>
+      <span class="pd-stock {% if product.in_stock %}pd-stock-in{% else %}pd-stock-out{% endif %}">
+        {% if product.in_stock %}✓ In stock{% else %}✕ Out of stock{% endif %}
+      </span>
+      {% if product.description %}<p class="pd-desc">{{ product.description }}</p>{% endif %}
+      <div class="pd-actions">
+        {% if product.in_stock %}
+          <a class="btn btn-primary btn-lg" href="{% url 'store_checkout' product.pk %}">Buy Now</a>
+        {% else %}
+          <span class="btn btn-primary btn-lg" style="opacity:.5;pointer-events:none">Out of Stock</span>
+        {% endif %}
+        <a class="btn btn-ghost btn-lg" href="{% url 'store_page' %}">← Back to Store</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -17,6 +17,9 @@
 .test-otp-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .test-otp-row input[type="text"]{flex:1;min-width:200px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit}
 .test-otp-row select{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit}
+.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.settings-row-wide{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media (max-width:560px){.settings-row,.settings-row-wide{grid-template-columns:1fr}}
 {% endblock %}
 
 {% block content %}
@@ -35,7 +38,7 @@
         {% if settings_obj.sms_configured %}✓ SMS provider configured{% else %}Not configured — SMS OTPs will fail until this is set up{% endif %}
       </span>
 
-      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="settings-row">
         <label><span class="panel-label-text">Provider name</span>{{ form.sms_provider_name }}</label>
         <label><span class="panel-label-text">Sender ID</span>{{ form.sms_sender_id }}</label>
       </div>
@@ -50,15 +53,15 @@
         {% if settings_obj.smtp_configured %}✓ SMTP configured{% else %}Not configured — using the site's default email sending{% endif %}
       </span>
 
-      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+      <div class="settings-row-wide">
         <label><span class="panel-label-text">SMTP host</span>{{ form.smtp_host }}</label>
         <label><span class="panel-label-text">Port</span>{{ form.smtp_port }}</label>
       </div>
-      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+      <div class="settings-row" style="margin-top:14px">
         <label><span class="panel-label-text">Username</span>{{ form.smtp_username }}</label>
         <label><span class="panel-label-text">Password</span>{{ form.smtp_password }}</label>
       </div>
-      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+      <div class="settings-row" style="margin-top:14px">
         <label><span class="panel-label-text">From email</span>{{ form.smtp_from_email }}</label>
         <label><span class="panel-label-text">From name</span>{{ form.smtp_from_name }}</label>
       </div>

@@ -14,6 +14,8 @@
 .provider-status-off{background:#F3F4F6;color:#6B7280}
 .redirect-uri-box{background:#FAFAF9;border:1px dashed var(--line);border-radius:10px;padding:10px 14px;font-size:12.5px;color:#374151;word-break:break-all;margin-bottom:16px}
 .redirect-uri-box strong{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-weight:800}
+.settings-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.settings-row{grid-template-columns:1fr}}
 {% endblock %}
 
 {% block content %}
@@ -36,7 +38,7 @@
         {{ google_redirect_uri }}
       </div>
       <label class="panel-form-check">{{ form.google_enabled }} Enable Google sign-in</label>
-      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+      <div class="settings-row" style="margin-top:14px">
         <label><span class="panel-label-text">Client ID</span>{{ form.google_client_id }}</label>
         <label><span class="panel-label-text">Client secret</span>{{ form.google_client_secret }}</label>
       </div>
@@ -53,7 +55,7 @@
         {{ facebook_redirect_uri }}
       </div>
       <label class="panel-form-check">{{ form.facebook_enabled }} Enable Facebook login</label>
-      <div class="panel-form-row course-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px">
+      <div class="settings-row" style="margin-top:14px">
         <label><span class="panel-label-text">App ID</span>{{ form.facebook_app_id }}</label>
         <label><span class="panel-label-text">App secret</span>{{ form.facebook_app_secret }}</label>
       </div>

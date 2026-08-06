@@ -719,7 +719,7 @@
         {% else %}
           <div class="pc-top"><span class="pc-icon pc-icon-grey">📦</span></div>
         {% endif %}
-        <h3>{{ product.name }}</h3>
+        <h3><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
         {% if product.description %}<p>{{ product.description|truncatechars:100 }}</p>{% endif %}
         <div class="pc-meta">
           <span>₹{{ product.current_price }}</span>
@@ -734,6 +734,9 @@
       {% empty %}
       <p class="panel-empty">No products added yet — check back soon.</p>
       {% endfor %}
+    </div>
+    <div style="text-align:center;margin-top:30px">
+      <a class="btn btn-primary btn-lg" href="{% url 'store_page' %}">View All Products →</a>
     </div>
   </div>
 </section>
@@ -832,6 +835,23 @@
 {% endblock %}
 
 {% block extra_script %}
+(function () {
+  var tabs = document.querySelectorAll('#tsTabs .ts-tab');
+  var cards = document.querySelectorAll('#tsGrid .ts-card');
+  if (!tabs.length || !cards.length) return;
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('is-active'); });
+      tab.classList.add('is-active');
+      var cat = tab.dataset.cat;
+      cards.forEach(function (card) {
+        card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+      });
+    });
+  });
+})();
+
 (function () {
   var IS_AUTHENTICATED = {% if user.is_authenticated %}true{% else %}false{% endif %};
   var playBtn = document.getElementById('quizPlayBtn');

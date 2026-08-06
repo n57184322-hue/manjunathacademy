@@ -126,7 +126,7 @@ def index(request):
     video_courses = Course.objects.filter(course_type=Course.VIDEO_COURSE, is_active=True)
     elibrary_items = Course.objects.filter(course_type=Course.ELIBRARY, is_active=True)
     test_series_categories = Category.objects.filter(courses__in=test_series_courses).distinct()
-    store_products = Product.objects.filter(is_active=True)
+    store_products = Product.objects.filter(is_active=True)[:8]
     jobs = JobPosting.objects.filter(is_active=True)
     bundles = Bundle.objects.filter(is_active=True).prefetch_related('courses')
     homepage_content = HomepageContent.load()
@@ -851,6 +851,17 @@ def razorpay_verify_payment(request):
         raise Http404
 
     return JsonResponse({'ok': True, 'redirect_url': redirect_url})
+
+
+def store_page(request):
+    products = Product.objects.filter(is_active=True).select_related('category')
+    categories = Category.objects.filter(products__in=products).distinct()
+    return render(request, 'myapp/store.html', {'products': products, 'categories': categories})
+
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    return render(request, 'myapp/product_detail.html', {'product': product})
 
 
 @login_required(login_url='login')
