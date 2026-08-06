@@ -112,6 +112,11 @@
           {% if form.password2.errors %}<ul class="auth-errors">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         </label>
 
+        <label><span class="auth-label-text">🎁 Referral code</span>
+          {{ form.referral_code }}
+          {% if form.referral_code.errors %}<ul class="auth-errors">{% for e in form.referral_code.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </label>
+
         {% if form.non_field_errors %}
           <ul class="auth-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}

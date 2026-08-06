@@ -4,7 +4,7 @@ from django.contrib.auth.views import LoginView, PasswordChangeView
 from decimal import Decimal
 
 from django.contrib import messages
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -81,6 +81,8 @@ from .models import (
     Question,
     QuizQuestion,
     RazorpaySettings,
+    ReferralCode,
+    ReferralSignup,
     ResultHighlight,
     SiteSettings,
     StaffAttendance,
@@ -205,10 +207,30 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save()
+            referral_code_str = form.cleaned_data.get('referral_code')
+            if referral_code_str:
+                referral_code = ReferralCode.objects.filter(code=referral_code_str).first()
+                if referral_code:
+                    ReferralSignup.objects.create(referral_code=referral_code, referred_user=user)
+                    Coupon.objects.create(
+                        code=f'WELCOME10-{user.pk}',
+                        description=f'10% referral welcome discount (referred by {referral_code.user.name})',
+                        discount_type=Coupon.PERCENTAGE,
+                        discount_value=10,
+                        applies_to=Coupon.APPLIES_ALL,
+                        per_user_limit=1,
+                        usage_limit=1,
+                        restricted_to_user=user,
+                        is_active=True,
+                    )
             auth_login(request, user)
             return redirect('index')
     else:
-        form = SignupForm()
+        initial = {}
+        ref_param = request.GET.get('ref', '').strip().upper()
+        if ref_param:
+            initial['referral_code'] = ref_param
+        form = SignupForm(initial=initial)
 
     return render(request, 'myapp/signup.html', {'form': form})
 
@@ -266,7 +288,11 @@ def account_coupons(request):
     for redemption in redemptions:
         times_used_by_coupon[redemption.coupon_id] = times_used_by_coupon.get(redemption.coupon_id, 0) + 1
 
-    coupons = Coupon.objects.filter(Q(is_active=True) | Q(pk__in=times_used_by_coupon.keys())).distinct()
+    coupons = Coupon.objects.filter(
+        Q(is_active=True) | Q(pk__in=times_used_by_coupon.keys())
+    ).filter(
+        Q(restricted_to_user__isnull=True) | Q(restricted_to_user=request.user)
+    ).distinct()
 
     coupon_rows = []
     status_order = {'available': 0, 'used': 1, 'expired': 2}
@@ -288,6 +314,14 @@ def account_coupons(request):
 def account_certificates(request):
     certificates = request.user.certificates.all()
     return render(request, 'myapp/account/certificates.html', {'certificates': certificates})
+
+
+@login_required(login_url='login')
+def account_refer_earn(request):
+    referral = ReferralCode.get_or_create_for(request.user)
+    signups = referral.signups.select_related('referred_user').order_by('-created_at')
+    signup_url = request.build_absolute_uri(f"{reverse('signup')}?ref={referral.code}")
+    return render(request, 'myapp/account/refer_earn.html', {'referral': referral, 'signups': signups, 'signup_url': signup_url})
 
 
 def _get_or_create_free_enrollment(user, course):
@@ -413,6 +447,9 @@ def _validate_coupon(code, content_type, base_amount, user):
 
     if not coupon.is_valid_now():
         return None, Decimal('0'), 'This coupon is inactive or has expired.'
+
+    if coupon.restricted_to_user_id and coupon.restricted_to_user_id != user.id:
+        return None, Decimal('0'), 'This coupon is not valid for your account.'
 
     if coupon.applies_to != Coupon.APPLIES_ALL and coupon.applies_to != content_type:
         return None, Decimal('0'), 'This coupon is not valid for this purchase.'
@@ -1805,6 +1842,14 @@ def panel_coupon_delete(request, pk):
         coupon.delete()
         messages.success(request, 'Coupon deleted.')
     return redirect('panel_coupon_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_refer_earn(request):
+    codes = ReferralCode.objects.select_related('user').annotate(signup_count=Count('signups'))
+    signups = ReferralSignup.objects.select_related('referral_code__user', 'referred_user')
+    return render(request, 'myapp/panel/refer_earn.html', {'codes': codes, 'signups': signups})
 
 
 @login_required(login_url='login')

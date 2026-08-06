@@ -11,6 +11,7 @@ urlpatterns = [
     path('account/purchases/', views.account_purchases, name='account_purchases'),
     path('account/coupons/', views.account_coupons, name='account_coupons'),
     path('account/certificates/', views.account_certificates, name='account_certificates'),
+    path('account/refer-earn/', views.account_refer_earn, name='account_refer_earn'),
     path('current-affairs/', views.daily_updates_page, {'category': 'current_affairs'}, name='current_affairs_page'),
     path('daily-news/', views.daily_updates_page, {'category': 'daily_news'}, name='daily_news_page'),
     path('gallery/', views.gallery_page, name='gallery_page'),
@@ -113,6 +114,7 @@ urlpatterns = [
     path('panel/bundles/<int:pk>/edit/', views.panel_bundle_edit, name='panel_bundle_edit'),
     path('panel/bundles/<int:pk>/delete/', views.panel_bundle_delete, name='panel_bundle_delete'),
 
+    path('panel/refer-earn/', views.panel_refer_earn, name='panel_refer_earn'),
     path('panel/coupons/', views.panel_coupon_list, name='panel_coupon_list'),
     path('panel/coupons/add/', views.panel_coupon_add, name='panel_coupon_add'),
     path('panel/coupons/<int:pk>/edit/', views.panel_coupon_edit, name='panel_coupon_edit'),

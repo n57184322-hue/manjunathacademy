@@ -1,0 +1,112 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Refer & Earn — Manjunath Academy{% endblock %}
+{% block meta_description %}Refer friends to Manjunath Academy and give them a 10% discount using your referral code.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.refer-wrap{max-width:680px;margin:0 auto}
+.refer-hero{
+  position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:24px;
+  padding:40px 34px;box-shadow:var(--shadow-md);text-align:center;margin-bottom:28px;
+}
+.refer-hero::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+}
+.refer-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:26px;margin:0 auto 16px;
+}
+.refer-hero h1{font-size:clamp(21px,3vw,25px);font-weight:800;margin:0 0 8px}
+.refer-hero-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;max-width:44ch;margin-inline:auto}
+.refer-code-box{
+  display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+  background:#FFF7ED;border:2px dashed #FDBA74;border-radius:16px;padding:18px 22px;margin:0 0 18px;
+}
+.refer-code-text{font-size:28px;font-weight:800;letter-spacing:.06em;color:var(--ink)}
+.refer-copy-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.refer-copy-msg{font-size:12.5px;font-weight:700;color:#15803D;min-height:16px;margin:8px 0 0}
+.refer-link-row{display:flex;gap:8px;margin-top:18px}
+.refer-link-row input{
+  flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 14px;
+  font-size:13px;font-family:inherit;color:var(--muted);background:#FAFAF9;
+}
+.refer-signups{background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px;box-shadow:var(--shadow-sm)}
+.refer-signups-head{padding:18px 20px 10px;font-weight:800;color:var(--ink);font-size:15px}
+.refer-signup-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 20px;border-top:1px solid var(--line)}
+.refer-signup-name{font-weight:700;color:var(--ink);margin:0}
+.refer-signup-date{font-size:12.5px;color:var(--muted);margin:0}
+.refer-empty{padding:26px 20px;text-align:center;color:var(--muted);font-size:13.5px}
+@media (max-width:560px){.refer-link-row{flex-direction:column}}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap refer-wrap">
+    <div class="refer-hero">
+      <span class="refer-icon">🎁</span>
+      <h1>Refer & Earn</h1>
+      <p class="refer-hero-sub">Share your code with friends. When they sign up using it, they instantly get a <strong>10% discount</strong> on their first purchase at Manjunath Academy.</p>
+
+      <div class="refer-code-box">
+        <span class="refer-code-text" id="referCode">{{ referral.code }}</span>
+      </div>
+      <div class="refer-copy-row">
+        <button type="button" class="btn btn-primary" id="copyCodeBtn">Copy code</button>
+      </div>
+
+      <div class="refer-link-row">
+        <input type="text" id="referLink" value="{{ signup_url }}" readonly>
+        <button type="button" class="btn btn-ghost" id="copyLinkBtn">Copy link</button>
+      </div>
+      <p class="refer-copy-msg" id="referCopyMsg"></p>
+    </div>
+
+    <div class="refer-signups">
+      <p class="refer-signups-head">People who joined using your code ({{ signups|length }})</p>
+      {% if signups %}
+        {% for signup in signups %}
+        <div class="refer-signup-item">
+          <p class="refer-signup-name">{{ signup.referred_user.name }}</p>
+          <p class="refer-signup-date">Joined {{ signup.created_at|date:"d M Y" }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="refer-empty">No one has signed up with your code yet. Share it to start earning!</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_script %}
+(function () {
+  var copyMsg = document.getElementById('referCopyMsg');
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    var temp = document.createElement('textarea');
+    temp.value = text;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    return Promise.resolve();
+  }
+
+  document.getElementById('copyCodeBtn').addEventListener('click', function () {
+    copyText(document.getElementById('referCode').textContent.trim()).then(function () {
+      copyMsg.textContent = 'Code copied to clipboard!';
+    });
+  });
+
+  document.getElementById('copyLinkBtn').addEventListener('click', function () {
+    copyText(document.getElementById('referLink').value).then(function () {
+      copyMsg.textContent = 'Link copied to clipboard!';
+    });
+  });
+})();
+{% endblock %}

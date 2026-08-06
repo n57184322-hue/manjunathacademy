@@ -1066,6 +1066,10 @@ class Coupon(models.Model):
     per_user_limit = models.PositiveIntegerField(default=1, help_text='How many times a single student may use this coupon')
     used_count = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    restricted_to_user = models.ForeignKey(
+        'CustomUser', null=True, blank=True, on_delete=models.CASCADE, related_name='personal_coupons',
+        help_text='System-generated personal coupons (e.g. referral rewards) set this automatically.',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1208,3 +1212,39 @@ class FAQItem(models.Model):
 
     def __str__(self):
         return self.question[:60]
+
+
+class ReferralCode(models.Model):
+    user = models.OneToOneField('CustomUser', on_delete=models.CASCADE, related_name='referral_code')
+    code = models.CharField(max_length=20, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.code
+
+    @classmethod
+    def get_or_create_for(cls, user):
+        existing = cls.objects.filter(user=user).first()
+        if existing:
+            return existing
+
+        base = re.sub(r'[^A-Za-z0-9]', '', user.name).upper()[:6] or 'USER'
+        code = f'{base}{user.pk}'
+        while cls.objects.filter(code=code).exists():
+            code = f'{code}X'
+        return cls.objects.create(user=user, code=code)
+
+
+class ReferralSignup(models.Model):
+    referral_code = models.ForeignKey(ReferralCode, on_delete=models.CASCADE, related_name='signups')
+    referred_user = models.OneToOneField('CustomUser', on_delete=models.CASCADE, related_name='referred_by_signup')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.referral_code.user} referred {self.referred_user}'

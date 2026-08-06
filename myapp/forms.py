@@ -29,6 +29,7 @@ from .models import (
     Question,
     QuizQuestion,
     RazorpaySettings,
+    ReferralCode,
     ResultHighlight,
     SiteSettings,
     StaffMember,
@@ -63,6 +64,11 @@ CITY_CHOICES = [
 
 
 class SignupForm(UserCreationForm):
+    referral_code = forms.CharField(
+        required=False, max_length=20,
+        widget=forms.TextInput(attrs={'placeholder': 'Referral code (optional)'}),
+    )
+
     class Meta:
         model = CustomUser
         fields = ('name', 'email', 'number', 'age', 'gender', 'state', 'city')
@@ -86,6 +92,12 @@ class SignupForm(UserCreationForm):
         self.fields['city'].required = False
         self.fields['password1'].widget.attrs['placeholder'] = 'Create a password'
         self.fields['password2'].widget.attrs['placeholder'] = 'Re-enter password'
+
+    def clean_referral_code(self):
+        code = self.cleaned_data.get('referral_code', '').strip().upper()
+        if code and not ReferralCode.objects.filter(code=code).exists():
+            raise forms.ValidationError('This referral code is not valid.')
+        return code
 
 
 class EmailAuthenticationForm(AuthenticationForm):
