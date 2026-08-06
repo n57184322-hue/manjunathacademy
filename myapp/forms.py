@@ -15,7 +15,6 @@ from .models import (
     CustomUser,
     DailyUpdateCard,
     DailyUpdatePost,
-    DropboxSettings,
     EligibilityCriteria,
     ExamCalendarEvent,
     ExtraPage,
@@ -394,15 +393,6 @@ class SSOCompleteSignupForm(forms.Form):
         max_length=15, label='Phone number',
         widget=forms.TextInput(attrs={'placeholder': '10-digit mobile number', 'autocomplete': 'off'}),
     )
-
-
-class DropboxSettingsForm(forms.ModelForm):
-    class Meta:
-        model = DropboxSettings
-        fields = ('access_token',)
-        widgets = {
-            'access_token': forms.PasswordInput(attrs={'placeholder': 'Your Dropbox access token', 'autocomplete': 'off'}, render_value=True),
-        }
 
 
 class RazorpaySettingsForm(forms.ModelForm):

@@ -659,7 +659,6 @@ class QuizZoneAttempt(models.Model):
 
 
 class DropboxSettings(models.Model):
-    access_token = models.CharField(max_length=500, blank=True, help_text='Generated from the Dropbox App Console for your app.')
     last_backup_at = models.DateTimeField(null=True, blank=True)
     last_backup_status = models.CharField(max_length=255, blank=True)
 
@@ -681,7 +680,8 @@ class DropboxSettings(models.Model):
 
     @property
     def is_configured(self):
-        return bool(self.access_token)
+        from . import dropbox_utils
+        return dropbox_utils.is_configured()
 
     def __str__(self):
         return 'Dropbox settings'

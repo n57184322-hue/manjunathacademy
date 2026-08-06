@@ -1,10 +1,18 @@
 import json
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
+from django.conf import settings
+
+TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token'
 UPLOAD_URL = 'https://content.dropboxapi.com/2/files/upload'
 DOWNLOAD_URL = 'https://content.dropboxapi.com/2/files/download'
+LIST_FOLDER_URL = 'https://api.dropboxapi.com/2/files/list_folder'
 ACCOUNT_URL = 'https://api.dropboxapi.com/2/users/get_current_account'
+
+_token_cache = {'token': None, 'expires_at': 0}
 
 
 class DropboxError(Exception):
@@ -18,11 +26,52 @@ def _http_error_detail(exc):
         return str(exc)
 
 
-def test_connection(access_token):
+def is_configured():
+    return bool(settings.DROPBOX_APP_KEY and settings.DROPBOX_APP_SECRET and settings.DROPBOX_REFRESH_TOKEN)
+
+
+def _get_access_token():
+    if _token_cache['token'] and time.time() < _token_cache['expires_at'] - 60:
+        return _token_cache['token']
+
+    if not is_configured():
+        raise DropboxError('Dropbox app key/secret/refresh token are not configured.')
+
+    data = urllib.parse.urlencode({
+        'grant_type': 'refresh_token',
+        'refresh_token': settings.DROPBOX_REFRESH_TOKEN,
+        'client_id': settings.DROPBOX_APP_KEY,
+        'client_secret': settings.DROPBOX_APP_SECRET,
+    }).encode('utf-8')
+    req = urllib.request.Request(TOKEN_URL, data=data, method='POST')
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            payload = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        raise DropboxError(f'Could not refresh Dropbox access token: {_http_error_detail(exc)}')
+    except Exception as exc:
+        raise DropboxError(f'Could not refresh Dropbox access token: {exc}')
+
+    token = payload.get('access_token')
+    if not token:
+        raise DropboxError('Dropbox did not return an access token.')
+    _token_cache['token'] = token
+    _token_cache['expires_at'] = time.time() + payload.get('expires_in', 14400)
+    return token
+
+
+def _auth_headers(extra=None):
+    headers = {'Authorization': f'Bearer {_get_access_token()}'}
+    if extra:
+        headers.update(extra)
+    return headers
+
+
+def test_connection():
     req = urllib.request.Request(
         ACCOUNT_URL,
         data=b'null',
-        headers={'Authorization': f'Bearer {access_token}', 'Content-Type': 'application/json'},
+        headers=_auth_headers({'Content-Type': 'application/json'}),
         method='POST',
     )
     try:
@@ -34,18 +83,17 @@ def test_connection(access_token):
         raise DropboxError(f'Could not connect to Dropbox: {exc}')
 
 
-def upload_file(access_token, dropbox_path, local_path):
+def upload_file(dropbox_path, local_path):
     with open(local_path, 'rb') as f:
         data = f.read()
     api_arg = json.dumps({'path': dropbox_path, 'mode': 'overwrite', 'autorename': False, 'mute': True})
     req = urllib.request.Request(
         UPLOAD_URL,
         data=data,
-        headers={
-            'Authorization': f'Bearer {access_token}',
+        headers=_auth_headers({
             'Dropbox-API-Arg': api_arg,
             'Content-Type': 'application/octet-stream',
-        },
+        }),
         method='POST',
     )
     try:
@@ -55,12 +103,12 @@ def upload_file(access_token, dropbox_path, local_path):
         raise DropboxError(f'Upload failed for {dropbox_path}: {_http_error_detail(exc)}')
 
 
-def download_file(access_token, dropbox_path, local_path):
+def download_file(dropbox_path, local_path):
     api_arg = json.dumps({'path': dropbox_path})
     req = urllib.request.Request(
         DOWNLOAD_URL,
         data=b'',
-        headers={'Authorization': f'Bearer {access_token}', 'Dropbox-API-Arg': api_arg},
+        headers=_auth_headers({'Dropbox-API-Arg': api_arg}),
         method='POST',
     )
     try:
@@ -70,3 +118,27 @@ def download_file(access_token, dropbox_path, local_path):
         raise DropboxError(f'Download failed for {dropbox_path}: {_http_error_detail(exc)}')
     with open(local_path, 'wb') as f:
         f.write(content)
+
+
+def list_folder(path):
+    """Returns a list of {name, server_modified} dicts for files directly inside `path`.
+
+    Returns an empty list if the folder doesn't exist yet (e.g. no backups taken so far).
+    """
+    req = urllib.request.Request(
+        LIST_FOLDER_URL,
+        data=json.dumps({'path': path}).encode('utf-8'),
+        headers=_auth_headers({'Content-Type': 'application/json'}),
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            payload = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        detail = _http_error_detail(exc)
+        if 'path/not_found' in detail:
+            return []
+        raise DropboxError(f'Could not list {path}: {detail}')
+
+    entries = [e for e in payload.get('entries', []) if e.get('.tag') == 'file']
+    return [{'name': e['name'], 'server_modified': e.get('server_modified', '')} for e in entries]

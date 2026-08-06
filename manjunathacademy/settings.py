@@ -156,6 +156,14 @@ STORAGES = {
 # one cached harmlessly. This is what actually speeds up repeat page loads.
 WHITENOISE_MAX_AGE = 31536000
 
+# Dropbox app used for the admin panel's database backup/restore feature.
+# Uses a refresh token so access tokens are minted on demand and never expire.
+DROPBOX_APP_KEY = os.environ.get('DROPBOX_APP_KEY', 'wgg2fsw5pf16x8q')
+DROPBOX_APP_SECRET = os.environ.get('DROPBOX_APP_SECRET', '38dg9gi6djz3zuu')
+DROPBOX_REFRESH_TOKEN = os.environ.get(
+    'DROPBOX_REFRESH_TOKEN', 'Si57f7yXuB0AAAAAAAAAAZGrsYbd1YLQpvGHxlJES4DRvKr7mDfZo8xqLaJBTY_s'
+)
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
