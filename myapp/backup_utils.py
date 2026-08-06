@@ -123,3 +123,47 @@ def restore_database(dropbox_settings, filename=None):
 
     shutil.move(tmp_path, db_path)
     return True, f'Database restored from {filename or "the latest backup"}. Your previous database was saved as {os.path.basename(safety_path)}. Restart the app for the change to fully take effect.'
+
+
+def restore_media():
+    """Downloads every file under /Manjunath Academy/Media back into MEDIA_ROOT, overwriting local copies."""
+    if not dropbox_utils.is_configured():
+        return False, 'Dropbox is not configured.'
+
+    try:
+        entries = dropbox_utils.list_folder(MEDIA_BACKUP_ROOT, recursive=True)
+    except DropboxError as exc:
+        return False, str(exc)
+
+    if not entries:
+        return False, 'No media backup found on Dropbox yet.'
+
+    media_root = settings.MEDIA_ROOT
+    prefix = MEDIA_BACKUP_ROOT.lower() + '/'
+    restored = 0
+    errors = []
+    for entry in entries:
+        path_lower = entry['path_display'].lower()
+        if not path_lower.startswith(prefix):
+            continue
+        rel_path = entry['path_display'][len(MEDIA_BACKUP_ROOT) + 1:]
+        local_path = os.path.join(media_root, *rel_path.split('/'))
+        try:
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            dropbox_utils.download_file(entry['path_display'], local_path)
+            restored += 1
+        except DropboxError as exc:
+            errors.append(str(exc))
+
+    if errors:
+        return False, f'{restored} file(s) restored, {len(errors)} error(s).'
+    return True, f'{restored} media file(s) restored from Dropbox.'
+
+
+def restore_everything(dropbox_settings, filename=None):
+    """Restores the database (latest or a specific backup) and every media file, in one action."""
+    db_ok, db_detail = restore_database(dropbox_settings, filename=filename)
+    media_ok, media_detail = restore_media()
+    ok = db_ok and media_ok
+    detail = f'Database: {db_detail} | Media: {media_detail}'
+    return ok, detail

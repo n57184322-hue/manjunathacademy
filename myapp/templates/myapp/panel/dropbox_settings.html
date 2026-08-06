@@ -36,6 +36,15 @@
 .btn-row-restore:hover{background:#FEF2F2}
 .provider-status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:var(--r-pill);margin-bottom:16px}
 .provider-status-off{background:#F3F4F6;color:#6B7280}
+.redeploy-card{border-radius:16px;padding:20px 22px;margin-bottom:24px;background:linear-gradient(120deg,#064E3B,#059669);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.redeploy-card h3{font-size:15.5px;margin:0 0 4px}
+.redeploy-card p{margin:0;font-size:13px;opacity:.9;max-width:52ch}
+.btn-restore-all{background:#fff;color:#065F46;font-weight:800;padding:12px 22px;border-radius:12px;border:none;cursor:pointer;font-size:14px;white-space:nowrap}
+.btn-restore-all:hover{background:#ECFDF5}
+.media-restore-row{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.media-restore-row p{margin:0;font-size:12.5px;color:var(--muted)}
+.btn-ghost-sm{padding:9px 16px;font-size:13px;font-weight:700;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap}
+.btn-ghost-sm:hover{border-color:#DC2626;color:#DC2626}
 {% endblock %}
 
 {% block content %}
@@ -47,6 +56,20 @@
   <span class="provider-status provider-status-off">⚠ Dropbox app credentials are not configured</span>
 {% elif dropbox_error %}
   <p class="panel-alert">Could not reach Dropbox: {{ dropbox_error }}</p>
+{% endif %}
+
+{% if settings_obj.is_configured and backups %}
+<div class="redeploy-card">
+  <div>
+    <h3>🔄 Just pushed new code / redeployed?</h3>
+    <p>Railway resets the site's data on every deploy. Click this once, right after each deploy, to bring back your latest database and all uploaded images from Dropbox.</p>
+  </div>
+  <form method="post" onsubmit="return confirm('This restores the latest database backup and all media files from Dropbox, overwriting whatever is currently live. Continue?');">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="restore_all">
+    <button type="submit" class="btn-restore-all">Restore Everything Now</button>
+  </form>
+</div>
 {% endif %}
 
 <div class="backup-grid">
@@ -83,6 +106,14 @@
           <p class="backup-empty">No backups available yet — run a backup first.</p>
         {% endif %}
       </form>
+      <div class="media-restore-row">
+        <p>Only need the images/videos back, not the database?</p>
+        <form method="post" onsubmit="return confirm('This overwrites local media files with the latest backup from Dropbox. Continue?');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="restore_media">
+          <button type="submit" class="btn-ghost-sm" {% if not settings_obj.is_configured %}disabled{% endif %}>Restore Media Only</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

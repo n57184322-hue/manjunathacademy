@@ -1827,6 +1827,16 @@ def panel_dropbox_settings(request):
             messages.success(request, detail) if ok else messages.error(request, f'Restore failed: {detail}')
             return redirect('panel_dropbox_settings')
 
+        if request.POST.get('action') == 'restore_media':
+            ok, detail = backup_utils.restore_media()
+            messages.success(request, detail) if ok else messages.error(request, f'Media restore failed: {detail}')
+            return redirect('panel_dropbox_settings')
+
+        if request.POST.get('action') == 'restore_all':
+            ok, detail = backup_utils.restore_everything(settings_obj)
+            messages.success(request, f'Restore complete. {detail}') if ok else messages.error(request, f'Restore finished with errors. {detail}')
+            return redirect('panel_dropbox_settings')
+
     backups = []
     dropbox_error = None
     if settings_obj.is_configured:

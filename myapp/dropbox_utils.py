@@ -10,6 +10,7 @@ TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token'
 UPLOAD_URL = 'https://content.dropboxapi.com/2/files/upload'
 DOWNLOAD_URL = 'https://content.dropboxapi.com/2/files/download'
 LIST_FOLDER_URL = 'https://api.dropboxapi.com/2/files/list_folder'
+LIST_FOLDER_CONTINUE_URL = 'https://api.dropboxapi.com/2/files/list_folder/continue'
 ACCOUNT_URL = 'https://api.dropboxapi.com/2/users/get_current_account'
 
 _token_cache = {'token': None, 'expires_at': 0}
@@ -120,25 +121,39 @@ def download_file(dropbox_path, local_path):
         f.write(content)
 
 
-def list_folder(path):
-    """Returns a list of {name, server_modified} dicts for files directly inside `path`.
-
-    Returns an empty list if the folder doesn't exist yet (e.g. no backups taken so far).
-    """
+def _post_json(url, body):
     req = urllib.request.Request(
-        LIST_FOLDER_URL,
-        data=json.dumps({'path': path}).encode('utf-8'),
+        url,
+        data=json.dumps(body).encode('utf-8'),
         headers=_auth_headers({'Content-Type': 'application/json'}),
         method='POST',
     )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode('utf-8'))
+
+
+def list_folder(path, recursive=False):
+    """Returns [{name, path_display, server_modified}, ...] for files inside `path`.
+
+    Returns an empty list if the folder doesn't exist yet (e.g. no backups taken so far).
+    """
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            payload = json.loads(resp.read().decode('utf-8'))
+        payload = _post_json(LIST_FOLDER_URL, {'path': path, 'recursive': recursive})
     except urllib.error.HTTPError as exc:
         detail = _http_error_detail(exc)
         if 'path/not_found' in detail:
             return []
         raise DropboxError(f'Could not list {path}: {detail}')
+    except Exception as exc:
+        raise DropboxError(f'Could not list {path}: {exc}')
 
-    entries = [e for e in payload.get('entries', []) if e.get('.tag') == 'file']
-    return [{'name': e['name'], 'server_modified': e.get('server_modified', '')} for e in entries]
+    entries = list(payload.get('entries', []))
+    while payload.get('has_more'):
+        payload = _post_json(LIST_FOLDER_CONTINUE_URL, {'cursor': payload['cursor']})
+        entries.extend(payload.get('entries', []))
+
+    files = [e for e in entries if e.get('.tag') == 'file']
+    return [
+        {'name': e['name'], 'path_display': e.get('path_display', e['name']), 'server_modified': e.get('server_modified', '')}
+        for e in files
+    ]
