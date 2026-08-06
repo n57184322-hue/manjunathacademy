@@ -1,0 +1,54 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Add Transaction{% endblock %}
+{% block page_title %}Add transaction{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_accounts %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div><h2>Record a transaction</h2></div>
+    <a class="btn btn-ghost" href="{% url 'panel_account_list' %}">← Back to accounts</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Type <span class="req">*</span></span>{{ form.type }}</label>
+      <label><span class="panel-label-text">Category</span>{{ form.category }}</label>
+    </div>
+
+    <label><span class="panel-label-text">Title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Amount (₹) <span class="req">*</span></span>
+        {{ form.amount }}
+        {% if form.amount.errors %}<ul class="panel-errors">{% for e in form.amount.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Date <span class="req">*</span></span>
+        {{ form.date }}
+        {% if form.date.errors %}<ul class="panel-errors">{% for e in form.date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Notes</span>{{ form.notes }}</label>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Save transaction</button>
+      <a class="btn btn-ghost" href="{% url 'panel_account_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

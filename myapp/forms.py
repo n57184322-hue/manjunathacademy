@@ -13,6 +13,7 @@ from .models import (
     DailyUpdateCard,
     DailyUpdatePost,
     EligibilityCriteria,
+    FeeInvoice,
     GalleryImage,
     HeroSection,
     HomepageContent,
@@ -26,7 +27,9 @@ from .models import (
     RazorpaySettings,
     ResultHighlight,
     SiteSettings,
+    StaffMember,
     StoreOrder,
+    Transaction,
 )
 
 STATE_CHOICES = [
@@ -381,6 +384,55 @@ class JobPostingForm(forms.ModelForm):
         }
         help_texts = {
             'order': 'Lower numbers show first.',
+        }
+
+
+class StaffMemberForm(forms.ModelForm):
+    class Meta:
+        model = StaffMember
+        fields = ('name', 'designation', 'department', 'email', 'phone', 'salary', 'date_of_joining', 'photo', 'address', 'is_active')
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Full name'}),
+            'designation': forms.TextInput(attrs={'placeholder': 'e.g. Maths Faculty'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'you@example.com'}),
+            'phone': forms.TextInput(attrs={'placeholder': '10-digit mobile number'}),
+            'salary': forms.NumberInput(attrs={'min': 0}),
+            'date_of_joining': forms.DateInput(attrs={'type': 'date'}),
+            'address': forms.Textarea(attrs={'rows': 3}),
+        }
+
+
+class StudentModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f'{obj.name} — {obj.email}'
+
+
+class FeeInvoiceForm(forms.ModelForm):
+    student = StudentModelChoiceField(
+        queryset=CustomUser.objects.filter(is_superuser=False, is_staff=False).order_by('name'),
+    )
+
+    class Meta:
+        model = FeeInvoice
+        fields = ('student', 'title', 'amount', 'due_date', 'status', 'payment_mode', 'paid_on', 'notes')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL Batch — Term 1 Fee'}),
+            'amount': forms.NumberInput(attrs={'min': 0}),
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'paid_on': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 2}),
+        }
+
+
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        fields = ('type', 'category', 'title', 'amount', 'date', 'notes')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. August rent'}),
+            'amount': forms.NumberInput(attrs={'min': 0}),
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 2}),
         }
 
 

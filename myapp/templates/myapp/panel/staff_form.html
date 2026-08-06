@@ -1,0 +1,71 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Staff{% endblock %}
+{% block page_title %}{% if is_new %}Add staff member{% else %}Edit staff member{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_staff %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+.course-preview{display:flex;align-items:center;gap:14px;margin-top:10px;padding:14px;background:#FAFAF9;border:1px dashed var(--line);border-radius:12px}
+.course-preview img{width:64px;height:64px;border-radius:50%;object-fit:cover}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new staff member{% else %}Editing: {{ staff_member.name }}{% endif %}</h2>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_staff_list' %}">← Back to staff</a>
+  </div>
+
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Full name <span class="req">*</span></span>
+      {{ form.name }}
+      {% if form.name.errors %}<ul class="panel-errors">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Designation</span>{{ form.designation }}</label>
+      <label><span class="panel-label-text">Department</span>{{ form.department }}</label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Email</span>{{ form.email }}</label>
+      <label><span class="panel-label-text">Phone <span class="req">*</span></span>
+        {{ form.phone }}
+        {% if form.phone.errors %}<ul class="panel-errors">{% for e in form.phone.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Monthly salary (₹)</span>{{ form.salary }}</label>
+      <label><span class="panel-label-text">Date of joining <span class="req">*</span></span>
+        {{ form.date_of_joining }}
+        {% if form.date_of_joining.errors %}<ul class="panel-errors">{% for e in form.date_of_joining.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Photo</span>{{ form.photo }}</label>
+    {% if staff_member.photo %}
+      <div class="course-preview"><img src="{{ staff_member.photo.url }}" alt=""><span class="custom-help">Current photo</span></div>
+    {% endif %}
+
+    <label><span class="panel-label-text">Address</span>{{ form.address }}</label>
+
+    <label class="panel-form-check">{{ form.is_active }} Currently employed</label>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add staff{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_staff_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

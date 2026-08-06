@@ -909,3 +909,128 @@ class JobApplication(models.Model):
 
     def __str__(self):
         return f'{self.name} — {self.job}'
+
+
+class StaffMember(models.Model):
+    TEACHING = 'teaching'
+    ADMINISTRATION = 'admin'
+    SUPPORT = 'support'
+    MANAGEMENT = 'management'
+    DEPARTMENT_CHOICES = [
+        (TEACHING, 'Teaching'),
+        (ADMINISTRATION, 'Administration'),
+        (SUPPORT, 'Support Staff'),
+        (MANAGEMENT, 'Management'),
+    ]
+
+    name = models.CharField(max_length=150)
+    designation = models.CharField(max_length=100, help_text='e.g. Maths Faculty')
+    department = models.CharField(max_length=15, choices=DEPARTMENT_CHOICES, default=TEACHING)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=15)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Monthly salary in ₹')
+    date_of_joining = models.DateField()
+    photo = models.ImageField(upload_to='staff/', blank=True, null=True)
+    address = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True, help_text='Uncheck when a staff member leaves — keeps their history intact')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class StaffAttendance(models.Model):
+    PRESENT = 'present'
+    ABSENT = 'absent'
+    HALF_DAY = 'half_day'
+    LEAVE = 'leave'
+    STATUS_CHOICES = [
+        (PRESENT, 'Present'),
+        (ABSENT, 'Absent'),
+        (HALF_DAY, 'Half Day'),
+        (LEAVE, 'On Leave'),
+    ]
+
+    staff = models.ForeignKey(StaffMember, on_delete=models.CASCADE, related_name='attendance_records')
+    date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PRESENT)
+    marked_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('staff', 'date')
+        ordering = ['-date']
+        verbose_name_plural = 'Staff attendance'
+
+    def __str__(self):
+        return f'{self.staff} — {self.date} ({self.get_status_display()})'
+
+
+class FeeInvoice(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_PAID = 'paid'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_PAID, 'Paid'),
+    ]
+    PAYMENT_MODE_CHOICES = [
+        ('cash', 'Cash'),
+        ('online', 'Online'),
+        ('upi', 'UPI'),
+        ('cheque', 'Cheque'),
+        ('other', 'Other'),
+    ]
+
+    student = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='fee_invoices')
+    title = models.CharField(max_length=200, help_text='e.g. SSC CGL Batch — Term 1 Fee')
+    amount = models.DecimalField(max_digits=9, decimal_places=2)
+    due_date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    payment_mode = models.CharField(max_length=10, choices=PAYMENT_MODE_CHOICES, blank=True)
+    paid_on = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    @property
+    def is_overdue(self):
+        from datetime import date
+
+        return self.status == self.STATUS_PENDING and self.due_date < date.today()
+
+    def __str__(self):
+        return f'{self.student} — {self.title}'
+
+
+class Transaction(models.Model):
+    INCOME = 'income'
+    EXPENSE = 'expense'
+    TYPE_CHOICES = [(INCOME, 'Income'), (EXPENSE, 'Expense')]
+    CATEGORY_CHOICES = [
+        ('fees', 'Student Fees'),
+        ('salary', 'Staff Salary'),
+        ('rent', 'Rent'),
+        ('utilities', 'Utilities'),
+        ('marketing', 'Marketing'),
+        ('supplies', 'Supplies'),
+        ('maintenance', 'Maintenance'),
+        ('other', 'Other'),
+    ]
+
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    category = models.CharField(max_length=15, choices=CATEGORY_CHOICES, default='other')
+    title = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f'{self.get_type_display()} — {self.title} (₹{self.amount})'

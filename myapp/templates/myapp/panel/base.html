@@ -291,6 +291,21 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
         <span class="panel-nav-ico">💳</span> Razorpay
       </a>
 
+      <p class="panel-nav-label">Operations (ERP)</p>
+      <div class="panel-nav-group {% block nav_erp_open %}{% endblock %}">
+        <button type="button" class="panel-nav-group-toggle {% block nav_erp %}{% endblock %}">
+          <span class="panel-nav-ico">🗂️</span> ERP
+          <svg class="panel-nav-group-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="panel-nav-subgroup">
+          <a class="panel-nav-sub {% block nav_erp_dashboard %}{% endblock %}" href="{% url 'panel_erp_dashboard' %}">Dashboard</a>
+          <a class="panel-nav-sub {% block nav_erp_staff %}{% endblock %}" href="{% url 'panel_staff_list' %}">Staff</a>
+          <a class="panel-nav-sub {% block nav_erp_attendance %}{% endblock %}" href="{% url 'panel_attendance' %}">Attendance</a>
+          <a class="panel-nav-sub {% block nav_erp_fees %}{% endblock %}" href="{% url 'panel_fee_list' %}">Fees</a>
+          <a class="panel-nav-sub {% block nav_erp_accounts %}{% endblock %}" href="{% url 'panel_account_list' %}">Accounts</a>
+        </div>
+      </div>
+
       <p class="panel-nav-label">Engagement</p>
       <a class="{% block nav_notification_customization %}{% endblock %}" href="{% url 'panel_notification_list' %}">
         <span class="panel-nav-ico">📢</span> Notifications

@@ -1,0 +1,62 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Create{% else %}Edit{% endif %} Fee Invoice{% endblock %}
+{% block page_title %}{% if is_new %}Create fee invoice{% else %}Edit fee invoice{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_fees %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Create a new invoice{% else %}Editing invoice{% endif %}</h2>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_fee_list' %}">← Back to fees</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Student <span class="req">*</span></span>
+      {{ form.student }}
+      {% if form.student.errors %}<ul class="panel-errors">{% for e in form.student.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Title <span class="req">*</span></span>
+      {{ form.title }}
+      {% if form.title.errors %}<ul class="panel-errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Amount (₹) <span class="req">*</span></span>
+        {{ form.amount }}
+        {% if form.amount.errors %}<ul class="panel-errors">{% for e in form.amount.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+      <label><span class="panel-label-text">Due date <span class="req">*</span></span>
+        {{ form.due_date }}
+        {% if form.due_date.errors %}<ul class="panel-errors">{% for e in form.due_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Status</span>{{ form.status }}</label>
+      <label><span class="panel-label-text">Payment mode</span>{{ form.payment_mode }}</label>
+    </div>
+
+    <label><span class="panel-label-text">Paid on</span>{{ form.paid_on }}</label>
+    <label><span class="panel-label-text">Notes</span>{{ form.notes }}</label>
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Create invoice{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_fee_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -22,6 +22,7 @@ from .forms import (
     EligibilityCheckForm,
     EligibilityCriteriaForm,
     EmailAuthenticationForm,
+    FeeInvoiceForm,
     FooterSettingsForm,
     GalleryImageForm,
     HeroSectionForm,
@@ -36,8 +37,10 @@ from .forms import (
     RazorpaySettingsForm,
     ResultHighlightForm,
     SignupForm,
+    StaffMemberForm,
     StoreCheckoutForm,
     StoreOrderStatusForm,
+    TransactionForm,
 )
 from .models import (
     AdmissionRegistration,
@@ -54,6 +57,7 @@ from .models import (
     DailyUpdatePost,
     EligibilityCriteria,
     EligibilitySubmission,
+    FeeInvoice,
     GalleryImage,
     HeroSection,
     HomepageContent,
@@ -67,9 +71,12 @@ from .models import (
     RazorpaySettings,
     ResultHighlight,
     SiteSettings,
+    StaffAttendance,
+    StaffMember,
     StoreOrder,
     TestAnswer,
     TestAttempt,
+    Transaction,
 )
 from .razorpay_utils import RazorpayError, create_order, verify_payment_signature
 
@@ -1601,6 +1608,228 @@ def panel_eligibility_submissions(request):
         'this_week': submissions.filter(created_at__gte=timezone.now() - timezone.timedelta(days=7)).count(),
     }
     return render(request, 'myapp/panel/eligibility_submissions.html', {'submissions': submissions, 'stats': stats})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_erp_dashboard(request):
+    from datetime import date
+
+    from django.db.models import Sum
+
+    today = date.today()
+    month_start = today.replace(day=1)
+
+    total_staff = StaffMember.objects.filter(is_active=True).count()
+    present_today = StaffAttendance.objects.filter(date=today, status=StaffAttendance.PRESENT).count()
+
+    pending_fees = FeeInvoice.objects.filter(status=FeeInvoice.STATUS_PENDING)
+    pending_fees_total = pending_fees.aggregate(total=Sum('amount'))['total'] or 0
+
+    month_income = Transaction.objects.filter(type=Transaction.INCOME, date__gte=month_start).aggregate(total=Sum('amount'))['total'] or 0
+    month_expense = Transaction.objects.filter(type=Transaction.EXPENSE, date__gte=month_start).aggregate(total=Sum('amount'))['total'] or 0
+
+    return render(request, 'myapp/panel/erp_dashboard.html', {
+        'total_staff': total_staff,
+        'present_today': present_today,
+        'pending_fees_count': pending_fees.count(),
+        'pending_fees_total': pending_fees_total,
+        'month_income': month_income,
+        'month_expense': month_expense,
+        'month_net': month_income - month_expense,
+        'recent_transactions': Transaction.objects.all()[:8],
+        'overdue_invoices': [inv for inv in pending_fees.select_related('student') if inv.is_overdue][:8],
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_staff_list(request):
+    staff = StaffMember.objects.all()
+    return render(request, 'myapp/panel/staff_list.html', {'staff': staff})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_staff_add(request):
+    if request.method == 'POST':
+        form = StaffMemberForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Staff member added.')
+            return redirect('panel_staff_list')
+    else:
+        form = StaffMemberForm()
+
+    return render(request, 'myapp/panel/staff_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_staff_edit(request, pk):
+    staff_member = get_object_or_404(StaffMember, pk=pk)
+
+    if request.method == 'POST':
+        form = StaffMemberForm(request.POST, request.FILES, instance=staff_member)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Staff member updated.')
+            return redirect('panel_staff_list')
+    else:
+        form = StaffMemberForm(instance=staff_member)
+
+    return render(request, 'myapp/panel/staff_form.html', {'form': form, 'is_new': False, 'staff_member': staff_member})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_staff_delete(request, pk):
+    staff_member = get_object_or_404(StaffMember, pk=pk)
+    if request.method == 'POST':
+        staff_member.delete()
+        messages.success(request, 'Staff member deleted.')
+    return redirect('panel_staff_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_attendance(request):
+    from datetime import date
+
+    date_str = request.POST.get('date') or request.GET.get('date')
+    try:
+        selected_date = date.fromisoformat(date_str) if date_str else date.today()
+    except ValueError:
+        selected_date = date.today()
+
+    staff_list = StaffMember.objects.filter(is_active=True)
+
+    if request.method == 'POST':
+        for staff_member in staff_list:
+            status = request.POST.get(f'status_{staff_member.pk}')
+            if status:
+                StaffAttendance.objects.update_or_create(
+                    staff=staff_member, date=selected_date, defaults={'status': status},
+                )
+        messages.success(request, f'Attendance saved for {selected_date:%d %b %Y}.')
+        return redirect(f"{reverse('panel_attendance')}?date={selected_date.isoformat()}")
+
+    existing = {a.staff_id: a.status for a in StaffAttendance.objects.filter(date=selected_date)}
+    rows = [{'staff': s, 'status': existing.get(s.pk, StaffAttendance.PRESENT)} for s in staff_list]
+
+    return render(request, 'myapp/panel/attendance.html', {
+        'rows': rows,
+        'selected_date': selected_date,
+        'status_choices': StaffAttendance.STATUS_CHOICES,
+    })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_fee_list(request):
+    from django.db.models import Sum
+
+    invoices = FeeInvoice.objects.select_related('student')
+    stats = {
+        'pending_count': invoices.filter(status=FeeInvoice.STATUS_PENDING).count(),
+        'pending_total': invoices.filter(status=FeeInvoice.STATUS_PENDING).aggregate(total=Sum('amount'))['total'] or 0,
+        'paid_total': invoices.filter(status=FeeInvoice.STATUS_PAID).aggregate(total=Sum('amount'))['total'] or 0,
+    }
+    return render(request, 'myapp/panel/fee_list.html', {'invoices': invoices, 'stats': stats})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_fee_add(request):
+    if request.method == 'POST':
+        form = FeeInvoiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Fee invoice created.')
+            return redirect('panel_fee_list')
+    else:
+        form = FeeInvoiceForm()
+
+    return render(request, 'myapp/panel/fee_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_fee_edit(request, pk):
+    invoice = get_object_or_404(FeeInvoice, pk=pk)
+
+    if request.method == 'POST':
+        form = FeeInvoiceForm(request.POST, instance=invoice)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Fee invoice updated.')
+            return redirect('panel_fee_list')
+    else:
+        form = FeeInvoiceForm(instance=invoice)
+
+    return render(request, 'myapp/panel/fee_form.html', {'form': form, 'is_new': False, 'invoice': invoice})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_fee_delete(request, pk):
+    invoice = get_object_or_404(FeeInvoice, pk=pk)
+    if request.method == 'POST':
+        invoice.delete()
+        messages.success(request, 'Fee invoice deleted.')
+    return redirect('panel_fee_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_fee_mark_paid(request, pk):
+    invoice = get_object_or_404(FeeInvoice, pk=pk)
+    if request.method == 'POST':
+        invoice.status = FeeInvoice.STATUS_PAID
+        invoice.paid_on = timezone.now().date()
+        invoice.payment_mode = request.POST.get('payment_mode') or invoice.payment_mode or 'cash'
+        invoice.save()
+        messages.success(request, 'Invoice marked as paid.')
+    return redirect('panel_fee_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_account_list(request):
+    from django.db.models import Sum
+
+    transactions = Transaction.objects.all()
+    stats = {
+        'total_income': transactions.filter(type=Transaction.INCOME).aggregate(total=Sum('amount'))['total'] or 0,
+        'total_expense': transactions.filter(type=Transaction.EXPENSE).aggregate(total=Sum('amount'))['total'] or 0,
+    }
+    stats['net'] = stats['total_income'] - stats['total_expense']
+    return render(request, 'myapp/panel/account_list.html', {'transactions': transactions, 'stats': stats})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_account_add(request):
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Transaction recorded.')
+            return redirect('panel_account_list')
+    else:
+        form = TransactionForm()
+
+    return render(request, 'myapp/panel/account_form.html', {'form': form})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_account_delete(request, pk):
+    transaction = get_object_or_404(Transaction, pk=pk)
+    if request.method == 'POST':
+        transaction.delete()
+        messages.success(request, 'Transaction deleted.')
+    return redirect('panel_account_list')
 
 
 

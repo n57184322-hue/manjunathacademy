@@ -1,0 +1,80 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Staff{% endblock %}
+{% block page_title %}Staff members{% endblock %}
+{% block page_sub %}Everyone employed at the academy — faculty, admin, support and management{% endblock %}
+{% block nav_erp %}is-active{% endblock %}
+{% block nav_erp_open %}is-open{% endblock %}
+{% block nav_erp_staff %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-thumb{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:#F3F4F6}
+.gallery-cell{display:flex;align-items:center;gap:12px}
+.gallery-title-text{font-weight:700;color:var(--ink)}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Staff</h2>
+      <p>{{ staff|length }} staff member{{ staff|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_staff_add' %}">+ Add staff</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if staff %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Designation</th>
+            <th>Department</th>
+            <th>Phone</th>
+            <th>Salary</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in staff %}
+          <tr>
+            <td>
+              <div class="gallery-cell">
+                {% if member.photo %}<img class="gallery-thumb" src="{{ member.photo.url }}" alt="">{% else %}<span class="panel-row-avatar" style="background:var(--orange)">{{ member.name|first|upper }}</span>{% endif %}
+                <div class="gallery-title-text">{{ member.name }}</div>
+              </div>
+            </td>
+            <td>{{ member.designation }}</td>
+            <td>{{ member.get_department_display }}</td>
+            <td><a href="tel:{{ member.phone }}">{{ member.phone }}</a></td>
+            <td>₹{{ member.salary }}</td>
+            <td>{% if member.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Left</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_staff_edit' member.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_staff_delete' member.pk %}" onsubmit="return confirm('Delete this staff member?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">👨‍🏫</span>No staff members added yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
