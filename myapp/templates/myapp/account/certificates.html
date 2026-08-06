@@ -1,0 +1,67 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}My Certificates — Manjunath Academy{% endblock %}
+{% block meta_description %}View and download certificates issued to you by Manjunath Academy.{% endblock %}
+
+{% block extra_style %}
+.auth-section{padding:80px 0 120px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.auth-card{
+  position:relative;overflow:hidden;max-width:480px;margin:0 auto;background:#fff;border:1px solid var(--line);
+  border-radius:24px;padding:44px 34px;box-shadow:var(--shadow-md);text-align:center;
+}
+.auth-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--orange),#FBBF24);
+}
+.auth-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--orange-soft);color:var(--orange-deep);
+  display:grid;place-items:center;font-size:26px;margin:0 auto 18px;
+}
+.auth-card h1{font-size:clamp(22px,3vw,26px);font-weight:800;margin:0 0 8px}
+.auth-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;max-width:36ch;margin-inline:auto}
+.certs-list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.cert-card{
+  display:flex;align-items:center;gap:18px;background:#fff;
+  border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow-sm);
+}
+.cert-thumb{width:160px;aspect-ratio:16/11.3;object-fit:cover;border-radius:10px;border:1px solid var(--line);flex:0 0 auto}
+.cert-name{font-weight:700;color:var(--ink);margin:0 0 4px}
+.cert-meta{font-size:13px;color:var(--muted);margin:0 0 2px}
+.cert-number{font-size:12px;color:var(--muted);margin:0}
+.cert-actions{margin-left:auto;flex:0 0 auto}
+@media (max-width:600px){.cert-card{flex-wrap:wrap}.cert-actions{margin-left:0;width:100%}.cert-actions .btn{width:100%;justify-content:center}}
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="wrap">
+    {% if certificates %}
+      <div class="certs-list">
+        {% for certificate in certificates %}
+        <div class="cert-card">
+          {% if certificate.image %}<img class="cert-thumb" src="{{ certificate.image.url }}" alt="{{ certificate.get_certificate_type_display }}">{% endif %}
+          <div>
+            <p class="cert-name">{{ certificate.get_certificate_type_display }}</p>
+            <p class="cert-meta">{{ certificate.course_name }}</p>
+            <p class="cert-meta">Issued {{ certificate.issue_date|date:"d M Y" }}</p>
+            <p class="cert-number">{{ certificate.certificate_number }}</p>
+          </div>
+          {% if certificate.image %}
+            <div class="cert-actions">
+              <a class="btn btn-primary" href="{{ certificate.image.url }}" download target="_blank" rel="noopener">Download</a>
+            </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="auth-card">
+        <span class="auth-icon">🎓</span>
+        <h1>My certificates</h1>
+        <p class="auth-sub">You don't have any certificates yet. Certificates issued to you by Manjunath Academy will appear here.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'index' %}">Browse Courses</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

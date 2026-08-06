@@ -17,6 +17,7 @@ from .forms import (
     BundleForm,
     CareerApplicationForm,
     CategoryForm,
+    CertificateForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
     CouponForm,
@@ -52,6 +53,7 @@ from .models import (
     Bundle,
     BundlePurchase,
     Category,
+    Certificate,
     ChatbotQuestion,
     ChatbotSettings,
     Coupon,
@@ -84,6 +86,7 @@ from .models import (
     TestAttempt,
     Transaction,
 )
+from .certificate_utils import generate_certificate_image
 from .razorpay_utils import RazorpayError, create_order, verify_payment_signature
 
 
@@ -257,6 +260,12 @@ def account_coupons(request):
     coupon_rows.sort(key=lambda row: status_order[row['status']])
 
     return render(request, 'myapp/account/coupons.html', {'coupon_rows': coupon_rows, 'redemptions': redemptions})
+
+
+@login_required(login_url='login')
+def account_certificates(request):
+    certificates = request.user.certificates.all()
+    return render(request, 'myapp/account/certificates.html', {'certificates': certificates})
 
 
 def _get_or_create_free_enrollment(user, course):
@@ -1694,6 +1703,44 @@ def panel_coupon_delete(request, pk):
         coupon.delete()
         messages.success(request, 'Coupon deleted.')
     return redirect('panel_coupon_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_certificate_list(request):
+    certificates = Certificate.objects.select_related('user')
+    return render(request, 'myapp/panel/certificate_list.html', {'certificates': certificates})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_certificate_add(request):
+    if request.method == 'POST':
+        form = CertificateForm(request.POST)
+        if form.is_valid():
+            certificate = form.save()
+            certificate.image.save(
+                f'{certificate.certificate_number}.png',
+                generate_certificate_image(certificate),
+                save=True,
+            )
+            messages.success(request, f'Certificate generated and issued to {certificate.recipient_name}.')
+            return redirect('panel_certificate_list')
+    else:
+        form = CertificateForm(initial={'issue_date': timezone.localdate()})
+
+    return render(request, 'myapp/panel/certificate_form.html', {'form': form})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_certificate_delete(request, pk):
+    certificate = get_object_or_404(Certificate, pk=pk)
+    if request.method == 'POST':
+        certificate.image.delete(save=False)
+        certificate.delete()
+        messages.success(request, 'Certificate deleted.')
+    return redirect('panel_certificate_list')
 
 
 @login_required(login_url='login')

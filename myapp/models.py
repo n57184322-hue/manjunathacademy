@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
@@ -1122,3 +1123,39 @@ class CouponRedemption(models.Model):
 
     def __str__(self):
         return f'{self.coupon.code} — {self.user}'
+
+
+class Certificate(models.Model):
+    TYPE_COMPLETION = 'completion'
+    TYPE_ACHIEVEMENT = 'achievement'
+    TYPE_PARTICIPATION = 'participation'
+    TYPE_APPRECIATION = 'appreciation'
+    TYPE_CHOICES = [
+        (TYPE_COMPLETION, 'Certificate of Completion'),
+        (TYPE_ACHIEVEMENT, 'Certificate of Achievement'),
+        (TYPE_PARTICIPATION, 'Certificate of Participation'),
+        (TYPE_APPRECIATION, 'Certificate of Appreciation'),
+    ]
+
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='certificates')
+    certificate_type = models.CharField(max_length=15, choices=TYPE_CHOICES, default=TYPE_COMPLETION)
+    recipient_name = models.CharField(max_length=150, blank=True, help_text="Leave blank to use the student's account name")
+    course_name = models.CharField(max_length=200, help_text='e.g. SSC CGL Test Series 2026')
+    description = models.CharField(max_length=250, blank=True, help_text='Optional extra line, e.g. for scoring 95% in the final test')
+    certificate_number = models.CharField(max_length=30, unique=True, blank=True)
+    issue_date = models.DateField()
+    image = models.ImageField(upload_to='certificates/', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.certificate_number:
+            self.certificate_number = f'MACERT-{uuid.uuid4().hex[:10].upper()}'
+        if not self.recipient_name and self.user_id:
+            self.recipient_name = self.user.name
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.certificate_number} — {self.recipient_name}'

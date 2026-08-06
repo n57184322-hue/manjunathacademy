@@ -1,0 +1,65 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Generate Certificate{% endblock %}
+{% block page_title %}Generate certificate{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_certificates %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Generate a new certificate</h2>
+      <p>Pick a student and fill in the details — the certificate image is generated automatically using the academy's certificate design.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_certificate_list' %}">← Back to certificates</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Student <span class="req">*</span></span>
+      {{ form.user }}
+      {% if form.user.errors %}<ul class="panel-errors">{% for e in form.user.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Certificate type</span>
+      {{ form.certificate_type }}
+    </label>
+
+    <label><span class="panel-label-text">Name on certificate</span>
+      {{ form.recipient_name }}
+      <p class="custom-help">{{ form.recipient_name.help_text }}</p>
+    </label>
+
+    <label><span class="panel-label-text">Course / reason <span class="req">*</span></span>
+      {{ form.course_name }}
+      {% if form.course_name.errors %}<ul class="panel-errors">{% for e in form.course_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Extra line (optional)</span>
+      {{ form.description }}
+    </label>
+
+    <label><span class="panel-label-text">Issue date <span class="req">*</span></span>
+      {{ form.issue_date }}
+      {% if form.issue_date.errors %}<ul class="panel-errors">{% for e in form.issue_date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Generate &amp; issue certificate</button>
+      <a class="btn btn-ghost" href="{% url 'panel_certificate_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

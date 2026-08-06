@@ -6,6 +6,7 @@ from .models import (
     BannerSlide,
     Bundle,
     Category,
+    Certificate,
     ChatbotQuestion,
     ChatbotSettings,
     Coupon,
@@ -401,6 +402,28 @@ class CouponForm(forms.ModelForm):
 
     def clean_code(self):
         return self.cleaned_data['code'].strip().upper()
+
+
+class StudentChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f'{obj.name} — {obj.email}'
+
+
+class CertificateForm(forms.ModelForm):
+    user = StudentChoiceField(
+        queryset=CustomUser.objects.filter(is_active=True).order_by('name'),
+        label='Student',
+    )
+
+    class Meta:
+        model = Certificate
+        fields = ('user', 'certificate_type', 'recipient_name', 'course_name', 'description', 'issue_date')
+        widgets = {
+            'recipient_name': forms.TextInput(attrs={'placeholder': "Leave blank to use the student's account name"}),
+            'course_name': forms.TextInput(attrs={'placeholder': 'e.g. SSC CGL Test Series 2026'}),
+            'description': forms.TextInput(attrs={'placeholder': 'Optional, e.g. for scoring 92% in the final mock test'}),
+            'issue_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 
 class JobPostingForm(forms.ModelForm):

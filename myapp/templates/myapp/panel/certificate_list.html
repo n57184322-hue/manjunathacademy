@@ -1,0 +1,80 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Certificates{% endblock %}
+{% block page_title %}Certificates{% endblock %}
+{% block page_sub %}Certificates issued to students — they can view these in My Certificates{% endblock %}
+{% block nav_certificates %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-thumb{width:56px;height:40px;border-radius:6px;object-fit:cover;flex:0 0 auto;background:#F3F4F6;border:1px solid var(--line)}
+.gallery-cell{display:flex;align-items:center;gap:12px}
+.gallery-title-text{font-weight:700;color:var(--ink)}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.cert-number{font-size:12px;color:var(--muted)}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Certificates</h2>
+      <p>{{ certificates|length }} certificate{{ certificates|length|pluralize }} issued</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_certificate_add' %}">+ Generate certificate</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if certificates %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Certificate</th>
+            <th>Student</th>
+            <th>Type</th>
+            <th>Course</th>
+            <th>Issued</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for certificate in certificates %}
+          <tr>
+            <td>
+              <div class="gallery-cell">
+                {% if certificate.image %}<img class="gallery-thumb" src="{{ certificate.image.url }}" alt="">{% endif %}
+                <div>
+                  <div class="gallery-title-text">{{ certificate.recipient_name }}</div>
+                  <div class="cert-number">{{ certificate.certificate_number }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ certificate.user.name }}<br><span style="font-size:12px;color:var(--muted)">{{ certificate.user.email }}</span></td>
+            <td>{{ certificate.get_certificate_type_display }}</td>
+            <td>{{ certificate.course_name }}</td>
+            <td>{{ certificate.issue_date|date:"d M Y" }}</td>
+            <td>
+              <div class="gallery-actions">
+                {% if certificate.image %}<a class="btn btn-ghost btn-sm" href="{{ certificate.image.url }}" target="_blank" rel="noopener">View</a>{% endif %}
+                <form method="post" action="{% url 'panel_certificate_delete' certificate.pk %}" onsubmit="return confirm('Delete this certificate? The student will lose access to it.');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🎓</span>No certificates issued yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

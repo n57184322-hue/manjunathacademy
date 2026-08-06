@@ -320,6 +320,9 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
       <a class="{% block nav_quiz %}{% endblock %}" href="{% url 'panel_quiz_question_list' %}">
         <span class="panel-nav-ico">🎮</span> Quiz Questions
       </a>
+      <a class="{% block nav_certificates %}{% endblock %}" href="{% url 'panel_certificate_list' %}">
+        <span class="panel-nav-ico">🎓</span> Certificates
+      </a>
       <div class="panel-nav-group {% block nav_eligibility_open %}{% endblock %}">
         <button type="button" class="panel-nav-group-toggle {% block nav_eligibility %}{% endblock %}">
           <span class="panel-nav-ico">🎯</span> Eligibility
