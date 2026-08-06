@@ -1297,11 +1297,18 @@ def panel_store_orders(request):
 @user_passes_test(_is_staff, login_url='login')
 def panel_store_order_update(request, pk):
     order = get_object_or_404(StoreOrder, pk=pk)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if request.method == 'POST':
         form = StoreOrderStatusForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
+            if is_ajax:
+                return JsonResponse({'ok': True, 'status': order.status, 'status_display': order.get_status_display()})
             messages.success(request, 'Order status updated.')
+        elif is_ajax:
+            return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
+
     return redirect('panel_store_orders')
 
 
