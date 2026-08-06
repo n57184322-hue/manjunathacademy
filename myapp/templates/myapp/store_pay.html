@@ -50,8 +50,11 @@
 {% endblock %}
 
 {% block extra_script %}
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
+(function () {
+  var razorpayScript = document.createElement('script');
+  razorpayScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  document.head.appendChild(razorpayScript);
+})();
 (function () {
   var payBtn = document.getElementById('payBtn');
   var errorBox = document.getElementById('payError');
@@ -135,6 +138,13 @@
           return;
         }
 
+        if (typeof Razorpay === 'undefined') {
+          showError('Payment is still loading. Please wait a moment and try again.');
+          payBtn.disabled = false;
+          payBtn.textContent = currentLabel;
+          return;
+        }
+
         var rzp = new Razorpay({
           key: data.key_id,
           amount: data.amount,
@@ -192,5 +202,4 @@
       });
   });
 })();
-</script>
 {% endblock %}
