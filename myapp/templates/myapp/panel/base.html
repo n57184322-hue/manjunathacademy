@@ -218,8 +218,8 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
 @media (max-width:560px){
   .panel-stats{grid-template-columns:1fr}
 }
-{% block extra_style %}{% endblock %}
 </style>
+<style id="panelExtraStyle">/*PJAX_STYLE_START*/{% block extra_style %}{% endblock %}/*PJAX_STYLE_END*/</style>
 </head>
 <body>
 <div class="panel-shell">
@@ -424,6 +424,7 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
   (function () {
     var contentEl = document.getElementById('panelContent');
     var titleEl = document.getElementById('panelPageTitle');
+    var styleEl = document.getElementById('panelExtraStyle');
     if (!contentEl || !titleEl) return;
 
     var MARK = {
@@ -431,6 +432,8 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
       contentEnd: '<!--PJAX_CONTENT' + '_END-->',
       titleStart: '<!--PJAX_TITLE' + '_START-->',
       titleEnd: '<!--PJAX_TITLE' + '_END-->',
+      styleStart: '/*PJAX_STYLE' + '_START*/',
+      styleEnd: '/*PJAX_STYLE' + '_END*/',
       scriptStart: '/*PJAX_SCRIPT' + '_START*/',
       scriptEnd: '/*PJAX_SCRIPT' + '_END*/'
     };
@@ -479,10 +482,12 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
           if (!contentHtml.trim()) { window.location.href = url; return; }
           var titleHtml = extractBetween(html, MARK.titleStart, MARK.titleEnd);
           var pageTitleMatch = html.match(/<title>([\s\S]*?)<\/title>/);
+          var pageStyle = extractBetween(html, MARK.styleStart, MARK.styleEnd);
           var pageScript = extractBetween(html, MARK.scriptStart, MARK.scriptEnd);
 
           contentEl.innerHTML = contentHtml;
           contentEl.style.opacity = '1';
+          if (styleEl) styleEl.textContent = pageStyle;
           if (titleHtml) titleEl.innerHTML = titleHtml;
           if (pageTitleMatch) document.title = pageTitleMatch[1];
           setActiveNav(url);

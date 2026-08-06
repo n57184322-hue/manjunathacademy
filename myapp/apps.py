@@ -12,6 +12,8 @@ class MyappConfig(AppConfig):
     name = 'myapp'
 
     def ready(self):
+        from . import signals  # noqa: F401
+
         if not self._should_start_scheduler():
             return
         thread = threading.Thread(target=self._backup_loop, daemon=True)

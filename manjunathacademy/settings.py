@@ -151,6 +151,11 @@ STORAGES = {
     },
 }
 
+# Static assets are hashed by CompressedManifestStaticFilesStorage, so a long
+# cache lifetime is safe: a changed file gets a new URL, browsers keep the old
+# one cached harmlessly. This is what actually speeds up repeat page loads.
+WHITENOISE_MAX_AGE = 31536000
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
