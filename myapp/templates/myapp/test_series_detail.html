@@ -1,0 +1,108 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}{{ course.name }} — Manjunath Academy{% endblock %}
+{% block meta_description %}{{ course.about|truncatechars:150 }}{% endblock %}
+
+{% block extra_style %}
+.ts-detail-hero{padding:52px 0 36px;background:linear-gradient(120deg,var(--peach) 0%,var(--cream) 100%)}
+.ts-detail-kicker{font-size:12.5px;font-weight:800;color:var(--orange-deep);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.ts-detail-hero h1{font-size:clamp(24px,3.6vw,36px);margin:0 0 10px}
+.ts-detail-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.ts-detail-meta span{background:rgba(255,255,255,.7);padding:6px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:700;color:#7A1010}
+.ts-detail-section{padding:44px 0}
+.ts-detail-card{max-width:800px;margin:0 auto 30px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:var(--shadow-sm)}
+.ts-detail-card h2{font-size:18px;margin:0 0 6px}
+.ts-detail-card-sub{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+.daily-quiz-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:4px 12px;border-radius:var(--r-pill);background:var(--orange-soft);color:var(--orange-deep);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
+.quiz-result-banner{padding:16px 20px;border-radius:14px;background:#ECFDF3;color:#15803D;font-weight:700;margin-bottom:20px}
+.test-question-card{background:#FAFAF9;border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:14px}
+.test-q-text{font-size:15px;font-weight:700;color:var(--ink);margin:0 0 14px}
+.test-options{display:flex;flex-direction:column;gap:9px}
+.test-option{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;font-size:14px;background:#fff;transition:.15s ease}
+.test-option:has(input:checked){border-color:var(--orange);background:var(--orange-soft)}
+.test-option input{accent-color:var(--orange)}
+.full-test-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.full-test-info p{margin:2px 0;font-size:13.5px;color:var(--muted)}
+.about-text{color:#374151;font-size:14.5px;line-height:1.8;white-space:pre-line}
+{% endblock %}
+
+{% block content %}
+<section class="ts-detail-hero">
+  <div class="wrap">
+    <p class="ts-detail-kicker">Test Series{% if course.category %} · {{ course.category.icon }} {{ course.category.name }}{% endif %}</p>
+    <h1>{{ course.name }}</h1>
+    <div class="ts-detail-meta">
+      {% if course.test_type %}<span>🏷 {{ course.get_test_type_display }}</span>{% endif %}
+      <span>📝 {{ course.questions.count }} question{{ course.questions.count|pluralize }}</span>
+      {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="ts-detail-section">
+  <div class="wrap">
+
+    <div class="ts-detail-card">
+      <span class="daily-quiz-badge">⚡ Daily Quiz</span>
+      <h2>Quick 5-question warm-up</h2>
+      <p class="ts-detail-card-sub">Randomly picked from this test's question bank — free to attempt, doesn't affect your full test score.</p>
+
+      {% if quiz_result %}
+        <div class="quiz-result-banner">You scored {{ quiz_result.score }} / {{ quiz_result.total }} on the daily quiz. Try again for a new set of questions!</div>
+      {% endif %}
+
+      {% if daily_quiz_questions %}
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="daily_quiz">
+          {% for question in daily_quiz_questions %}
+          <input type="hidden" name="quiz_question_ids" value="{{ question.id }}">
+          <div class="test-question-card">
+            <p class="test-q-text">Q{{ forloop.counter }}. {{ question.text }}</p>
+            {% if question.question_type == 'single' %}
+              <div class="test-options">
+                {% if question.option_a %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="A" required> {{ question.option_a }}</label>{% endif %}
+                {% if question.option_b %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="B"> {{ question.option_b }}</label>{% endif %}
+                {% if question.option_c %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="C"> {{ question.option_c }}</label>{% endif %}
+                {% if question.option_d %}<label class="test-option"><input type="radio" name="q_{{ question.id }}" value="D"> {{ question.option_d }}</label>{% endif %}
+              </div>
+            {% elif question.question_type == 'true_false' %}
+              <div class="test-options">
+                <label class="test-option"><input type="radio" name="q_{{ question.id }}" value="True" required> True</label>
+                <label class="test-option"><input type="radio" name="q_{{ question.id }}" value="False"> False</label>
+              </div>
+            {% elif question.question_type == 'multiple' %}
+              <div class="test-options">
+                {% if question.option_a %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="A"> {{ question.option_a }}</label>{% endif %}
+                {% if question.option_b %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="B"> {{ question.option_b }}</label>{% endif %}
+                {% if question.option_c %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="C"> {{ question.option_c }}</label>{% endif %}
+                {% if question.option_d %}<label class="test-option"><input type="checkbox" name="q_{{ question.id }}" value="D"> {{ question.option_d }}</label>{% endif %}
+              </div>
+            {% else %}
+              <input class="test-option" style="cursor:text" type="text" name="q_{{ question.id }}" placeholder="Your answer" required>
+            {% endif %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary">Submit Daily Quiz</button>
+        </form>
+      {% else %}
+        <p style="color:var(--muted);font-size:13.5px">No questions have been added to this test yet — the daily quiz will appear once the admin adds some.</p>
+      {% endif %}
+    </div>
+
+    <div class="ts-detail-card">
+      <h2>About this test series</h2>
+      {% if course.about %}<p class="about-text">{{ course.about }}</p>{% else %}<p class="ts-detail-card-sub" style="margin:0">Full-length test covering the complete syllabus with detailed scoring.</p>{% endif %}
+
+      <div class="full-test-row" style="margin-top:22px">
+        <div class="full-test-info">
+          <p><strong>₹{{ course.current_price }}</strong>{% if course.original_price and course.original_price != course.current_price %} <s>₹{{ course.original_price }}</s>{% endif %}</p>
+          <p>{{ course.questions.count }} question{{ course.questions.count|pluralize }}{% if course.duration_minutes %} · {{ course.duration_minutes }} minutes{% endif %}</p>
+        </div>
+        <a class="btn btn-primary btn-lg" href="{% url 'test_attempt_start' course.pk %}">Start Full Test →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

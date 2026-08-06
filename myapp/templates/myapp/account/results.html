@@ -1,0 +1,91 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}My Results — Manjunath Academy{% endblock %}
+{% block meta_description %}Your test attempts, daily quizzes and Quiz Zone results at Manjunath Academy.{% endblock %}
+
+{% block extra_style %}
+.results-section{padding:64px 0 110px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.results-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:800px;margin:0 auto 34px}
+.results-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;box-shadow:var(--shadow-sm)}
+.results-stat-num{font-family:"Archivo",sans-serif;font-size:26px;font-weight:800;color:var(--orange-deep)}
+.results-stat-label{font-size:12.5px;color:var(--muted);margin-top:4px}
+.results-wrap{max-width:800px;margin:0 auto}
+.results-section-label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:32px 0 14px}
+.results-section-label:first-child{margin-top:0}
+.result-card{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin-bottom:10px;box-shadow:var(--shadow-sm);flex-wrap:wrap}
+.result-name{font-weight:700;color:var(--ink);margin:0 0 3px}
+.result-meta{font-size:12.5px;color:var(--muted);margin:0}
+.result-score{font-size:14px;font-weight:800;color:var(--orange-deep);white-space:nowrap}
+.results-empty{text-align:center;color:var(--muted);font-size:13.5px;padding:20px 0}
+@media (max-width:560px){.results-stats{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="results-section">
+  <div class="wrap">
+    <h1 class="section-title center-title" style="text-align:center;margin:0 auto 30px">My <span class="text-orange">Results</span></h1>
+
+    <div class="results-stats">
+      <div class="results-stat">
+        <div class="results-stat-num">{{ stats.tests_attempted }}</div>
+        <div class="results-stat-label">Tests attempted</div>
+      </div>
+      <div class="results-stat">
+        <div class="results-stat-num">{{ stats.daily_quizzes_taken }}</div>
+        <div class="results-stat-label">Daily quizzes taken</div>
+      </div>
+      <div class="results-stat">
+        <div class="results-stat-num">{{ stats.quiz_zone_played }}</div>
+        <div class="results-stat-label">Quiz Game rounds played</div>
+      </div>
+    </div>
+
+    <div class="results-wrap">
+      <p class="results-section-label">Test attempts</p>
+      {% if test_attempts %}
+        {% for attempt in test_attempts %}
+        <a class="result-card" href="{% url 'test_attempt_result' attempt.pk %}">
+          <div>
+            <p class="result-name">{{ attempt.course.name }}</p>
+            <p class="result-meta">{{ attempt.submitted_at|date:"d M Y, h:i A" }}</p>
+          </div>
+          <span class="result-score">{{ attempt.score }} / {{ attempt.total_marks }}</span>
+        </a>
+        {% endfor %}
+      {% else %}
+        <p class="results-empty">You haven't attempted any full tests yet.</p>
+      {% endif %}
+
+      <p class="results-section-label">Daily quizzes</p>
+      {% if daily_quiz_attempts %}
+        {% for dq in daily_quiz_attempts %}
+        <div class="result-card">
+          <div>
+            <p class="result-name">{{ dq.course.name }}</p>
+            <p class="result-meta">{{ dq.taken_at|date:"d M Y, h:i A" }}</p>
+          </div>
+          <span class="result-score">{{ dq.score }} / {{ dq.total }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="results-empty">No daily quizzes taken yet — try one from any test series detail page.</p>
+      {% endif %}
+
+      <p class="results-section-label">Quiz Game</p>
+      {% if quiz_zone_attempts %}
+        {% for qz in quiz_zone_attempts %}
+        <div class="result-card">
+          <div>
+            <p class="result-name">Quiz Game round</p>
+            <p class="result-meta">{{ qz.taken_at|date:"d M Y, h:i A" }}{% if qz.final_prize_label %} · Reached {{ qz.final_prize_label }}{% endif %}</p>
+          </div>
+          <span class="result-score">{{ qz.correct_count }} / {{ qz.questions_answered }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="results-empty">No Quiz Game rounds played yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

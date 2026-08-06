@@ -630,6 +630,34 @@ class TestAnswer(models.Model):
         return f'{self.attempt} — {self.question_id}'
 
 
+class DailyQuizAttempt(models.Model):
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='daily_quiz_attempts')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='daily_quiz_attempts', limit_choices_to={'course_type': 'test_series'})
+    score = models.PositiveIntegerField(default=0)
+    total = models.PositiveIntegerField(default=5)
+    taken_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-taken_at']
+
+    def __str__(self):
+        return f'{self.user} — {self.course} daily quiz ({self.score}/{self.total})'
+
+
+class QuizZoneAttempt(models.Model):
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='quiz_zone_attempts')
+    questions_answered = models.PositiveIntegerField(default=0)
+    correct_count = models.PositiveIntegerField(default=0)
+    final_prize_label = models.CharField(max_length=20, blank=True)
+    taken_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-taken_at']
+
+    def __str__(self):
+        return f'{self.user} — Quiz Zone ({self.correct_count}/{self.questions_answered})'
+
+
 class RazorpaySettings(models.Model):
     key_id = models.CharField(max_length=100, blank=True, verbose_name='Razorpay Key ID')
     key_secret = models.CharField(max_length=100, blank=True, verbose_name='Razorpay Key Secret')

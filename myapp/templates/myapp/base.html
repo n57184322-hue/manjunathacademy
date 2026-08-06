@@ -221,6 +221,26 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 }
 .nav-more-dropdown a:hover{background:#F6F6F7;color:var(--ink)}
 
+.nav-lang{position:relative;list-style:none}
+.nav-lang-toggle{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex:0 0 auto;
+  font-size:13px;font-weight:600;color:#4b5563;background:none;border:0;font-family:inherit;
+  padding:8px 9px;border-radius:var(--r-pill);transition:.18s ease;cursor:pointer;
+}
+.nav-lang-toggle:hover{background:#F6F6F7;color:var(--ink)}
+.nav-lang.is-open .nav-more-caret{transform:rotate(180deg)}
+.nav-lang-dropdown{
+  position:absolute;right:0;top:calc(100% + 8px);min-width:150px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;display:none;flex-direction:column;gap:2px;z-index:70;
+}
+.nav-lang.is-open .nav-lang-dropdown{display:flex}
+.nav-lang-dropdown button{
+  padding:9px 12px;border-radius:8px;font-size:13.5px;font-weight:600;color:#374151;text-align:left;
+  display:flex;align-items:center;gap:8px;transition:.12s ease;background:none;border:0;font-family:inherit;cursor:pointer;width:100%;
+}
+.nav-lang-dropdown button:hover{background:#F6F6F7;color:var(--ink)}
+.nav-lang-dropdown button.is-current{background:var(--orange-soft);color:var(--orange-deep)}
+
 .header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .chip{
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto;
@@ -985,6 +1005,8 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
   .primary-nav > ul a{padding:12px 14px;font-size:14.5px}
   .nav-more-toggle{width:100%;padding:12px 14px;font-size:14.5px}
   .nav-more-dropdown{position:static;box-shadow:none;border:0;padding:2px 0 0 14px;margin:0}
+  .nav-lang-toggle{width:100%;padding:12px 14px;font-size:14.5px}
+  .nav-lang-dropdown{position:static;box-shadow:none;border:0;padding:2px 0 0 14px;margin:0}
   .chip span.chip-label{display:inline}
   .header-actions{flex-wrap:wrap}
   .header-actions .btn{flex:1}
@@ -1153,24 +1175,37 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 
     <nav class="primary-nav" id="primaryNav" aria-label="Primary">
       <ul>
-        <li><a class="{% if request.path == '/' %}is-active{% endif %}" href="{% url 'index' %}" id="navHomeLink">Home</a></li>
-        <li><a href="{% url 'index' %}#popular-courses">Courses</a></li>
-        <li><a href="{% url 'index' %}#test-series">Test Series</a></li>
-        <li><a href="{% url 'index' %}#quiz">Quiz Game</a></li>
-        <li><a href="{% url 'index' %}#e-store">E-Store</a></li>
-        <li><a href="{% url 'index' %}#results">Results</a></li>
-        <li><a href="{% url 'index' %}#about">About</a></li>
-        <li><a href="{% url 'contact_us_page' %}">Contact</a></li>
+        <li><a class="{% if request.path == '/' %}is-active{% endif %}" href="{% url 'index' %}" id="navHomeLink" data-i18n="nav_home">Home</a></li>
+        <li><a href="{% url 'index' %}#popular-courses" data-i18n="nav_courses">Courses</a></li>
+        <li><a href="{% url 'index' %}#test-series" data-i18n="nav_test_series">Test Series</a></li>
+        <li><a href="{% url 'index' %}#quiz" data-i18n="nav_quiz_game">Quiz Game</a></li>
+        <li><a href="{% url 'index' %}#e-store" data-i18n="nav_estore">E-Store</a></li>
+        <li><a href="{% url 'index' %}#results" data-i18n="nav_results">Results</a></li>
+        <li><a href="{% url 'index' %}#about" data-i18n="nav_about">About</a></li>
+        <li><a href="{% url 'contact_us_page' %}" data-i18n="nav_contact">Contact</a></li>
         <li class="nav-more" id="navMore">
           <button type="button" class="nav-more-toggle" id="navMoreToggle" aria-haspopup="true" aria-expanded="false">
-            More
+            <span data-i18n="nav_more">More</span>
             <svg class="nav-more-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <div class="nav-more-dropdown" id="navMoreDropdown">
-            <a href="{% url 'index' %}#video-courses">Video Courses</a>
-            <a href="{% url 'index' %}#e-library">E-Library</a>
-            <a href="{% url 'contact_us_page' %}">Contact Us</a>
-            <a href="{% url 'gallery_page' %}">Gallery</a>
+            <a href="{% url 'index' %}#video-courses" data-i18n="nav_video_courses">Video Courses</a>
+            <a href="{% url 'index' %}#e-library" data-i18n="nav_elibrary">E-Library</a>
+            <a href="{% url 'contact_us_page' %}" data-i18n="nav_contact_us">Contact Us</a>
+            <a href="{% url 'gallery_page' %}" data-i18n="nav_gallery">Gallery</a>
+          </div>
+        </li>
+        <li class="nav-lang" id="navLang">
+          <button type="button" class="nav-lang-toggle" id="navLangToggle" aria-haspopup="true" aria-expanded="false">
+            🌐 <span id="navLangCurrent">EN</span>
+            <svg class="nav-more-caret" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="nav-lang-dropdown" id="navLangDropdown">
+            <button type="button" data-lang="en">English</button>
+            <button type="button" data-lang="hi">हिन्दी</button>
+            <button type="button" data-lang="hinglish">Hinglish</button>
+            <button type="button" data-lang="ta">தமிழ்</button>
+            <button type="button" data-lang="mr">मराठी</button>
           </div>
         </li>
       </ul>
@@ -1184,14 +1219,14 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
           <span class="chip-label">WhatsApp</span>
         </a>
         {% if not user.is_authenticated %}
-          <a class="btn btn-ghost btn-sm" href="{% url 'login' %}">Login</a>
-          <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Join for Free</a>
+          <a class="btn btn-ghost btn-sm" href="{% url 'login' %}" data-i18n="nav_login">Login</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'signup' %}" data-i18n="nav_join_free">Join for Free</a>
         {% endif %}
       </div>
     </nav>
 
     {% if not user.is_authenticated %}
-      <a class="nav-guest-cta" href="{% url 'signup' %}">Join now</a>
+      <a class="nav-guest-cta" href="{% url 'signup' %}" data-i18n="nav_join_now">Join now</a>
     {% endif %}
 
     {% if user.is_authenticated %}
@@ -1207,18 +1242,19 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         </button>
         <div class="nav-user-dropdown" id="navUserDropdown">
           {% if user.is_staff %}
-            <a href="{% url 'panel_signups' %}">🛠️ Admin panel</a>
+            <a href="{% url 'panel_signups' %}">🛠️ <span data-i18n="drop_admin_panel">Admin panel</span></a>
             <hr>
           {% endif %}
-          <a href="{% url 'account_edit' %}">✏️ Update account details</a>
-          <a href="{% url 'account_password' %}">🔒 Edit password</a>
-          <a href="{% url 'account_purchases' %}">🛍️ My purchases</a>
-          <a href="{% url 'account_coupons' %}">🏷️ My coupons</a>
-          <a href="{% url 'account_certificates' %}">🎓 My certificates</a>
-          <a href="{% url 'account_refer_earn' %}">🎁 Refer &amp; Earn</a>
-          <a href="{% url 'account_classrooms' %}">🏫 My classrooms</a>
+          <a href="{% url 'account_edit' %}">✏️ <span data-i18n="drop_update_account">Update account details</span></a>
+          <a href="{% url 'account_password' %}">🔒 <span data-i18n="drop_edit_password">Edit password</span></a>
+          <a href="{% url 'account_purchases' %}">🛍️ <span data-i18n="drop_purchases">My purchases</span></a>
+          <a href="{% url 'account_results' %}">📊 <span data-i18n="drop_results">Results</span></a>
+          <a href="{% url 'account_coupons' %}">🏷️ <span data-i18n="drop_coupons">My coupons</span></a>
+          <a href="{% url 'account_certificates' %}">🎓 <span data-i18n="drop_certificates">My certificates</span></a>
+          <a href="{% url 'account_refer_earn' %}">🎁 <span data-i18n="drop_refer_earn">Refer &amp; Earn</span></a>
+          <a href="{% url 'account_classrooms' %}">🏫 <span data-i18n="drop_classrooms">My classrooms</span></a>
           <hr>
-          <a href="{% url 'logout' %}" class="nav-user-logout">🚪 Logout</a>
+          <a href="{% url 'logout' %}" class="nav-user-logout">🚪 <span data-i18n="drop_logout">Logout</span></a>
         </div>
       </div>
     {% endif %}
@@ -1250,35 +1286,35 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
       </div>
     </div>
     <div>
-      <h4>Courses</h4>
-      <ul><li><a href="#popular-courses">SSC &amp; Railways</a></li><li><a href="#popular-courses">Banking</a></li><li><a href="#popular-courses">NEET &amp; JEE</a></li><li><a href="#test-series">Test series</a></li></ul>
+      <h4 data-i18n="footer_courses">Courses</h4>
+      <ul><li><a href="#popular-courses" data-i18n="footer_ssc_railways">SSC &amp; Railways</a></li><li><a href="#popular-courses" data-i18n="footer_banking">Banking</a></li><li><a href="#popular-courses" data-i18n="footer_neet_jee">NEET &amp; JEE</a></li><li><a href="#test-series" data-i18n="footer_test_series">Test series</a></li></ul>
     </div>
     <div>
-      <h4>Resources</h4>
-      <ul><li><a href="#results">PYQ library</a></li><li><a href="#results">Current affairs</a></li><li><a href="{% url 'exam_calendar_page' %}">Exam calendar</a></li><li><a href="{% url 'eligibility_check' %}">Eligibility check</a></li></ul>
+      <h4 data-i18n="footer_resources">Resources</h4>
+      <ul><li><a href="#results" data-i18n="footer_pyq">PYQ library</a></li><li><a href="#results" data-i18n="footer_current_affairs">Current affairs</a></li><li><a href="{% url 'exam_calendar_page' %}" data-i18n="footer_exam_calendar">Exam calendar</a></li><li><a href="{% url 'eligibility_check' %}" data-i18n="footer_eligibility">Eligibility check</a></li></ul>
     </div>
     <div>
-      <h4>Reach us</h4>
+      <h4 data-i18n="footer_reach_us">Reach us</h4>
       <ul>
         {% if site_settings.footer_phone %}<li><a href="tel:{{ site_settings.footer_phone }}">{{ site_settings.footer_phone }}</a></li>{% endif %}
         {% if site_settings.footer_email %}<li><a href="mailto:{{ site_settings.footer_email }}">{{ site_settings.footer_email }}</a></li>{% endif %}
         {% if site_settings.footer_address %}<li>{{ site_settings.footer_address }}</li>{% endif %}
-        <li>Mon–Sat, 8 am – 8 pm</li>
+        <li data-i18n="footer_hours">Mon–Sat, 8 am – 8 pm</li>
       </ul>
     </div>
   </div>
   <div class="wrap footer-legal-row">
-    <a href="{% url 'privacy_policy_page' %}">Privacy Policy</a>
-    <a href="{% url 'terms_conditions_page' %}">Terms &amp; Conditions</a>
-    <a href="{% url 'refund_cancellation_page' %}">Refund &amp; Cancellation</a>
-    <a href="{% url 'shipping_delivery_page' %}">Shipping &amp; Delivery</a>
-    <a href="{% url 'disclaimer_page' %}">Disclaimer</a>
-    <a href="{% url 'faq_page' %}">FAQ</a>
-    <a href="{% url 'contact_us_page' %}">Contact Us</a>
+    <a href="{% url 'privacy_policy_page' %}" data-i18n="footer_privacy">Privacy Policy</a>
+    <a href="{% url 'terms_conditions_page' %}" data-i18n="footer_terms">Terms &amp; Conditions</a>
+    <a href="{% url 'refund_cancellation_page' %}" data-i18n="footer_refund">Refund &amp; Cancellation</a>
+    <a href="{% url 'shipping_delivery_page' %}" data-i18n="footer_shipping">Shipping &amp; Delivery</a>
+    <a href="{% url 'disclaimer_page' %}" data-i18n="footer_disclaimer">Disclaimer</a>
+    <a href="{% url 'faq_page' %}" data-i18n="footer_faq">FAQ</a>
+    <a href="{% url 'contact_us_page' %}" data-i18n="footer_contact_us">Contact Us</a>
   </div>
   <div class="wrap footer-base">
     <p>© <span id="year"></span> {{ site_settings.copyright_text }}</p>
-    <p>Demo site build</p>
+    <p data-i18n="footer_demo">Demo site build</p>
   </div>
 </footer>
 
@@ -1288,9 +1324,155 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
    1. Sliding advertisement banner (autoplay, dots, arrows, swipe)
    2. Mobile menu
    3. Header shadow on scroll + active nav link
+   4. Site language switcher
    ============================================================ */
 
+/* ---------- Language switcher: dictionary + apply/switch logic ---------- */
+var SITE_I18N = {
+  hi: {
+    nav_home: 'होम', nav_courses: 'कोर्स', nav_test_series: 'टेस्ट सीरीज़', nav_quiz_game: 'क्विज़ गेम',
+    nav_estore: 'ई-स्टोर', nav_results: 'परिणाम', nav_about: 'हमारे बारे में', nav_contact: 'संपर्क करें',
+    nav_more: 'और', nav_video_courses: 'वीडियो कोर्स', nav_elibrary: 'ई-लाइब्रेरी', nav_contact_us: 'संपर्क करें',
+    nav_gallery: 'गैलरी', nav_login: 'लॉग इन', nav_join_free: 'मुफ़्त में जुड़ें', nav_join_now: 'अभी जुड़ें',
+    drop_admin_panel: 'एडमिन पैनल', drop_update_account: 'खाता विवरण अपडेट करें', drop_edit_password: 'पासवर्ड बदलें',
+    drop_purchases: 'मेरी खरीदारी', drop_results: 'परिणाम', drop_coupons: 'मेरे कूपन', drop_certificates: 'मेरे प्रमाणपत्र',
+    drop_refer_earn: 'रेफ़र करें और कमाएँ', drop_classrooms: 'मेरी क्लासरूम', drop_logout: 'लॉग आउट',
+    footer_courses: 'कोर्स', footer_ssc_railways: 'एसएससी और रेलवे', footer_banking: 'बैंकिंग', footer_neet_jee: 'नीट और जेईई',
+    footer_test_series: 'टेस्ट सीरीज़', footer_resources: 'संसाधन', footer_pyq: 'पिछले वर्षों के प्रश्नपत्र',
+    footer_current_affairs: 'करेंट अफेयर्स', footer_exam_calendar: 'परीक्षा कैलेंडर', footer_eligibility: 'पात्रता जाँच',
+    footer_reach_us: 'हमसे संपर्क करें', footer_hours: 'सोम–शनि, सुबह 8 – रात 8', footer_privacy: 'गोपनीयता नीति',
+    footer_terms: 'नियम व शर्तें', footer_refund: 'रिफंड और रद्दीकरण', footer_shipping: 'शिपिंग और डिलीवरी',
+    footer_disclaimer: 'अस्वीकरण', footer_faq: 'सामान्य प्रश्न', footer_contact_us: 'संपर्क करें', footer_demo: 'डेमो साइट',
+    idx_eyebrow_courses: '&lt;/&gt; परीक्षा श्रेणियाँ', idx_title_courses: 'हमारे लोकप्रिय <span class="text-orange">कोर्स</span>',
+    idx_title_test_series: 'सभी <span class="text-orange">टेस्ट सीरीज़</span> देखें',
+    idx_eyebrow_video: '🎬 वीडियो कोर्स एक्सप्लोर करें', idx_title_video: 'विशेषज्ञ शिक्षकों से सीखें, <span class="text-orange">वीडियो पर</span>',
+    idx_eyebrow_elibrary: '📚 डिजिटल ई-लाइब्रेरी', idx_title_elibrary: 'आपकी संपूर्ण <span class="text-orange">डिजिटल लाइब्रेरी</span>',
+    idx_eyebrow_quiz: '🎮 खेलें और सीखें', idx_title_quiz: 'क्विज़ ज़ोन',
+    idx_eyebrow_gallery: '📸 गैलरी', idx_eyebrow_about: 'हमारे बारे में',
+    idx_eyebrow_eligibility: '🎯 पात्रता जाँच', idx_title_eligibility: 'आप किन परीक्षाओं के लिए <span class="text-orange">पात्र हैं?</span>',
+    idx_eyebrow_estore: '🛒 ई-स्टोर', idx_title_estore: 'नोट्स, किताबें और <span class="text-orange">मर्चेंडाइज़</span>',
+    idx_eyebrow_careers: '💼 करियर', idx_title_careers: 'हमारे साथ <span class="text-orange">काम करें</span>',
+    idx_eyebrow_admission: '🏫 ऑफ़लाइन प्रवेश', idx_title_admission: 'ऑफ़लाइन बैच के लिए <span class="text-orange">रजिस्टर करें</span>',
+    idx_eyebrow_contact: '📞 संपर्क करें', idx_title_contact: 'एक काउंसलर से <span class="text-orange">बात करें</span>',
+    btn_enroll_now: 'नामांकन करें →', btn_view_course: 'कोर्स देखें →', btn_view_book: 'किताब देखें →',
+    btn_buy_now: 'अभी खरीदें', btn_out_of_stock: 'स्टॉक ख़त्म',
+  },
+  hinglish: {
+    nav_home: 'Home', nav_courses: 'Courses', nav_test_series: 'Test Series', nav_quiz_game: 'Quiz Game',
+    nav_estore: 'E-Store', nav_results: 'Results', nav_about: 'Hamare Baare Mein', nav_contact: 'Contact Karein',
+    nav_more: 'Aur', nav_video_courses: 'Video Courses', nav_elibrary: 'E-Library', nav_contact_us: 'Contact Karein',
+    nav_gallery: 'Gallery', nav_login: 'Login Karein', nav_join_free: 'Free Mein Judiye', nav_join_now: 'Abhi Judiye',
+    drop_admin_panel: 'Admin Panel', drop_update_account: 'Account Details Update Karein', drop_edit_password: 'Password Badlein',
+    drop_purchases: 'Meri Purchases', drop_results: 'Results', drop_coupons: 'Mere Coupons', drop_certificates: 'Mere Certificates',
+    drop_refer_earn: 'Refer Karein & Kamayein', drop_classrooms: 'Meri Classrooms', drop_logout: 'Logout',
+    footer_courses: 'Courses', footer_ssc_railways: 'SSC & Railways', footer_banking: 'Banking', footer_neet_jee: 'NEET & JEE',
+    footer_test_series: 'Test Series', footer_resources: 'Resources', footer_pyq: 'PYQ Library',
+    footer_current_affairs: 'Current Affairs', footer_exam_calendar: 'Exam Calendar', footer_eligibility: 'Eligibility Check',
+    footer_reach_us: 'Humse Judein', footer_hours: 'Mon–Sat, 8 am – 8 pm', footer_privacy: 'Privacy Policy',
+    footer_terms: 'Terms & Conditions', footer_refund: 'Refund & Cancellation', footer_shipping: 'Shipping & Delivery',
+    footer_disclaimer: 'Disclaimer', footer_faq: 'FAQ', footer_contact_us: 'Contact Us', footer_demo: 'Demo Site Build',
+    idx_eyebrow_courses: '&lt;/&gt; Exam Categories', idx_title_courses: 'Hamare Popular <span class="text-orange">Courses</span>',
+    idx_title_test_series: 'Saare <span class="text-orange">Test Series</span> Dekhein',
+    idx_eyebrow_video: '🎬 Explore Video Courses', idx_title_video: 'Expert Faculty Se Seekhein, <span class="text-orange">Video Par</span>',
+    idx_eyebrow_elibrary: '📚 Digital E-Library', idx_title_elibrary: 'Aapki Complete <span class="text-orange">Digital Library</span>',
+    idx_eyebrow_quiz: '🎮 Play & Learn', idx_title_quiz: 'Quiz Zone',
+    idx_eyebrow_gallery: '📸 Gallery', idx_eyebrow_about: 'Hamare Baare Mein',
+    idx_eyebrow_eligibility: '🎯 Eligibility Check', idx_title_eligibility: 'Aap Kaunse Exams Ke Liye <span class="text-orange">Eligible Hain?</span>',
+    idx_eyebrow_estore: '🛒 E-Store', idx_title_estore: 'Notes, Books & <span class="text-orange">Merchandise</span>',
+    idx_eyebrow_careers: '💼 Careers', idx_title_careers: 'Hamare Saath <span class="text-orange">Kaam Karein</span>',
+    idx_eyebrow_admission: '🏫 Offline Admission', idx_title_admission: 'Offline Batch Ke Liye <span class="text-orange">Register Karein</span>',
+    idx_eyebrow_contact: '📞 Contact Us', idx_title_contact: 'Ek Counsellor Se <span class="text-orange">Baat Karein</span>',
+    btn_enroll_now: 'Enroll Now →', btn_view_course: 'Course Dekhein →', btn_view_book: 'Book Dekhein →',
+    btn_buy_now: 'Abhi Kharidein', btn_out_of_stock: 'Stock Khatam',
+  },
+  ta: {
+    nav_home: 'முகப்பு', nav_courses: 'படிப்புகள்', nav_test_series: 'தேர்வு தொடர்', nav_quiz_game: 'வினாடி வினா',
+    nav_estore: 'இ-கடை', nav_results: 'முடிவுகள்', nav_about: 'எங்களைப் பற்றி', nav_contact: 'தொடர்பு கொள்ள',
+    nav_more: 'மேலும்', nav_video_courses: 'வீடியோ படிப்புகள்', nav_elibrary: 'இ-நூலகம்', nav_contact_us: 'தொடர்பு கொள்ள',
+    nav_gallery: 'படத்தொகுப்பு', nav_login: 'உள்நுழைய', nav_join_free: 'இலவசமாக சேரவும்', nav_join_now: 'இப்போது சேரவும்',
+    drop_admin_panel: 'நிர்வாக பலகம்', drop_update_account: 'கணக்கு விவரங்களை புதுப்பிக்க', drop_edit_password: 'கடவுச்சொல்லை மாற்ற',
+    drop_purchases: 'எனது கொள்முதல்கள்', drop_results: 'முடிவுகள்', drop_coupons: 'எனது கூப்பன்கள்', drop_certificates: 'எனது சான்றிதழ்கள்',
+    drop_refer_earn: 'பரிந்துரைத்து சம்பாதிக்க', drop_classrooms: 'எனது வகுப்பறைகள்', drop_logout: 'வெளியேறு',
+    footer_courses: 'படிப்புகள்', footer_ssc_railways: 'SSC & ரயில்வே', footer_banking: 'வங்கி', footer_neet_jee: 'NEET & JEE',
+    footer_test_series: 'தேர்வு தொடர்', footer_resources: 'வளங்கள்', footer_pyq: 'முந்தைய வினாத்தாள்கள்',
+    footer_current_affairs: 'நடப்பு நிகழ்வுகள்', footer_exam_calendar: 'தேர்வு நாட்காட்டி', footer_eligibility: 'தகுதி சரிபார்ப்பு',
+    footer_reach_us: 'எங்களை தொடர்பு கொள்ள', footer_hours: 'திங்கள்–சனி, காலை 8 – இரவு 8', footer_privacy: 'தனியுரிமைக் கொள்கை',
+    footer_terms: 'விதிமுறைகள்', footer_refund: 'திரும்பப்பணம் & ரத்து', footer_shipping: 'அனுப்புதல் & விநியோகம்',
+    footer_disclaimer: 'மறுப்பு', footer_faq: 'அடிக்கடி கேட்கப்படும் கேள்விகள்', footer_contact_us: 'தொடர்பு கொள்ள', footer_demo: 'டெமோ தளம்',
+    idx_eyebrow_courses: '&lt;/&gt; தேர்வு பிரிவுகள்', idx_title_courses: 'எங்கள் பிரபலமான <span class="text-orange">படிப்புகள்</span>',
+    idx_title_test_series: 'அனைத்து <span class="text-orange">தேர்வு தொடர்களையும்</span> பார்க்க',
+    idx_eyebrow_video: '🎬 வீடியோ படிப்புகளை ஆராயுங்கள்', idx_title_video: 'சிறந்த ஆசிரியர்களிடம் கற்க, <span class="text-orange">வீடியோவில்</span>',
+    idx_eyebrow_elibrary: '📚 டிஜிட்டல் இ-நூலகம்', idx_title_elibrary: 'உங்கள் முழுமையான <span class="text-orange">டிஜிட்டல் நூலகம்</span>',
+    idx_eyebrow_quiz: '🎮 விளையாடி கற்க', idx_title_quiz: 'வினாடி வினா மண்டலம்',
+    idx_eyebrow_gallery: '📸 படத்தொகுப்பு', idx_eyebrow_about: 'எங்களைப் பற்றி',
+    idx_eyebrow_eligibility: '🎯 தகுதி சரிபார்ப்பு', idx_title_eligibility: 'எந்த தேர்வுகளுக்கு நீங்கள் <span class="text-orange">தகுதியானவர்?</span>',
+    idx_eyebrow_estore: '🛒 இ-கடை', idx_title_estore: 'நோட்ஸ், புத்தகங்கள் & <span class="text-orange">பொருட்கள்</span>',
+    idx_eyebrow_careers: '💼 வேலைவாய்ப்பு', idx_title_careers: 'எங்களுடன் <span class="text-orange">பணியாற்றுங்கள்</span>',
+    idx_eyebrow_admission: '🏫 நேரடி சேர்க்கை', idx_title_admission: 'நேரடி வகுப்புக்கு <span class="text-orange">பதிவு செய்ய</span>',
+    idx_eyebrow_contact: '📞 தொடர்பு கொள்ள', idx_title_contact: 'ஆலோசகருடன் <span class="text-orange">பேசுங்கள்</span>',
+    btn_enroll_now: 'சேரவும் →', btn_view_course: 'படிப்பைப் பார்க்க →', btn_view_book: 'புத்தகத்தைப் பார்க்க →',
+    btn_buy_now: 'இப்போது வாங்க', btn_out_of_stock: 'கையிருப்பு இல்லை',
+  },
+  mr: {
+    nav_home: 'मुख्यपृष्ठ', nav_courses: 'कोर्सेस', nav_test_series: 'टेस्ट सिरीज', nav_quiz_game: 'क्विझ गेम',
+    nav_estore: 'ई-स्टोअर', nav_results: 'निकाल', nav_about: 'आमच्याबद्दल', nav_contact: 'संपर्क करा',
+    nav_more: 'अधिक', nav_video_courses: 'व्हिडिओ कोर्सेस', nav_elibrary: 'ई-लायब्ररी', nav_contact_us: 'संपर्क करा',
+    nav_gallery: 'गॅलरी', nav_login: 'लॉगिन', nav_join_free: 'मोफत सामील व्हा', nav_join_now: 'आता सामील व्हा',
+    drop_admin_panel: 'ॲडमिन पॅनेल', drop_update_account: 'खाते तपशील अपडेट करा', drop_edit_password: 'पासवर्ड बदला',
+    drop_purchases: 'माझ्या खरेदी', drop_results: 'निकाल', drop_coupons: 'माझे कूपन्स', drop_certificates: 'माझी प्रमाणपत्रे',
+    drop_refer_earn: 'रेफर करा आणि कमवा', drop_classrooms: 'माझे वर्ग', drop_logout: 'लॉगआउट',
+    footer_courses: 'कोर्सेस', footer_ssc_railways: 'एसएससी आणि रेल्वे', footer_banking: 'बँकिंग', footer_neet_jee: 'नीट आणि जेईई',
+    footer_test_series: 'टेस्ट सिरीज', footer_resources: 'संसाधने', footer_pyq: 'मागील प्रश्नपत्रिका',
+    footer_current_affairs: 'चालू घडामोडी', footer_exam_calendar: 'परीक्षा दिनदर्शिका', footer_eligibility: 'पात्रता तपासा',
+    footer_reach_us: 'आमच्याशी संपर्क साधा', footer_hours: 'सोम–शनि, सकाळी 8 – रात्री 8', footer_privacy: 'गोपनीयता धोरण',
+    footer_terms: 'नियम व अटी', footer_refund: 'परतावा आणि रद्दीकरण', footer_shipping: 'शिपिंग आणि डिलिव्हरी',
+    footer_disclaimer: 'अस्वीकरण', footer_faq: 'वारंवार विचारले जाणारे प्रश्न', footer_contact_us: 'संपर्क करा', footer_demo: 'डेमो साइट',
+    idx_eyebrow_courses: '&lt;/&gt; परीक्षा श्रेणी', idx_title_courses: 'आमचे लोकप्रिय <span class="text-orange">कोर्सेस</span>',
+    idx_title_test_series: 'सर्व <span class="text-orange">टेस्ट सिरीज</span> पाहा',
+    idx_eyebrow_video: '🎬 व्हिडिओ कोर्सेस एक्सप्लोर करा', idx_title_video: 'तज्ज्ञ शिक्षकांकडून शिका, <span class="text-orange">व्हिडिओवर</span>',
+    idx_eyebrow_elibrary: '📚 डिजिटल ई-लायब्ररी', idx_title_elibrary: 'तुमची संपूर्ण <span class="text-orange">डिजिटल लायब्ररी</span>',
+    idx_eyebrow_quiz: '🎮 खेळा आणि शिका', idx_title_quiz: 'क्विझ झोन',
+    idx_eyebrow_gallery: '📸 गॅलरी', idx_eyebrow_about: 'आमच्याबद्दल',
+    idx_eyebrow_eligibility: '🎯 पात्रता तपासा', idx_title_eligibility: 'तुम्ही कोणत्या परीक्षांसाठी <span class="text-orange">पात्र आहात?</span>',
+    idx_eyebrow_estore: '🛒 ई-स्टोअर', idx_title_estore: 'नोट्स, पुस्तके आणि <span class="text-orange">मर्चेंडाइज</span>',
+    idx_eyebrow_careers: '💼 करिअर', idx_title_careers: 'आमच्यासोबत <span class="text-orange">काम करा</span>',
+    idx_eyebrow_admission: '🏫 ऑफलाइन प्रवेश', idx_title_admission: 'ऑफलाइन बॅचसाठी <span class="text-orange">नोंदणी करा</span>',
+    idx_eyebrow_contact: '📞 संपर्क करा', idx_title_contact: 'समुपदेशकाशी <span class="text-orange">बोला</span>',
+    btn_enroll_now: 'नावनोंदणी करा →', btn_view_course: 'कोर्स पाहा →', btn_view_book: 'पुस्तक पाहा →',
+    btn_buy_now: 'आता खरेदी करा', btn_out_of_stock: 'स्टॉक संपला',
+  },
+};
+
+function applySiteLanguage(lang) {
+  var nodes = document.querySelectorAll('[data-i18n]');
+  nodes.forEach(function (el) {
+    if (!el.dataset.i18nDefault) {
+      el.dataset.i18nDefault = el.innerHTML;
+    }
+    if (lang === 'en' || !SITE_I18N[lang] || !SITE_I18N[lang][el.dataset.i18n]) {
+      el.innerHTML = el.dataset.i18nDefault;
+    } else {
+      el.innerHTML = SITE_I18N[lang][el.dataset.i18n];
+    }
+  });
+  var currentLabel = document.getElementById('navLangCurrent');
+  if (currentLabel) {
+    var labels = { en: 'EN', hi: 'हिन्दी', hinglish: 'Hinglish', ta: 'தமிழ்', mr: 'मराठी' };
+    currentLabel.textContent = labels[lang] || 'EN';
+  }
+  document.querySelectorAll('.nav-lang-dropdown [data-lang]').forEach(function (btn) {
+    btn.classList.toggle('is-current', btn.dataset.lang === lang);
+  });
+}
+
+window.setSiteLanguage = function (lang) {
+  localStorage.setItem('site_lang', lang);
+  applySiteLanguage(lang);
+};
+
 document.addEventListener('DOMContentLoaded', function () {
+  applySiteLanguage(localStorage.getItem('site_lang') || 'en');
+
 
   /* ---------- 0. Preloader (logo animation, hides once page is ready) ---------- */
   const preloader = document.getElementById('preloader');
@@ -1496,6 +1678,40 @@ document.addEventListener('DOMContentLoaded', function () {
         navMore.classList.remove('is-open');
         navMoreToggle.setAttribute('aria-expanded', 'false');
       }
+    });
+  }
+
+  /* ---------- 2a-2. Language dropdown ---------- */
+  const navLang = document.getElementById('navLang');
+  const navLangToggle = document.getElementById('navLangToggle');
+
+  if (navLang && navLangToggle) {
+    navLangToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = navLang.classList.toggle('is-open');
+      navLangToggle.setAttribute('aria-expanded', String(open));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!navLang.contains(e.target)) {
+        navLang.classList.remove('is-open');
+        navLangToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        navLang.classList.remove('is-open');
+        navLangToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    navLang.querySelectorAll('[data-lang]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        window.setSiteLanguage(btn.dataset.lang);
+        navLang.classList.remove('is-open');
+        navLangToggle.setAttribute('aria-expanded', 'false');
+      });
     });
   }
 

@@ -4,15 +4,27 @@
 {% block meta_description %}Complete your purchase of {{ course.name }}.{% endblock %}
 
 {% block extra_style %}
-.checkout-section{padding:64px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
-.checkout-card{max-width:520px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow-md)}
-.checkout-thumb{width:100%;max-height:220px;object-fit:cover;border-radius:14px;margin-bottom:20px}
-.checkout-card h1{font-size:22px;margin:0 0 6px}
+.checkout-section{padding:48px 0 100px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.checkout-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:start;max-width:1040px;margin:0 auto}
+.checkout-preview{background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow-sm)}
+.checkout-thumb{width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin-bottom:22px}
+.checkout-preview h1{font-size:clamp(22px,3vw,28px);margin:0 0 8px}
 .checkout-type{font-size:12.5px;font-weight:800;color:var(--orange-deep);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px}
-.checkout-price-row{display:flex;align-items:baseline;gap:10px;margin:18px 0}
+.checkout-preview-meta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.checkout-preview-meta span{background:var(--orange-soft);color:var(--orange-deep);padding:6px 14px;border-radius:var(--r-pill);font-size:12.5px;font-weight:700}
+.checkout-about-full{color:#374151;font-size:14.5px;line-height:1.8;white-space:pre-line}
+.locked-media{
+  margin-top:24px;border-radius:16px;background:#F3F1EE;border:1px dashed var(--line);
+  min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  text-align:center;padding:30px;position:relative;overflow:hidden;
+}
+.locked-media-icon{width:56px;height:56px;border-radius:16px;background:#fff;box-shadow:var(--shadow-sm);display:grid;place-items:center;font-size:24px}
+.locked-media h3{font-size:15px;margin:0;color:var(--ink)}
+.locked-media p{font-size:13px;color:var(--muted);margin:0;max-width:36ch}
+.checkout-card{position:sticky;top:20px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow-md)}
+.checkout-price-row{display:flex;align-items:baseline;gap:10px;margin:0 0 18px}
 .checkout-price{font-size:30px;font-weight:800;color:var(--ink)}
 .checkout-price-old{font-size:16px;color:var(--muted);text-decoration:line-through}
-.checkout-about{color:#374151;font-size:14.5px;line-height:1.7;margin:0 0 22px}
 .checkout-pay-btn{width:100%;justify-content:center;padding:15px;font-size:15.5px}
 .checkout-error{background:#FEF2F2;color:#DC2626;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;margin-top:14px;display:none}
 .checkout-error.is-visible{display:block}
@@ -24,24 +36,61 @@
 .coupon-msg{font-size:12.5px;margin:8px 0 0;font-weight:600;min-height:16px}
 .coupon-msg.is-success{color:#15803D}
 .coupon-msg.is-error{color:#DC2626}
+.checkout-includes{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:13px;color:#374151}
+.checkout-includes li{display:flex;align-items:center;gap:8px}
+@media (max-width:860px){.checkout-grid{grid-template-columns:1fr}.checkout-card{position:static}}
 {% endblock %}
 
 {% block content %}
 <section class="checkout-section">
-  <div class="wrap">
-    <div class="checkout-card">
+  <div class="wrap checkout-grid">
+    <div class="checkout-preview">
       {% if course.thumbnail %}<img class="checkout-thumb" src="{{ course.thumbnail.url }}" alt="">{% endif %}
       <p class="checkout-type">{{ course.get_course_type_display }}{% if course.category %} · {{ course.category.name }}{% endif %}</p>
       <h1>{{ course.name }}</h1>
-      {% if course.about %}<p class="checkout-about">{{ course.about|truncatechars:180 }}</p>{% endif %}
+      <div class="checkout-preview-meta">
+        {% if course.author %}<span>✍️ {{ course.author }}</span>{% endif %}
+        {% if course.pages %}<span>📄 {{ course.pages }} pages</span>{% endif %}
+        {% if course.duration_minutes %}<span>⏱ {{ course.duration_minutes }} min</span>{% endif %}
+      </div>
+      {% if course.about %}<p class="checkout-about-full">{{ course.about }}</p>{% endif %}
 
+      <div class="locked-media">
+        {% if course.course_type == 'video_course' %}
+          <span class="locked-media-icon">🔒</span>
+          <h3>Video locked</h3>
+          <p>Unlock this course to watch the full video on any device.</p>
+        {% elif course.course_type == 'elibrary' %}
+          <span class="locked-media-icon">🔒</span>
+          <h3>Book locked</h3>
+          <p>Unlock this e-library item to read online or download the PDF.</p>
+        {% else %}
+          <span class="locked-media-icon">🔒</span>
+          <h3>Content locked</h3>
+          <p>Unlock to get full access.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="checkout-card">
       <div class="checkout-price-row">
         <span class="checkout-price">₹{{ course.current_price }}</span>
         {% if course.original_price and course.original_price != course.current_price %}<span class="checkout-price-old">₹{{ course.original_price }}</span>{% endif %}
       </div>
 
+      <ul class="checkout-includes">
+        {% if course.course_type == 'video_course' %}
+          <li>▶️ Full HD video, watch anytime</li>
+          {% if course.duration_minutes %}<li>⏱ {{ course.duration_minutes }} minutes of content</li>{% endif %}
+        {% elif course.course_type == 'elibrary' %}
+          <li>📖 Read online or download the PDF</li>
+          {% if course.pages %}<li>📄 {{ course.pages }} pages</li>{% endif %}
+        {% endif %}
+        <li>📱 Works on mobile, tablet and desktop</li>
+      </ul>
+
       {% csrf_token %}
-      <div class="coupon-box">
+      <div class="coupon-box" style="margin-top:18px">
         <div class="coupon-row">
           <input type="text" id="couponInput" placeholder="Have a coupon code?" autocomplete="off">
           <button type="button" class="btn btn-ghost" id="couponApplyBtn">Apply</button>

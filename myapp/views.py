@@ -1,5 +1,6 @@
 import csv
 import io
+import random
 import secrets
 import uuid
 
@@ -76,6 +77,7 @@ from .models import (
     Course,
     CourseEnrollment,
     CustomUser,
+    DailyQuizAttempt,
     DailyUpdateCard,
     DailyUpdatePost,
     EligibilityCriteria,
@@ -96,6 +98,7 @@ from .models import (
     PWASettings,
     Question,
     QuizQuestion,
+    QuizZoneAttempt,
     RazorpaySettings,
     ReferralCode,
     ReferralSignup,
@@ -387,6 +390,24 @@ def account_purchases(request):
 
 
 @login_required(login_url='login')
+def account_results(request):
+    test_attempts = TestAttempt.objects.filter(user=request.user, submitted_at__isnull=False).select_related('course')
+    daily_quiz_attempts = DailyQuizAttempt.objects.filter(user=request.user).select_related('course')
+    quiz_zone_attempts = QuizZoneAttempt.objects.filter(user=request.user)
+
+    stats = {
+        'tests_attempted': test_attempts.count(),
+        'daily_quizzes_taken': daily_quiz_attempts.count(),
+        'quiz_zone_played': quiz_zone_attempts.count(),
+    }
+
+    return render(request, 'myapp/account/results.html', {
+        'test_attempts': test_attempts, 'daily_quiz_attempts': daily_quiz_attempts,
+        'quiz_zone_attempts': quiz_zone_attempts, 'stats': stats,
+    })
+
+
+@login_required(login_url='login')
 def account_coupons(request):
     redemptions = list(CouponRedemption.objects.filter(user=request.user).select_related('coupon').order_by('-created_at'))
     times_used_by_coupon = {}
@@ -505,6 +526,37 @@ def _grade_answer(question, submitted):
         correct_set = {part.strip().upper() for part in correct.split(',') if part.strip()}
         return submitted_set == correct_set
     return submitted.strip().lower() == correct.strip().lower()
+
+
+@login_required(login_url='login')
+def test_series_detail(request, pk):
+    course = get_object_or_404(Course, pk=pk, course_type=Course.TEST_SERIES, is_active=True)
+    enrollment = _get_or_create_free_enrollment(request.user, course)
+    all_questions = list(course.questions.all())
+    quiz_result = None
+
+    if request.method == 'POST' and request.POST.get('action') == 'daily_quiz':
+        question_ids = [int(v) for v in request.POST.getlist('quiz_question_ids') if v.isdigit()]
+        quiz_questions = list(Question.objects.filter(pk__in=question_ids, course=course))
+        score = 0
+        for question in quiz_questions:
+            if question.question_type == Question.MULTIPLE:
+                submitted = ','.join(request.POST.getlist(f'q_{question.id}'))
+            else:
+                submitted = request.POST.get(f'q_{question.id}', '')
+            if _grade_answer(question, submitted):
+                score += 1
+        total = len(quiz_questions) or 5
+        DailyQuizAttempt.objects.create(user=request.user, course=course, score=score, total=total)
+        quiz_result = {'score': score, 'total': total}
+        all_questions = list(course.questions.all())
+
+    daily_quiz_questions = random.sample(all_questions, min(5, len(all_questions))) if all_questions else []
+
+    return render(request, 'myapp/test_series_detail.html', {
+        'course': course, 'enrollment': enrollment,
+        'daily_quiz_questions': daily_quiz_questions, 'quiz_result': quiz_result,
+    })
 
 
 @login_required(login_url='login')
@@ -938,7 +990,26 @@ def quiz_reset(request):
     request.session['quiz_used_fifty'] = False
     request.session['quiz_used_audience'] = False
     request.session['quiz_used_skip'] = False
+    request.session['quiz_questions_answered'] = 0
+    request.session['quiz_correct_count'] = 0
+    request.session['quiz_last_prize_label'] = ''
+    request.session['quiz_recorded'] = False
     return JsonResponse({'ok': True})
+
+
+def _record_quiz_zone_attempt(request):
+    if request.session.get('quiz_recorded'):
+        return
+    answered = request.session.get('quiz_questions_answered', 0)
+    if answered <= 0:
+        return
+    QuizZoneAttempt.objects.create(
+        user=request.user,
+        questions_answered=answered,
+        correct_count=request.session.get('quiz_correct_count', 0),
+        final_prize_label=request.session.get('quiz_last_prize_label', ''),
+    )
+    request.session['quiz_recorded'] = True
 
 
 @login_required(login_url='login')
@@ -946,6 +1017,7 @@ def quiz_get_question(request):
     level = request.session.get('quiz_level', 1)
     question = QuizQuestion.objects.filter(is_active=True, level__gte=level).order_by('level', 'id').first()
     if not question:
+        _record_quiz_zone_attempt(request)
         return JsonResponse({'ok': True, 'finished': True})
     return JsonResponse({
         'ok': True,
@@ -976,8 +1048,13 @@ def quiz_submit_answer(request):
     selected = (request.POST.get('selected_option') or '').strip().upper()
     is_correct = selected == question.correct_option
 
+    request.session['quiz_questions_answered'] = request.session.get('quiz_questions_answered', 0) + 1
     if is_correct:
         request.session['quiz_level'] = question.level + 1
+        request.session['quiz_correct_count'] = request.session.get('quiz_correct_count', 0) + 1
+        request.session['quiz_last_prize_label'] = question.prize_label
+    else:
+        _record_quiz_zone_attempt(request)
     return JsonResponse({
         'ok': True,
         'is_correct': is_correct,

@@ -421,8 +421,8 @@
 <!-- ================= POPULAR COURSES ================= -->
 <section class="section" id="popular-courses">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">&lt;/&gt; Exam Categories</p>
-    <h2 class="section-title center-title">Our Popular <span class="text-orange">Courses</span></h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_courses">&lt;/&gt; Exam Categories</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_courses">Our Popular <span class="text-orange">Courses</span></h2>
     <p class="section-sub">Comprehensive courses for all major government exams with expert guidance and complete study material.</p>
 
     <div class="pc-grid">
@@ -439,7 +439,7 @@
           <span>₹{{ bundle.current_price }}</span>
           {% if bundle.original_price and bundle.original_price != bundle.current_price %}<span><s>₹{{ bundle.original_price }}</s></span>{% endif %}
         </div>
-        <a class="btn-pc btn-pc-orange" href="{% url 'bundle_checkout' bundle.pk %}">Enroll Now →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'bundle_checkout' bundle.pk %}" data-i18n="btn_enroll_now">Enroll Now →</a>
       </article>
       {% empty %}
       <p class="panel-empty">No course bundles added yet — check back soon.</p>
@@ -451,7 +451,7 @@
 <!-- ================= TEST SERIES ================= -->
 <section class="section section-tint" id="test-series">
   <div class="wrap">
-    <h2 class="section-title center-title">Explore All <span class="text-orange">Test Series</span></h2>
+    <h2 class="section-title center-title" data-i18n="idx_title_test_series">Explore All <span class="text-orange">Test Series</span></h2>
 
     <div class="ts-panel">
       <p class="ts-panel-title">Test Series</p>
@@ -474,7 +474,7 @@
             <h4>{{ course.name }}</h4>
             <span class="ts-count">📝 {{ course.questions.count }} question{{ course.questions.count|pluralize }}{% if course.duration_minutes %} · ⏱ {{ course.duration_minutes }}m{% endif %}</span>
             <span class="ts-count">₹{{ course.current_price }}{% if course.original_price and course.original_price != course.current_price %} <s>₹{{ course.original_price }}</s>{% endif %}</span>
-            <a class="btn-ts" href="{% url 'test_attempt_start' course.pk %}">{% if course.questions.count %}Attempt Test{% else %}Explore{% endif %}</a>
+            <a class="btn-ts" href="{% url 'test_series_detail' course.pk %}">View Details →</a>
           </article>
           {% empty %}
           <p class="panel-empty">No test series added yet — check back soon.</p>
@@ -488,8 +488,8 @@
 <!-- ================= VIDEO COURSES ================= -->
 <section class="section section-tint" id="video-courses">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">🎬 Video Courses</p>
-    <h2 class="section-title center-title">Learn From Expert Faculty, <span class="text-orange">On Video</span></h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_video">🎬 Explore Video Courses</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_video">Learn From Expert Faculty, <span class="text-orange">On Video</span></h2>
     <p class="section-sub">HD recorded lectures with a clear chapter-wise breakdown — pause, rewind and rewatch as many times as you need, on any device.</p>
     <div class="pc-grid">
       {% for course in video_courses %}
@@ -509,7 +509,7 @@
           <span>₹{{ course.current_price }}</span>
           {% if course.original_price and course.original_price != course.current_price %}<span><s>₹{{ course.original_price }}</s></span>{% endif %}
         </div>
-        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}">View Course →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' course.pk %}" data-i18n="btn_view_course">View Course →</a>
       </article>
       {% empty %}
       <p class="panel-empty">No video courses added yet — check back soon.</p>
@@ -521,8 +521,8 @@
 <!-- ================= E-LIBRARY ================= -->
 <section class="section" id="e-library">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">📚 Digital E-Library</p>
-    <h2 class="section-title center-title">Your Complete <span class="text-orange">Digital Library</span></h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_elibrary">📚 Digital E-Library</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_elibrary">Your Complete <span class="text-orange">Digital Library</span></h2>
     <p class="section-sub">E-books, previous year papers and revision notes — read online in the built-in viewer or download the PDF, on any device.</p>
     <div class="pc-grid">
       {% for item in elibrary_items %}
@@ -543,7 +543,7 @@
           <span>₹{{ item.current_price }}</span>
           {% if item.original_price and item.original_price != item.current_price %}<span><s>₹{{ item.original_price }}</s></span>{% endif %}
         </div>
-        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' item.pk %}">View Book →</a>
+        <a class="btn-pc btn-pc-orange" href="{% url 'course_detail' item.pk %}" data-i18n="btn_view_book">View Book →</a>
       </article>
       {% empty %}
       <p class="panel-empty">No e-library items added yet — check back soon.</p>
@@ -555,8 +555,8 @@
 <!-- ================= QUIZ / KBC-STYLE GAME ================= -->
 <section class="section" id="quiz">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">🎮 Play &amp; Learn</p>
-    <h2 class="section-title center-title">Quiz Zone</h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_quiz">🎮 Play &amp; Learn</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_quiz">Quiz Zone</h2>
     <p class="section-sub">Two ways to test yourself — quick topic quizzes, or the full KBC-style challenge.</p>
 
     <div class="quiz-grid">
@@ -648,7 +648,7 @@
 <!-- ================= GALLERY ================= -->
 <section class="section section-tint" id="gallery">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">📸 Gallery</p>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_gallery">📸 Gallery</p>
     <h2 class="section-title center-title">{{ homepage_content.gallery_heading }}</h2>
     <p class="section-sub">{{ homepage_content.gallery_subtitle }}</p>
     <div class="gal-grid">
@@ -675,7 +675,7 @@
     </div>
 
     <div class="au-copy">
-      <p class="eyebrow eyebrow-pill">About Us</p>
+      <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_about">About Us</p>
       <h2 class="section-title">{{ homepage_content.about_heading }}</h2>
       <p class="body-copy">{{ homepage_content.about_para1 }}</p>
       <p class="body-copy au-muted">{{ homepage_content.about_para2 }}</p>
@@ -695,8 +695,8 @@
 <!-- ================= ELIGIBILITY CHECK ================= -->
 <section class="section section-tint" id="eligibility">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">🎯 Eligibility Check</p>
-    <h2 class="section-title center-title">Which Exams Are You <span class="text-orange">Eligible For?</span></h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_eligibility">🎯 Eligibility Check</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_eligibility">Which Exams Are You <span class="text-orange">Eligible For?</span></h2>
     <p class="section-sub">Enter your education, height, state, DOB, gender and marital status once — see every job/exam you currently qualify for, the way the Join Indian Army portal does it.</p>
     <div style="text-align:center">
       <a class="btn btn-primary btn-lg" href="{% url 'eligibility_check' %}">Check My Eligibility →</a>
@@ -708,8 +708,8 @@
 <!-- ================= E-STORE ================= -->
 <section class="section section-tint" id="e-store">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">🛒 E-Store</p>
-    <h2 class="section-title center-title">Notes, Books &amp; <span class="text-orange">Merchandise</span></h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_estore">🛒 E-Store</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_estore">Notes, Books &amp; <span class="text-orange">Merchandise</span></h2>
     <p class="section-sub">Printed notes, guidebooks and academy merch — ordered online, delivered to your door.</p>
     <div class="pc-grid">
       {% for product in store_products %}
@@ -726,9 +726,9 @@
           {% if product.original_price and product.original_price != product.current_price %}<span><s>₹{{ product.original_price }}</s></span>{% endif %}
         </div>
         {% if product.in_stock %}
-          <a class="btn-pc btn-pc-orange" href="{% url 'store_checkout' product.pk %}">Buy Now</a>
+          <a class="btn-pc btn-pc-orange" href="{% url 'store_checkout' product.pk %}" data-i18n="btn_buy_now">Buy Now</a>
         {% else %}
-          <span class="btn-pc btn-pc-orange" style="opacity:.5;pointer-events:none">Out of Stock</span>
+          <span class="btn-pc btn-pc-orange" style="opacity:.5;pointer-events:none" data-i18n="btn_out_of_stock">Out of Stock</span>
         {% endif %}
       </article>
       {% empty %}
@@ -741,8 +741,8 @@
 <!-- ================= CAREERS ================= -->
 <section class="section" id="careers">
   <div class="wrap">
-    <p class="eyebrow eyebrow-pill">💼 Careers</p>
-    <h2 class="section-title center-title">Work With <span class="text-orange">Us</span></h2>
+    <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_careers">💼 Careers</p>
+    <h2 class="section-title center-title" data-i18n="idx_title_careers">Work With <span class="text-orange">Us</span></h2>
     <div class="career-grid">
       {% for job in jobs %}
       <article class="career-card">
@@ -782,8 +782,8 @@
 <section class="section section-tint" id="admission">
   <div class="wrap admission-grid">
     <div>
-      <p class="eyebrow eyebrow-pill">🏫 Offline Admission</p>
-      <h2 class="section-title">Register For An <span class="text-orange">Offline Batch</span></h2>
+      <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_admission">🏫 Offline Admission</p>
+      <h2 class="section-title" data-i18n="idx_title_admission">Register For An <span class="text-orange">Offline Batch</span></h2>
       <p class="body-copy">Fill this once and our admissions team calls you within 24 hours to confirm your seat at the Lucknow centre.</p>
       <ul class="au-checks">
         <li><span class="au-check-ico">✓</span>Small batches, capped at 60 students</li>
@@ -808,8 +808,8 @@
 <section class="section" id="contact-us">
   <div class="wrap contact-grid">
     <div>
-      <p class="eyebrow eyebrow-pill">📞 Contact Us</p>
-      <h2 class="section-title">Talk To A <span class="text-orange">Counsellor</span></h2>
+      <p class="eyebrow eyebrow-pill" data-i18n="idx_eyebrow_contact">📞 Contact Us</p>
+      <h2 class="section-title" data-i18n="idx_title_contact">Talk To A <span class="text-orange">Counsellor</span></h2>
       <p class="body-copy">Questions about a course, a batch timing, or which exam fits you best — ask us directly.</p>
       <ul class="contact-info">
         <li><span>📍</span>Hazratganj, Lucknow, Uttar Pradesh</li>
