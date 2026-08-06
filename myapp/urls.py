@@ -99,6 +99,7 @@ urlpatterns = [
     path('panel/razorpay/', views.panel_razorpay_settings, name='panel_razorpay_settings'),
     path('panel/notifications/sms-email/', views.panel_notification_provider_settings, name='panel_notification_provider_settings'),
     path('panel/sso/', views.panel_sso_settings, name='panel_sso_settings'),
+    path('panel/dropbox/', views.panel_dropbox_settings, name='panel_dropbox_settings'),
     path('panel/store/products/', views.panel_store_product_list, name='panel_store_product_list'),
     path('panel/store/products/add/', views.panel_store_product_add, name='panel_store_product_add'),
     path('panel/store/products/<int:pk>/edit/', views.panel_store_product_edit, name='panel_store_product_edit'),

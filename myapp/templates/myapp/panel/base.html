@@ -304,6 +304,9 @@ table.panel-table tbody tr:hover{background:#FFF8F2}
       <a class="{% block nav_sso %}{% endblock %}" href="{% url 'panel_sso_settings' %}">
         <span class="panel-nav-ico">🔑</span> SSO Login
       </a>
+      <a class="{% block nav_dropbox %}{% endblock %}" href="{% url 'panel_dropbox_settings' %}">
+        <span class="panel-nav-ico">📦</span> Dropbox Backup
+      </a>
 
       <p class="panel-nav-label">Operations (ERP)</p>
       <div class="panel-nav-group {% block nav_erp_open %}{% endblock %}">

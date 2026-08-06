@@ -32,6 +32,7 @@ from .forms import (
     CourseForm,
     DailyUpdateCardForm,
     DailyUpdatePostForm,
+    DropboxSettingsForm,
     EligibilityCheckForm,
     EligibilityCriteriaForm,
     EmailAuthenticationForm,
@@ -79,6 +80,7 @@ from .models import (
     CustomUser,
     DailyQuizAttempt,
     DailyUpdateCard,
+    DropboxSettings,
     DailyUpdatePost,
     EligibilityCriteria,
     EligibilitySubmission,
@@ -117,6 +119,8 @@ from .razorpay_utils import RazorpayError, create_order, verify_payment_signatur
 from .otp_utils import send_otp
 from . import sso_utils
 from .sso_utils import SSOError
+from . import backup_utils
+from .dropbox_utils import DropboxError, test_connection as dropbox_test_connection
 
 
 def index(request):
@@ -1805,6 +1809,47 @@ def panel_sso_settings(request):
         'form': form, 'settings_obj': settings_obj,
         'google_redirect_uri': google_redirect_uri, 'facebook_redirect_uri': facebook_redirect_uri,
     })
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_dropbox_settings(request):
+    settings_obj = DropboxSettings.load()
+    if request.method == 'POST':
+        if request.POST.get('action') == 'backup_now':
+            ok, detail = backup_utils.run_full_backup(settings_obj)
+            messages.success(request, f'Backup complete. {detail}') if ok else messages.error(request, f'Backup finished with errors. {detail}')
+            return redirect('panel_dropbox_settings')
+
+        if request.POST.get('action') == 'restore':
+            ok, detail = backup_utils.restore_database(settings_obj)
+            messages.success(request, detail) if ok else messages.error(request, f'Restore failed: {detail}')
+            return redirect('panel_dropbox_settings')
+
+        old_token = settings_obj.access_token
+        form = DropboxSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            new_token = form.cleaned_data['access_token']
+            token_changed = new_token != old_token
+            form.save()
+            if token_changed and settings_obj.is_configured:
+                try:
+                    dropbox_test_connection(settings_obj.access_token)
+                    messages.success(request, 'Dropbox connected. Starting an initial backup now…')
+                    ok, detail = backup_utils.run_full_backup(settings_obj)
+                    if ok:
+                        messages.success(request, f'Initial backup complete. {detail}')
+                    else:
+                        messages.error(request, f'Initial backup finished with errors. {detail}')
+                except DropboxError as exc:
+                    messages.error(request, f'Saved, but could not connect to Dropbox: {exc}')
+            else:
+                messages.success(request, 'Dropbox settings saved.')
+            return redirect('panel_dropbox_settings')
+    else:
+        form = DropboxSettingsForm(instance=settings_obj)
+
+    return render(request, 'myapp/panel/dropbox_settings.html', {'form': form, 'settings_obj': settings_obj})
 
 
 @login_required(login_url='login')

@@ -1,0 +1,71 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Dropbox Backup{% endblock %}
+{% block page_title %}Dropbox Backup{% endblock %}
+{% block page_sub %}Automatically back up your media files and database to Dropbox{% endblock %}
+{% block nav_dropbox %}is-active{% endblock %}
+
+{% block extra_style %}
+.provider-status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;padding:6px 14px;border-radius:var(--r-pill);margin-bottom:16px}
+.provider-status-on{background:#ECFDF3;color:#15803D}
+.provider-status-off{background:#F3F4F6;color:#6B7280}
+.backup-info{background:#FAFAF9;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:24px;font-size:13.5px;color:#374151;line-height:1.8}
+.backup-info strong{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-weight:800}
+.backup-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.backup-note{font-size:12.5px;color:var(--muted);margin-top:6px}
+.restore-box{margin-top:30px;padding:18px 20px;border-radius:14px;background:#FEF2F2;border:1px solid #FCA5A5}
+.restore-box h3{font-size:14.5px;margin:0 0 6px;color:#991B1B}
+.restore-box p{font-size:13px;color:#7F1D1D;margin:0 0 14px}
+.btn-danger{background:#DC2626;color:#fff}
+.btn-danger:hover{background:#B91C1C}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <span class="provider-status {% if settings_obj.is_configured %}provider-status-on{% else %}provider-status-off{% endif %}">
+    {% if settings_obj.is_configured %}✓ Dropbox connected{% else %}⚠ Not configured yet{% endif %}
+  </span>
+
+  <div class="backup-info">
+    <strong>Last backup</strong>
+    {% if settings_obj.last_backup_at %}{{ settings_obj.last_backup_at|date:"d M Y, h:i A" }} — {{ settings_obj.last_backup_status }}{% else %}No backup has run yet.{% endif %}
+  </div>
+
+  <form method="post" class="panel-form" novalidate>
+    {% csrf_token %}
+    <label><span class="panel-label-text">Dropbox access token</span>
+      {{ form.access_token }}
+      <p class="backup-note">Generate one from the <a href="https://www.dropbox.com/developers/apps" target="_blank" rel="noopener">Dropbox App Console</a> → your app → "Generate access token". Saving a new token runs an initial backup automatically.</p>
+      {% if form.access_token.errors %}<ul class="panel-errors">{% for e in form.access_token.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Save settings</button>
+    </div>
+  </form>
+
+  {% if settings_obj.is_configured %}
+    <div class="backup-actions">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="backup_now">
+        <button type="submit" class="btn btn-ghost">📦 Backup now</button>
+      </form>
+    </div>
+    <p class="backup-note">Backups also run automatically every hour in the background — every file in Media, plus the database, organized under a "Manjunath Academy" folder in your Dropbox.</p>
+
+    <div class="restore-box">
+      <h3>⚠ Restore database from Dropbox</h3>
+      <p>This overwrites the site's current database with the latest backup from Dropbox. A safety copy of the current database is kept locally, but any data added after that backup will be lost. Only do this if you know what you're doing.</p>
+      <form method="post" onsubmit="return confirm('This will overwrite the live database with the latest Dropbox backup. Are you absolutely sure?');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="restore">
+        <button type="submit" class="btn btn-danger">Restore from latest backup</button>
+      </form>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

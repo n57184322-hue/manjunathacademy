@@ -658,6 +658,35 @@ class QuizZoneAttempt(models.Model):
         return f'{self.user} — Quiz Zone ({self.correct_count}/{self.questions_answered})'
 
 
+class DropboxSettings(models.Model):
+    access_token = models.CharField(max_length=500, blank=True, help_text='Generated from the Dropbox App Console for your app.')
+    last_backup_at = models.DateTimeField(null=True, blank=True)
+    last_backup_status = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = 'Dropbox settings'
+        verbose_name_plural = 'Dropbox settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    @property
+    def is_configured(self):
+        return bool(self.access_token)
+
+    def __str__(self):
+        return 'Dropbox settings'
+
+
 class RazorpaySettings(models.Model):
     key_id = models.CharField(max_length=100, blank=True, verbose_name='Razorpay Key ID')
     key_secret = models.CharField(max_length=100, blank=True, verbose_name='Razorpay Key Secret')
