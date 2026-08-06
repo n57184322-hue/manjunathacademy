@@ -27,6 +27,8 @@ from .forms import (
     EligibilityCheckForm,
     EligibilityCriteriaForm,
     EmailAuthenticationForm,
+    ExtraPageForm,
+    FAQItemForm,
     FeeInvoiceForm,
     FooterSettingsForm,
     GalleryImageForm,
@@ -65,6 +67,8 @@ from .models import (
     DailyUpdatePost,
     EligibilityCriteria,
     EligibilitySubmission,
+    ExtraPage,
+    FAQItem,
     FeeInvoice,
     GalleryImage,
     HeroSection,
@@ -162,6 +166,24 @@ def daily_updates_page(request, category):
 def gallery_page(request):
     images = GalleryImage.objects.filter(is_active=True)
     return render(request, 'myapp/gallery_page.html', {'images': images})
+
+
+def extra_page_view(request, page_key):
+    valid_keys = dict(ExtraPage.PAGE_CHOICES)
+    if page_key not in valid_keys or page_key == ExtraPage.CONTACT_US:
+        raise Http404
+    page_obj, _ = ExtraPage.objects.get_or_create(page=page_key)
+    return render(request, 'myapp/extra_page.html', {'page_obj': page_obj})
+
+
+def contact_us_page(request):
+    page_obj, _ = ExtraPage.objects.get_or_create(page=ExtraPage.CONTACT_US)
+    return render(request, 'myapp/contact_us.html', {'page_obj': page_obj})
+
+
+def faq_page(request):
+    faqs = FAQItem.objects.filter(is_active=True)
+    return render(request, 'myapp/faq_page.html', {'faqs': faqs})
 
 
 def admission_register(request):
@@ -1540,6 +1562,86 @@ def panel_footer_settings(request):
         form = FooterSettingsForm(instance=site_settings_obj)
 
     return render(request, 'myapp/panel/footer_settings.html', {'form': form})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_extra_page_list(request):
+    pages_by_key = {page.page: page for page in ExtraPage.objects.all()}
+    rows = [
+        {'key': key, 'label': label, 'page': pages_by_key.get(key)}
+        for key, label in ExtraPage.PAGE_CHOICES
+    ]
+    return render(request, 'myapp/panel/extra_page_list.html', {'rows': rows, 'faq_count': FAQItem.objects.count()})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_extra_page_edit(request, page_key):
+    valid_keys = dict(ExtraPage.PAGE_CHOICES)
+    if page_key not in valid_keys:
+        raise Http404
+    page_obj, _ = ExtraPage.objects.get_or_create(page=page_key)
+
+    if request.method == 'POST':
+        form = ExtraPageForm(request.POST, instance=page_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'{valid_keys[page_key]} updated.')
+            return redirect('panel_extra_page_list')
+    else:
+        form = ExtraPageForm(instance=page_obj)
+
+    return render(request, 'myapp/panel/extra_page_form.html', {'form': form, 'page_obj': page_obj, 'label': valid_keys[page_key]})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_faq_list(request):
+    faqs = FAQItem.objects.all()
+    return render(request, 'myapp/panel/faq_list.html', {'faqs': faqs})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_faq_add(request):
+    if request.method == 'POST':
+        form = FAQItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'FAQ added.')
+            return redirect('panel_faq_list')
+    else:
+        form = FAQItemForm(initial={'order': FAQItem.objects.count()})
+
+    return render(request, 'myapp/panel/faq_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_faq_edit(request, pk):
+    faq = get_object_or_404(FAQItem, pk=pk)
+
+    if request.method == 'POST':
+        form = FAQItemForm(request.POST, instance=faq)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'FAQ updated.')
+            return redirect('panel_faq_list')
+    else:
+        form = FAQItemForm(instance=faq)
+
+    return render(request, 'myapp/panel/faq_form.html', {'form': form, 'is_new': False, 'faq': faq})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_faq_delete(request, pk):
+    faq = get_object_or_404(FAQItem, pk=pk)
+    if request.method == 'POST':
+        faq.delete()
+        messages.success(request, 'FAQ deleted.')
+    return redirect('panel_faq_list')
 
 
 @login_required(login_url='login')

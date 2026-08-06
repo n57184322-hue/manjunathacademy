@@ -1,0 +1,48 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Edit {{ label }}{% endblock %}
+{% block page_title %}Edit {{ label }}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_extra_pages_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form textarea{font-family:inherit;line-height:1.6}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{{ label }}</h2>
+      <p>This is what students see when they open this page from the site footer.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_extra_page_list' %}">← Back to extra pages</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Page title</span>
+      {{ form.title }}
+      <p class="custom-help">Leave blank to use "{{ label }}" as the title.</p>
+    </label>
+
+    <label><span class="panel-label-text">Content</span>
+      {{ form.content }}
+      <p class="custom-help">{{ form.content.help_text }}</p>
+    </label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <a class="btn btn-ghost" href="{% url 'panel_extra_page_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

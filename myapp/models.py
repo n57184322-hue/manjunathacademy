@@ -1159,3 +1159,52 @@ class Certificate(models.Model):
 
     def __str__(self):
         return f'{self.certificate_number} — {self.recipient_name}'
+
+
+class ExtraPage(models.Model):
+    PRIVACY_POLICY = 'privacy_policy'
+    TERMS_CONDITIONS = 'terms_conditions'
+    REFUND_CANCELLATION = 'refund_cancellation'
+    SHIPPING_DELIVERY = 'shipping_delivery'
+    CONTACT_US = 'contact_us'
+    DISCLAIMER = 'disclaimer'
+    PAGE_CHOICES = [
+        (PRIVACY_POLICY, 'Privacy Policy'),
+        (TERMS_CONDITIONS, 'Terms & Conditions'),
+        (REFUND_CANCELLATION, 'Refund & Cancellation Policy'),
+        (SHIPPING_DELIVERY, 'Shipping & Delivery Policy'),
+        (CONTACT_US, 'Contact Us'),
+        (DISCLAIMER, 'Disclaimer'),
+    ]
+
+    page = models.CharField(max_length=25, choices=PAGE_CHOICES, unique=True)
+    title = models.CharField(max_length=150, blank=True, help_text='Leave blank to use the default title shown above')
+    content = models.TextField(
+        blank=True,
+        help_text='Separate paragraphs with a blank line. Start a line with "- " for a bullet point.',
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['page']
+
+    def __str__(self):
+        return self.get_page_display()
+
+    @property
+    def display_title(self):
+        return self.title.strip() if self.title.strip() else self.get_page_display()
+
+
+class FAQItem(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    order = models.PositiveIntegerField(default=0, help_text='Lower numbers show first')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.question[:60]

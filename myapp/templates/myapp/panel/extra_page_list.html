@@ -1,0 +1,64 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Extra Pages{% endblock %}
+{% block page_title %}Extra pages{% endblock %}
+{% block page_sub %}Legal and info pages shown in the site footer{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_extra_pages_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-title-text{font-weight:700;color:var(--ink)}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.cert-number{font-size:12px;color:var(--muted)}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Extra pages</h2>
+      <p>Privacy Policy, Terms & Conditions and other info pages linked from the footer</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  <div class="panel-table-wrap">
+    <table class="panel-table">
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Last updated</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td><div class="gallery-title-text">{{ row.label }}</div></td>
+          <td>{% if row.page %}{{ row.page.updated_at|date:"d M Y, h:i A" }}{% else %}<span class="cert-number">Not customised yet</span>{% endif %}</td>
+          <td>
+            <div class="gallery-actions">
+              <a class="btn btn-ghost btn-sm" href="{% url 'panel_extra_page_edit' row.key %}">Edit</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td><div class="gallery-title-text">FAQ</div></td>
+          <td><span class="cert-number">{{ faq_count }} question{{ faq_count|pluralize }}</span></td>
+          <td>
+            <div class="gallery-actions">
+              <a class="btn btn-ghost btn-sm" href="{% url 'panel_faq_list' %}">Manage</a>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

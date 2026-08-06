@@ -1,0 +1,73 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}FAQ{% endblock %}
+{% block page_title %}FAQ{% endblock %}
+{% block page_sub %}Questions shown on the public FAQ page{% endblock %}
+{% block nav_customization %}is-active{% endblock %}
+{% block nav_customization_open %}is-open{% endblock %}
+{% block nav_extra_pages_customization %}is-active{% endblock %}
+
+{% block extra_style %}
+.gallery-title-text{font-weight:700;color:var(--ink)}
+.gallery-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+.faq-answer-preview{font-size:12.5px;color:var(--muted);max-width:360px}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>FAQ</h2>
+      <p>{{ faqs|length }} question{{ faqs|length|pluralize }}</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a class="btn btn-ghost" href="{% url 'panel_extra_page_list' %}">← Back to extra pages</a>
+      <a class="btn btn-primary" href="{% url 'panel_faq_add' %}">+ Add question</a>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if faqs %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for faq in faqs %}
+          <tr>
+            <td>{{ faq.order }}</td>
+            <td><div class="gallery-title-text">{{ faq.question }}</div></td>
+            <td><div class="faq-answer-preview">{{ faq.answer|truncatechars:90 }}</div></td>
+            <td>{% if faq.is_active %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">Hidden</span>{% endif %}</td>
+            <td>
+              <div class="gallery-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_faq_edit' faq.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_faq_delete' faq.pk %}" onsubmit="return confirm('Delete this question?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">❓</span>No FAQs yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

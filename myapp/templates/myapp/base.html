@@ -948,10 +948,16 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
 .site-footer li a:hover{color:var(--orange)}
 .footer-base{
   display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  border-top:1px solid rgba(255,255,255,.1);margin-top:46px;padding-top:20px;
+  margin-top:18px;padding-top:0;
   font-size:13px;color:#8A837D;
 }
 .footer-base p{margin:0}
+.footer-legal-row{
+  display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:46px;
+  border-top:1px solid rgba(255,255,255,.1);padding-top:20px;
+}
+.footer-legal-row a{font-size:13px;color:#A9A29C}
+.footer-legal-row a:hover{color:var(--orange)}
 
 /* ============================================================
    RESPONSIVE
@@ -1255,6 +1261,15 @@ h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.1;
         <li>Mon–Sat, 8 am – 8 pm</li>
       </ul>
     </div>
+  </div>
+  <div class="wrap footer-legal-row">
+    <a href="{% url 'privacy_policy_page' %}">Privacy Policy</a>
+    <a href="{% url 'terms_conditions_page' %}">Terms &amp; Conditions</a>
+    <a href="{% url 'refund_cancellation_page' %}">Refund &amp; Cancellation</a>
+    <a href="{% url 'shipping_delivery_page' %}">Shipping &amp; Delivery</a>
+    <a href="{% url 'disclaimer_page' %}">Disclaimer</a>
+    <a href="{% url 'faq_page' %}">FAQ</a>
+    <a href="{% url 'contact_us_page' %}">Contact Us</a>
   </div>
   <div class="wrap footer-base">
     <p>© <span id="year"></span> {{ site_settings.copyright_text }}</p>

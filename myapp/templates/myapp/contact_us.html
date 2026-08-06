@@ -1,0 +1,74 @@
+{% extends "myapp/base.html" %}
+
+{% block title %}Contact Us — Manjunath Academy{% endblock %}
+{% block meta_description %}Get in touch with Manjunath Academy — phone, email and address details.{% endblock %}
+
+{% block extra_style %}
+.legal-section{padding:70px 0 110px;background:linear-gradient(180deg,var(--cream) 0%,#FFFCFA 60%,#fff 100%);min-height:60vh}
+.legal-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:40px;box-shadow:var(--shadow-md)}
+.legal-body{color:#374151;font-size:15px;line-height:1.85}
+.legal-body p{margin:0 0 20px}
+.contact-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1.2fr 1fr;gap:26px;align-items:start}
+.contact-info-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:20px}
+.contact-info-item{display:flex;gap:14px;align-items:flex-start}
+.contact-info-ico{width:44px;height:44px;border-radius:12px;background:var(--orange-soft);color:var(--orange-deep);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
+.contact-info-label{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 3px}
+.contact-info-value{font-size:14.5px;color:var(--ink);font-weight:600;margin:0}
+.contact-info-value a{color:inherit}
+.contact-social-row{margin-top:24px}
+@media (max-width:860px){.contact-grid{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<section class="legal-section">
+  <div class="wrap">
+    <h1 class="section-title center-title" style="text-align:center;margin:0 auto 34px">Contact <span class="text-orange">Us</span></h1>
+    <div class="contact-grid">
+      <div class="legal-card">
+        <div class="legal-body">
+          {% if page_obj.content %}
+            {{ page_obj.content|linebreaks }}
+          {% else %}
+            <p>We're here to help with anything related to your courses, orders or account.</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="legal-card">
+        <ul class="contact-info-list">
+          {% if site_settings.footer_phone %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">📞</span>
+            <div><p class="contact-info-label">Call us</p><p class="contact-info-value"><a href="tel:{{ site_settings.footer_phone }}">{{ site_settings.footer_phone }}</a></p></div>
+          </li>
+          {% endif %}
+          {% if site_settings.footer_email %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">✉️</span>
+            <div><p class="contact-info-label">Email us</p><p class="contact-info-value"><a href="mailto:{{ site_settings.footer_email }}">{{ site_settings.footer_email }}</a></p></div>
+          </li>
+          {% endif %}
+          {% if site_settings.footer_address %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">📍</span>
+            <div><p class="contact-info-label">Visit us</p><p class="contact-info-value">{{ site_settings.footer_address }}</p></div>
+          </li>
+          {% endif %}
+          <li class="contact-info-item">
+            <span class="contact-info-ico">🕒</span>
+            <div><p class="contact-info-label">Working hours</p><p class="contact-info-value">Mon–Sat, 8 am – 8 pm</p></div>
+          </li>
+        </ul>
+        <div class="contact-social-row social-row">
+          {% if site_settings.facebook_url %}<a class="ico-facebook" href="{{ site_settings.facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">📘</a>{% endif %}
+          {% if site_settings.instagram_url %}<a class="ico-instagram" href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">📷</a>{% endif %}
+          {% if site_settings.twitter_url %}<a class="ico-twitter" href="{{ site_settings.twitter_url }}" target="_blank" rel="noopener" aria-label="Twitter/X">✖️</a>{% endif %}
+          {% if site_settings.telegram_url %}<a class="ico-telegram" href="{{ site_settings.telegram_url }}" target="_blank" rel="noopener" aria-label="Telegram">✈️</a>{% endif %}
+          {% if site_settings.linkedin_url %}<a class="ico-linkedin" href="{{ site_settings.linkedin_url }}" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>{% endif %}
+          {% if site_settings.youtube_url %}<a class="ico-youtube" href="{{ site_settings.youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">▶️</a>{% endif %}
+          {% if site_settings.whatsapp_link %}<a class="ico-whatsapp" href="{{ site_settings.whatsapp_link }}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

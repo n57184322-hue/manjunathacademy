@@ -15,6 +15,8 @@ from .models import (
     DailyUpdateCard,
     DailyUpdatePost,
     EligibilityCriteria,
+    ExtraPage,
+    FAQItem,
     FeeInvoice,
     GalleryImage,
     HeroSection,
@@ -606,6 +608,27 @@ class QuizQuestionForm(forms.ModelForm):
         }
         help_texts = {
             'level': 'Lower levels are asked first — like a difficulty ladder.',
+        }
+
+
+class ExtraPageForm(forms.ModelForm):
+    class Meta:
+        model = ExtraPage
+        fields = ('title', 'content')
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'Leave blank to use the default title'}),
+            'content': forms.Textarea(attrs={'rows': 22, 'placeholder': 'Separate paragraphs with a blank line. Start a line with "- " for a bullet point.'}),
+        }
+
+
+class FAQItemForm(forms.ModelForm):
+    class Meta:
+        model = FAQItem
+        fields = ('question', 'answer', 'order', 'is_active')
+        widgets = {
+            'question': forms.TextInput(attrs={'placeholder': 'e.g. How do I purchase a Test Series?'}),
+            'answer': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Write the answer here'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
         }
 
 
