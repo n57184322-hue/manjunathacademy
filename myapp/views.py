@@ -1,7 +1,10 @@
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.views import LoginView, PasswordChangeView
+from decimal import Decimal
+
 from django.contrib import messages
+from django.db.models import F
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -16,6 +19,7 @@ from .forms import (
     CategoryForm,
     ChatbotQuestionForm,
     ChatbotSettingsForm,
+    CouponForm,
     CourseForm,
     DailyUpdateCardForm,
     DailyUpdatePostForm,
@@ -50,6 +54,8 @@ from .models import (
     Category,
     ChatbotQuestion,
     ChatbotSettings,
+    Coupon,
+    CouponRedemption,
     Course,
     CourseEnrollment,
     CustomUser,
@@ -328,6 +334,75 @@ def test_attempt_result(request, pk):
     return render(request, 'myapp/test_attempt_result.html', {'attempt': attempt, 'answers': answers})
 
 
+def _get_purchase_base(content_type, object_id, user):
+    """Returns (object, base_amount, display_name) for a checkout target, or (None, None, None)."""
+    if content_type == 'course':
+        obj = get_object_or_404(Course, pk=object_id, is_active=True)
+        return obj, obj.current_price, obj.name
+    if content_type == 'store':
+        obj = get_object_or_404(StoreOrder, pk=object_id, user=user, status=StoreOrder.STATUS_PENDING)
+        return obj, obj.amount, obj.product.name
+    if content_type == 'bundle':
+        obj = get_object_or_404(Bundle, pk=object_id, is_active=True)
+        return obj, obj.current_price, obj.name
+    return None, None, None
+
+
+def _validate_coupon(code, content_type, base_amount, user):
+    """Returns (coupon, discount_amount, error_message)."""
+    try:
+        coupon = Coupon.objects.get(code__iexact=code.strip())
+    except Coupon.DoesNotExist:
+        return None, Decimal('0'), 'Invalid coupon code.'
+
+    if not coupon.is_valid_now():
+        return None, Decimal('0'), 'This coupon is inactive or has expired.'
+
+    if coupon.applies_to != Coupon.APPLIES_ALL and coupon.applies_to != content_type:
+        return None, Decimal('0'), 'This coupon is not valid for this purchase.'
+
+    if base_amount < coupon.min_order_amount:
+        return None, Decimal('0'), f'This coupon needs a minimum order of ₹{coupon.min_order_amount}.'
+
+    if CouponRedemption.objects.filter(coupon=coupon, user=user).count() >= coupon.per_user_limit:
+        return None, Decimal('0'), 'You have already used this coupon.'
+
+    discount = coupon.calculate_discount(base_amount)
+    if discount <= 0:
+        return None, Decimal('0'), 'This coupon does not apply to this order.'
+
+    return coupon, discount, None
+
+
+@login_required(login_url='login')
+def apply_coupon(request):
+    if request.method != 'POST':
+        raise Http404
+
+    content_type = request.POST.get('content_type')
+    object_id = request.POST.get('object_id')
+    code = request.POST.get('code', '').strip()
+    if not code:
+        return JsonResponse({'ok': False, 'error': 'Enter a coupon code.'}, status=400)
+
+    obj, base_amount, _name = _get_purchase_base(content_type, object_id, request.user)
+    if obj is None:
+        raise Http404
+
+    coupon, discount, error = _validate_coupon(code, content_type, base_amount, request.user)
+    if error:
+        return JsonResponse({'ok': False, 'error': error}, status=400)
+
+    final_amount = (base_amount - discount).quantize(Decimal('0.01'))
+    return JsonResponse({
+        'ok': True,
+        'code': coupon.code,
+        'discount': str(discount),
+        'base_amount': str(base_amount),
+        'final_amount': str(final_amount),
+    })
+
+
 @login_required(login_url='login')
 def razorpay_create_order(request):
     if request.method != 'POST':
@@ -339,6 +414,7 @@ def razorpay_create_order(request):
 
     content_type = request.POST.get('content_type')
     object_id = request.POST.get('object_id')
+    coupon_code = request.POST.get('coupon_code', '').strip()
     timestamp = int(timezone.now().timestamp())
 
     if content_type == 'course':
@@ -358,6 +434,12 @@ def razorpay_create_order(request):
         receipt = f'bundle_{bundle.pk}_{request.user.pk}_{timestamp}'
     else:
         raise Http404
+
+    if coupon_code:
+        _coupon, discount, error = _validate_coupon(coupon_code, content_type, amount, request.user)
+        if error:
+            return JsonResponse({'ok': False, 'error': error}, status=400)
+        amount = (amount - discount).quantize(Decimal('0.01'))
 
     try:
         razorpay_order = create_order(settings_obj.key_id, settings_obj.key_secret, amount, receipt)
@@ -388,39 +470,71 @@ def razorpay_verify_payment(request):
     razorpay_signature = request.POST.get('razorpay_signature', '')
     content_type = request.POST.get('content_type')
     object_id = request.POST.get('object_id')
+    coupon_code = request.POST.get('coupon_code', '').strip()
 
     if not verify_payment_signature(settings_obj.key_secret, razorpay_order_id, razorpay_payment_id, razorpay_signature):
         return JsonResponse({'ok': False, 'error': 'Payment verification failed.'}, status=400)
 
+    def resolve_amount(base_amount):
+        """Recomputes the coupon discount for bookkeeping. The actual amount charged
+        was already fixed when the Razorpay order was created, so a coupon problem
+        here must never block a payment that has already gone through."""
+        if not coupon_code:
+            return base_amount, None, Decimal('0')
+        coupon, discount, error = _validate_coupon(coupon_code, content_type, base_amount, request.user)
+        if error:
+            return base_amount, None, Decimal('0')
+        return (base_amount - discount).quantize(Decimal('0.01')), coupon, discount
+
+    def record_redemption(coupon, discount, amount_before, amount_after, object_pk):
+        if not coupon:
+            return
+        CouponRedemption.objects.create(
+            coupon=coupon, user=request.user, content_type=content_type, object_id=object_pk,
+            amount_before=amount_before, discount_amount=discount, amount_after=amount_after,
+            razorpay_order_id=razorpay_order_id,
+        )
+        Coupon.objects.filter(pk=coupon.pk).update(used_count=F('used_count') + 1)
+
     if content_type == 'course':
         course = get_object_or_404(Course, pk=object_id)
+        base_amount = course.current_price
+        amount_paid, coupon, discount = resolve_amount(base_amount)
         enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
         enrollment.grant_paid_access(
-            amount_paid=course.current_price,
+            amount_paid=amount_paid,
             razorpay_order_id=razorpay_order_id,
             razorpay_payment_id=razorpay_payment_id,
         )
+        record_redemption(coupon, discount, base_amount, amount_paid, course.pk)
         if course.course_type == Course.TEST_SERIES:
             redirect_url = reverse('test_attempt_start', args=[course.pk])
         else:
             redirect_url = reverse('course_detail', args=[course.pk])
     elif content_type == 'store':
         order = get_object_or_404(StoreOrder, pk=object_id, user=request.user)
+        base_amount = order.amount
+        amount_paid, coupon, discount = resolve_amount(base_amount)
         order.status = StoreOrder.STATUS_PAID
+        order.amount = amount_paid
         order.razorpay_order_id = razorpay_order_id
         order.razorpay_payment_id = razorpay_payment_id
         order.save()
+        record_redemption(coupon, discount, base_amount, amount_paid, order.pk)
         redirect_url = reverse('store_order_success', args=[order.pk])
     elif content_type == 'bundle':
         bundle = get_object_or_404(Bundle, pk=object_id)
+        base_amount = bundle.current_price
+        amount_paid, coupon, discount = resolve_amount(base_amount)
         BundlePurchase.objects.create(
-            user=request.user, bundle=bundle, amount_paid=bundle.current_price,
+            user=request.user, bundle=bundle, amount_paid=amount_paid,
             razorpay_order_id=razorpay_order_id, razorpay_payment_id=razorpay_payment_id,
         )
         for course in bundle.courses.all():
             enrollment, _ = CourseEnrollment.objects.get_or_create(user=request.user, course=course)
             if not enrollment.is_paid:
                 enrollment.grant_paid_access(amount_paid=0, razorpay_order_id=razorpay_order_id, razorpay_payment_id=razorpay_payment_id)
+        record_redemption(coupon, discount, base_amount, amount_paid, bundle.pk)
         redirect_url = reverse('bundle_success', args=[bundle.pk])
     else:
         raise Http404
@@ -1506,6 +1620,55 @@ def panel_bundle_delete(request, pk):
         bundle.delete()
         messages.success(request, 'Bundle deleted.')
     return redirect('panel_bundle_list')
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_coupon_list(request):
+    coupons = Coupon.objects.all()
+    return render(request, 'myapp/panel/coupon_list.html', {'coupons': coupons})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_coupon_add(request):
+    if request.method == 'POST':
+        form = CouponForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Coupon created.')
+            return redirect('panel_coupon_list')
+    else:
+        form = CouponForm()
+
+    return render(request, 'myapp/panel/coupon_form.html', {'form': form, 'is_new': True})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_coupon_edit(request, pk):
+    coupon = get_object_or_404(Coupon, pk=pk)
+
+    if request.method == 'POST':
+        form = CouponForm(request.POST, instance=coupon)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Coupon updated.')
+            return redirect('panel_coupon_list')
+    else:
+        form = CouponForm(instance=coupon)
+
+    return render(request, 'myapp/panel/coupon_form.html', {'form': form, 'is_new': False, 'coupon': coupon})
+
+
+@login_required(login_url='login')
+@user_passes_test(_is_staff, login_url='login')
+def panel_coupon_delete(request, pk):
+    coupon = get_object_or_404(Coupon, pk=pk)
+    if request.method == 'POST':
+        coupon.delete()
+        messages.success(request, 'Coupon deleted.')
+    return redirect('panel_coupon_list')
 
 
 @login_required(login_url='login')

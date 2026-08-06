@@ -8,6 +8,7 @@ from .models import (
     Category,
     ChatbotQuestion,
     ChatbotSettings,
+    Coupon,
     Course,
     CustomUser,
     DailyUpdateCard,
@@ -369,6 +370,37 @@ class StoreOrderStatusForm(forms.ModelForm):
     class Meta:
         model = StoreOrder
         fields = ('status',)
+
+
+class CouponForm(forms.ModelForm):
+    valid_from = forms.DateTimeField(
+        required=False, input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+    )
+    valid_until = forms.DateTimeField(
+        required=False, input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+    )
+
+    class Meta:
+        model = Coupon
+        fields = (
+            'code', 'description', 'discount_type', 'discount_value', 'max_discount_amount',
+            'min_order_amount', 'applies_to', 'valid_from', 'valid_until',
+            'usage_limit', 'per_user_limit', 'is_active',
+        )
+        widgets = {
+            'code': forms.TextInput(attrs={'placeholder': 'e.g. WELCOME50'}),
+            'description': forms.TextInput(attrs={'placeholder': 'Internal note, e.g. Launch offer for new students'}),
+            'discount_value': forms.NumberInput(attrs={'min': 0, 'step': '0.01'}),
+            'max_discount_amount': forms.NumberInput(attrs={'min': 0, 'step': '0.01'}),
+            'min_order_amount': forms.NumberInput(attrs={'min': 0, 'step': '0.01'}),
+            'usage_limit': forms.NumberInput(attrs={'min': 1}),
+            'per_user_limit': forms.NumberInput(attrs={'min': 1}),
+        }
+
+    def clean_code(self):
+        return self.cleaned_data['code'].strip().upper()
 
 
 class JobPostingForm(forms.ModelForm):

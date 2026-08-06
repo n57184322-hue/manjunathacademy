@@ -1,0 +1,97 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}{% if is_new %}Add{% else %}Edit{% endif %} Coupon{% endblock %}
+{% block page_title %}{% if is_new %}Add coupon{% else %}Edit coupon{% endif %}{% endblock %}
+{% block page_sub %}{% endblock %}
+{% block nav_store %}is-active{% endblock %}
+{% block nav_store_open %}is-open{% endblock %}
+{% block nav_store_coupons %}is-active{% endblock %}
+
+{% block extra_style %}
+.course-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.custom-help{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.panel-form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#374151}
+@media (max-width:560px){.course-form-row{grid-template-columns:1fr}}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>{% if is_new %}Add a new coupon{% else %}Editing: {{ coupon.code }}{% endif %}</h2>
+      <p>Students enter this code at checkout to get a discount.</p>
+    </div>
+    <a class="btn btn-ghost" href="{% url 'panel_coupon_list' %}">← Back to coupons</a>
+  </div>
+
+  <form class="panel-form" method="post" novalidate>
+    {% csrf_token %}
+
+    <label><span class="panel-label-text">Coupon code <span class="req">*</span></span>
+      {{ form.code }}
+      <p class="custom-help">Shown to students exactly as typed here, e.g. WELCOME50</p>
+      {% if form.code.errors %}<ul class="panel-errors">{% for e in form.code.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </label>
+
+    <label><span class="panel-label-text">Internal note</span>
+      {{ form.description }}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Discount type</span>
+        {{ form.discount_type }}
+      </label>
+      <label><span class="panel-label-text">Discount value <span class="req">*</span></span>
+        {{ form.discount_value }}
+        <p class="custom-help">Percentage (e.g. 20) or flat rupees (e.g. 100) depending on the type above</p>
+        {% if form.discount_value.errors %}<ul class="panel-errors">{% for e in form.discount_value.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Max discount (₹)</span>
+        {{ form.max_discount_amount }}
+        <p class="custom-help">Caps the discount for percentage coupons. Leave blank for no cap.</p>
+      </label>
+      <label><span class="panel-label-text">Minimum order (₹)</span>
+        {{ form.min_order_amount }}
+      </label>
+    </div>
+
+    <label><span class="panel-label-text">Applies to</span>
+      {{ form.applies_to }}
+    </label>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Valid from</span>
+        {{ form.valid_from }}
+      </label>
+      <label><span class="panel-label-text">Valid until</span>
+        {{ form.valid_until }}
+        <p class="custom-help">Leave blank for no expiry</p>
+      </label>
+    </div>
+
+    <div class="panel-form-row course-form-row">
+      <label><span class="panel-label-text">Total usage limit</span>
+        {{ form.usage_limit }}
+        <p class="custom-help">Leave blank for unlimited total uses</p>
+      </label>
+      <label><span class="panel-label-text">Per-student limit</span>
+        {{ form.per_user_limit }}
+      </label>
+    </div>
+
+    <label class="panel-form-check">{{ form.is_active }} Coupon is active</label>
+
+    {% if form.non_field_errors %}
+      <ul class="panel-errors">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+
+    <div class="panel-form-actions">
+      <button type="submit" class="btn btn-primary">{% if is_new %}Add coupon{% else %}Save changes{% endif %}</button>
+      <a class="btn btn-ghost" href="{% url 'panel_coupon_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

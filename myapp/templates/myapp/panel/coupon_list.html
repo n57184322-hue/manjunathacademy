@@ -1,0 +1,78 @@
+{% extends "myapp/panel/base.html" %}
+
+{% block title %}Coupons{% endblock %}
+{% block page_title %}Coupons{% endblock %}
+{% block page_sub %}Discount codes students can apply at checkout{% endblock %}
+{% block nav_store %}is-active{% endblock %}
+{% block nav_store_open %}is-open{% endblock %}
+{% block nav_store_coupons %}is-active{% endblock %}
+
+{% block extra_style %}
+.coupon-code{font-weight:800;letter-spacing:.02em;color:var(--ink);background:#FFF7ED;border:1px dashed #FDBA74;border-radius:8px;padding:3px 9px;font-size:12.5px}
+.coupon-actions{display:flex;gap:8px}
+.btn-sm{padding:8px 14px;font-size:13px}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-danger:hover{background:#DC2626;color:#fff}
+{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+  <div class="panel-card-head">
+    <div>
+      <h2>Coupons</h2>
+      <p>{{ coupons|length }} coupon{{ coupons|length|pluralize }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'panel_coupon_add' %}">+ Add coupon</a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}<p class="panel-alert">{{ message }}</p>{% endfor %}
+  {% endif %}
+
+  {% if coupons %}
+    <div class="panel-table-wrap">
+      <table class="panel-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Discount</th>
+            <th>Applies to</th>
+            <th>Validity</th>
+            <th>Used</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for coupon in coupons %}
+          <tr>
+            <td><span class="coupon-code">{{ coupon.code }}</span>{% if coupon.description %}<br><span style="font-size:12px;color:var(--muted)">{{ coupon.description }}</span>{% endif %}</td>
+            <td>{% if coupon.discount_type == 'percentage' %}{{ coupon.discount_value|floatformat:0 }}% off{% if coupon.max_discount_amount %} (up to ₹{{ coupon.max_discount_amount }}){% endif %}{% else %}₹{{ coupon.discount_value }} off{% endif %}{% if coupon.min_order_amount %}<br><span style="font-size:12px;color:var(--muted)">Min order ₹{{ coupon.min_order_amount }}</span>{% endif %}</td>
+            <td>{{ coupon.get_applies_to_display }}</td>
+            <td>
+              {% if coupon.valid_from %}From {{ coupon.valid_from|date:"d M Y" }}<br>{% endif %}
+              {% if coupon.valid_until %}Till {{ coupon.valid_until|date:"d M Y" }}{% else %}No expiry{% endif %}
+            </td>
+            <td>{{ coupon.used_count }}{% if coupon.usage_limit %} / {{ coupon.usage_limit }}{% endif %}</td>
+            <td>
+              {% if coupon.is_valid_now %}<span class="panel-badge">Active</span>{% else %}<span class="panel-badge panel-badge-muted">{% if not coupon.is_active %}Disabled{% else %}Expired{% endif %}</span>{% endif %}
+            </td>
+            <td>
+              <div class="coupon-actions">
+                <a class="btn btn-ghost btn-sm" href="{% url 'panel_coupon_edit' coupon.pk %}">Edit</a>
+                <form method="post" action="{% url 'panel_coupon_delete' coupon.pk %}" onsubmit="return confirm('Delete this coupon?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="panel-empty"><span class="panel-empty-ico">🏷️</span>No coupons yet. Create one so students can use it at checkout.</p>
+  {% endif %}
+</div>
+{% endblock %}

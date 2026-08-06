@@ -17,6 +17,13 @@
 .checkout-error{background:#FEF2F2;color:#DC2626;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;margin-top:14px;display:none}
 .checkout-error.is-visible{display:block}
 .checkout-secure{display:flex;align-items:center;gap:6px;justify-content:center;color:var(--muted);font-size:12.5px;margin-top:14px}
+.coupon-box{margin:0 0 18px}
+.coupon-row{display:flex;gap:8px}
+.coupon-row input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:13.5px;font-family:inherit;text-transform:uppercase}
+.coupon-row input:focus{outline:2px solid var(--orange);outline-offset:1px}
+.coupon-msg{font-size:12.5px;margin:8px 0 0;font-weight:600;min-height:16px}
+.coupon-msg.is-success{color:#15803D}
+.coupon-msg.is-error{color:#DC2626}
 {% endblock %}
 
 {% block content %}
@@ -34,7 +41,14 @@
       </div>
 
       {% csrf_token %}
-      <button type="button" class="btn btn-primary btn-lg checkout-pay-btn" id="payBtn" data-content-type="course" data-object-id="{{ course.pk }}">Pay ₹{{ course.current_price }} &amp; Get Access</button>
+      <div class="coupon-box">
+        <div class="coupon-row">
+          <input type="text" id="couponInput" placeholder="Have a coupon code?" autocomplete="off">
+          <button type="button" class="btn btn-ghost" id="couponApplyBtn">Apply</button>
+        </div>
+        <p class="coupon-msg" id="couponMsg"></p>
+      </div>
+      <button type="button" class="btn btn-primary btn-lg checkout-pay-btn" id="payBtn" data-content-type="course" data-object-id="{{ course.pk }}" data-coupon-code="">Pay ₹{{ course.current_price }} &amp; Get Access</button>
       <p class="checkout-error" id="payError"></p>
       <p class="checkout-secure">🔒 Secured by Razorpay</p>
     </div>
@@ -50,13 +64,60 @@
   var errorBox = document.getElementById('payError');
   if (!payBtn) return;
   var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  var priceEl = document.querySelector('.checkout-price');
+  var couponInput = document.getElementById('couponInput');
+  var couponApplyBtn = document.getElementById('couponApplyBtn');
+  var couponMsg = document.getElementById('couponMsg');
+  var baseAmount = '{{ course.current_price }}';
+
+  function payLabel(amount) {
+    return 'Pay ₹' + amount + ' & Get Access';
+  }
+  payBtn.textContent = payLabel(baseAmount);
 
   function showError(msg) {
     errorBox.textContent = msg;
     errorBox.classList.add('is-visible');
   }
 
+  couponApplyBtn.addEventListener('click', function () {
+    var code = couponInput.value.trim();
+    if (!code) return;
+    couponApplyBtn.disabled = true;
+    couponMsg.className = 'coupon-msg';
+    couponMsg.textContent = '';
+
+    fetch('{% url "apply_coupon" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: new URLSearchParams({ content_type: payBtn.dataset.contentType, object_id: payBtn.dataset.objectId, code: code }),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        couponApplyBtn.disabled = false;
+        if (!data.ok) {
+          payBtn.dataset.couponCode = '';
+          priceEl.textContent = '₹' + baseAmount;
+          payBtn.textContent = payLabel(baseAmount);
+          couponMsg.textContent = data.error || 'Could not apply coupon.';
+          couponMsg.classList.add('is-error');
+          return;
+        }
+        payBtn.dataset.couponCode = data.code;
+        priceEl.textContent = '₹' + data.final_amount;
+        payBtn.textContent = payLabel(data.final_amount);
+        couponMsg.textContent = 'Coupon applied! You saved ₹' + data.discount + '.';
+        couponMsg.classList.add('is-success');
+      })
+      .catch(function () {
+        couponApplyBtn.disabled = false;
+        couponMsg.textContent = 'Could not connect. Please try again.';
+        couponMsg.classList.add('is-error');
+      });
+  });
+
   payBtn.addEventListener('click', function () {
+    var currentLabel = payBtn.textContent;
     payBtn.disabled = true;
     payBtn.textContent = 'Please wait…';
     errorBox.classList.remove('is-visible');
@@ -64,6 +125,7 @@
     var body = new URLSearchParams({
       content_type: payBtn.dataset.contentType,
       object_id: payBtn.dataset.objectId,
+      coupon_code: payBtn.dataset.couponCode || '',
     });
 
     fetch('{% url "razorpay_create_order" %}', {
@@ -76,7 +138,7 @@
         if (!data.ok) {
           showError(data.error || 'Something went wrong. Please try again.');
           payBtn.disabled = false;
-          payBtn.textContent = 'Pay ₹{{ course.current_price }} & Get Access';
+          payBtn.textContent = currentLabel;
           return;
         }
 
@@ -100,6 +162,7 @@
               razorpay_signature: response.razorpay_signature,
               content_type: payBtn.dataset.contentType,
               object_id: payBtn.dataset.objectId,
+              coupon_code: payBtn.dataset.couponCode || '',
             });
             fetch('{% url "razorpay_verify_payment" %}', {
               method: 'POST',
@@ -118,21 +181,21 @@
           modal: {
             ondismiss: function () {
               payBtn.disabled = false;
-              payBtn.textContent = 'Pay ₹{{ course.current_price }} & Get Access';
+              payBtn.textContent = currentLabel;
             },
           },
         });
         rzp.on('payment.failed', function () {
           showError('Payment failed. Please try again.');
           payBtn.disabled = false;
-          payBtn.textContent = 'Pay ₹{{ course.current_price }} & Get Access';
+          payBtn.textContent = currentLabel;
         });
         rzp.open();
       })
       .catch(function () {
         showError('Could not connect. Please try again.');
         payBtn.disabled = false;
-        payBtn.textContent = 'Pay ₹{{ course.current_price }} & Get Access';
+        payBtn.textContent = currentLabel;
       });
   });
 })();

@@ -1034,3 +1034,91 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f'{self.get_type_display()} — {self.title} (₹{self.amount})'
+
+
+class Coupon(models.Model):
+    PERCENTAGE = 'percentage'
+    FLAT = 'flat'
+    DISCOUNT_TYPE_CHOICES = [(PERCENTAGE, 'Percentage off'), (FLAT, 'Flat amount off')]
+
+    APPLIES_ALL = 'all'
+    APPLIES_COURSE = 'course'
+    APPLIES_BUNDLE = 'bundle'
+    APPLIES_STORE = 'store'
+    APPLIES_TO_CHOICES = [
+        (APPLIES_ALL, 'Everything'),
+        (APPLIES_COURSE, 'Courses & test series'),
+        (APPLIES_BUNDLE, 'Bundles'),
+        (APPLIES_STORE, 'Store products'),
+    ]
+
+    code = models.CharField(max_length=40, unique=True, help_text='Shown to students, e.g. WELCOME50')
+    description = models.CharField(max_length=200, blank=True, help_text='Internal note about this coupon')
+    discount_type = models.CharField(max_length=12, choices=DISCOUNT_TYPE_CHOICES, default=PERCENTAGE)
+    discount_value = models.DecimalField(max_digits=8, decimal_places=2, help_text='Percentage (e.g. 20) or flat rupees (e.g. 100) depending on type above')
+    max_discount_amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text='Caps the discount for percentage coupons. Leave blank for no cap.')
+    min_order_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0, help_text='Coupon only applies if the order is at least this much')
+    applies_to = models.CharField(max_length=12, choices=APPLIES_TO_CHOICES, default=APPLIES_ALL)
+    valid_from = models.DateTimeField(null=True, blank=True)
+    valid_until = models.DateTimeField(null=True, blank=True, help_text='Leave blank for no expiry')
+    usage_limit = models.PositiveIntegerField(null=True, blank=True, help_text='Total times this coupon can be used across all students. Leave blank for unlimited.')
+    per_user_limit = models.PositiveIntegerField(default=1, help_text='How many times a single student may use this coupon')
+    used_count = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.code
+
+    def save(self, *args, **kwargs):
+        self.code = self.code.strip().upper()
+        super().save(*args, **kwargs)
+
+    def is_valid_now(self):
+        from django.utils import timezone as dj_timezone
+
+        if not self.is_active:
+            return False
+        now = dj_timezone.now()
+        if self.valid_from and now < self.valid_from:
+            return False
+        if self.valid_until and now > self.valid_until:
+            return False
+        if self.usage_limit is not None and self.used_count >= self.usage_limit:
+            return False
+        return True
+
+    def calculate_discount(self, amount):
+        from decimal import Decimal
+
+        amount = Decimal(amount)
+        if amount < self.min_order_amount:
+            return Decimal('0')
+        if self.discount_type == self.PERCENTAGE:
+            discount = (amount * self.discount_value) / Decimal('100')
+            if self.max_discount_amount:
+                discount = min(discount, self.max_discount_amount)
+        else:
+            discount = self.discount_value
+        return min(discount, amount).quantize(Decimal('0.01'))
+
+
+class CouponRedemption(models.Model):
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name='redemptions')
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='coupon_redemptions')
+    content_type = models.CharField(max_length=12)
+    object_id = models.PositiveIntegerField()
+    amount_before = models.DecimalField(max_digits=9, decimal_places=2)
+    discount_amount = models.DecimalField(max_digits=9, decimal_places=2)
+    amount_after = models.DecimalField(max_digits=9, decimal_places=2)
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.coupon.code} — {self.user}'
