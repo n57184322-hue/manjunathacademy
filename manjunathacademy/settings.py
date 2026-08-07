@@ -29,7 +29,9 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+# Hardcoded True everywhere (including production) per explicit request -
+# overrides any DEBUG env var Railway might have set.
+DEBUG = True
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
