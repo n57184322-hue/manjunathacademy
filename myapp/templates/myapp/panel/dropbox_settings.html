@@ -66,7 +66,9 @@
     <h3>🔄 Just pushed new code / redeployed?</h3>
     <p>Railway resets the site's data on every deploy. Click this once, right after each deploy, to bring back your latest database and all uploaded images from Dropbox.</p>
   </div>
-  <form method="post" onsubmit="return confirm('This restores the latest database backup and all media files from Dropbox, overwriting whatever is currently live. Continue?');">
+  <form method="post"
+        data-confirm="This restores the latest database backup and all media files from Dropbox, overwriting whatever is currently live. Continue?"
+        data-loading-text="Restoring your database and media from Dropbox…">
     {% csrf_token %}
     <input type="hidden" name="action" value="restore_all">
     <button type="submit" class="btn-restore-all">Restore Everything Now</button>
@@ -81,7 +83,7 @@
       <div class="backup-fact">📁 Saves a timestamped copy to <code>/db-backups/history/</code></div>
       <div class="backup-fact">🔄 Also overwrites <code>/db-backups/db_latest.sqlite3</code></div>
       <div class="backup-fact">🗂 All old backups are kept — nothing is deleted</div>
-      <form method="post" style="margin-top:18px">
+      <form method="post" style="margin-top:18px" data-loading-text="Backing up your database and media to Dropbox…">
         {% csrf_token %}
         <input type="hidden" name="action" value="backup_now">
         <button type="submit" class="btn-block btn-block-blue" {% if not settings_obj.is_configured %}disabled{% endif %}>☁ Backup Now</button>
@@ -93,7 +95,9 @@
     <div class="backup-card-head head-red">⬇ Restore from Dropbox</div>
     <div class="backup-card-body">
       <div class="backup-warn">⚠ <span><strong>Warning:</strong> This will overwrite your current database. Take a fresh backup first!</span></div>
-      <form method="post" onsubmit="return confirm('This will overwrite the live database with the selected backup. Are you absolutely sure?');">
+      <form method="post"
+            data-confirm="This will overwrite the live database with the selected backup. Are you absolutely sure?"
+            data-loading-text="Restoring your database from Dropbox…">
         {% csrf_token %}
         <input type="hidden" name="action" value="restore">
         <span class="backup-select-label">Select Backup File:</span>
@@ -110,7 +114,9 @@
       </form>
       <div class="media-restore-row">
         <p>Only need the images/videos back, not the database?</p>
-        <form method="post" onsubmit="return confirm('This overwrites local media files with the latest backup from Dropbox. Continue?');">
+        <form method="post"
+              data-confirm="This overwrites local media files with the latest backup from Dropbox. Continue?"
+              data-loading-text="Restoring media files from Dropbox…">
           {% csrf_token %}
           <input type="hidden" name="action" value="restore_media">
           <button type="submit" class="btn-ghost-sm" {% if not settings_obj.is_configured %}disabled{% endif %}>Restore Media Only</button>
@@ -124,7 +130,7 @@
   <div class="history-head">
     <span>📋 Backup History ({{ backups|length }} backup{{ backups|length|pluralize }} on Dropbox)</span>
     {% if backups %}
-      <form method="post" onsubmit="return confirm('Permanently delete ALL database backups from Dropbox? This cannot be undone.');">
+      <form method="post" data-confirm="Permanently delete ALL database backups from Dropbox? This cannot be undone.">
         {% csrf_token %}
         <input type="hidden" name="action" value="delete_all_backups">
         <button type="submit" class="btn-delete-all">🗑 Delete All Backups</button>
@@ -145,7 +151,9 @@
             <td>{{ b.date }}</td>
             <td>{{ b.time }}</td>
             <td>
-              <form method="post" onsubmit="return confirm('Restore {{ b.filename }}? This overwrites the live database.');">
+              <form method="post"
+                    data-confirm="Restore {{ b.filename }}? This overwrites the live database."
+                    data-loading-text="Restoring your database from Dropbox…">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="restore">
                 <input type="hidden" name="filename" value="{{ b.filename }}">

@@ -33,7 +33,8 @@
     <a class="btn btn-ghost" href="{% url 'panel_course_list' course_type %}">← Back to {{ type_label|lower }}</a>
   </div>
 
-  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate>
+  <form class="panel-form" method="post" enctype="multipart/form-data" novalidate
+        data-loading-text="Uploading your file(s) to the server…">
     {% csrf_token %}
 
     <label><span class="panel-label-text">Category</span>
