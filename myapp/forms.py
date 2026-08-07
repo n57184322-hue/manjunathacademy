@@ -121,6 +121,7 @@ class AccountUpdateForm(forms.ModelForm):
             'age': forms.NumberInput(attrs={'placeholder': 'e.g. 21', 'min': 10, 'max': 100}),
             'state': forms.Select(choices=STATE_CHOICES),
             'city': forms.Select(choices=CITY_CHOICES),
+            'profile_picture': forms.FileInput(),
         }
         help_texts = {
             'profile_picture': 'Square image works best, e.g. 300×300px. Max 2MB.',
@@ -145,6 +146,8 @@ class NavbarCustomizationForm(forms.ModelForm):
             'logo_type': forms.RadioSelect(),
             'youtube_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/@yourchannel'}),
             'whatsapp_number': forms.TextInput(attrs={'placeholder': 'e.g. 915220000000'}),
+            'logo_image': forms.FileInput(),
+            'favicon': forms.FileInput(),
         }
         help_texts = {
             'logo_image': 'Recommended size: 200×60px (transparent PNG works best). Max 1MB.',
@@ -165,6 +168,7 @@ class BannerSlideForm(forms.ModelForm):
             'button_link': forms.TextInput(attrs={'placeholder': 'e.g. #popular-courses'}),
             'image_url': forms.URLInput(attrs={'placeholder': 'https://example.com/photo.jpg'}),
             'order': forms.NumberInput(attrs={'min': 0}),
+            'image': forms.FileInput(),
         }
         help_texts = {
             'image': 'Recommended size: 1400×500px (wide photo). JPG or PNG, under 2MB.',
@@ -233,6 +237,7 @@ class HeroSectionForm(forms.ModelForm):
             'primary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #admission or a full https:// URL'}),
             'secondary_btn_link': forms.TextInput(attrs={'placeholder': 'e.g. #popular-courses or a full https:// URL'}),
             'visual_video_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/watch?v=...'}),
+            'visual_image': forms.FileInput(),
         }
 
 
@@ -243,6 +248,7 @@ class DailyUpdateCardForm(forms.ModelForm):
         widgets = {
             'visual_type': forms.RadioSelect(),
             'illustration_style': forms.RadioSelect(),
+            'image': forms.FileInput(),
         }
 
 
@@ -254,6 +260,7 @@ class DailyUpdatePostForm(forms.ModelForm):
             'category': forms.Select(),
             'title': forms.TextInput(attrs={'placeholder': 'e.g. Union Budget 2026: Key Highlights'}),
             'body': forms.Textarea(attrs={'rows': 8, 'placeholder': 'Full article text'}),
+            'image': forms.FileInput(),
         }
 
 
@@ -275,6 +282,8 @@ class PWASettingsForm(forms.ModelForm):
         widgets = {
             'theme_color': forms.TextInput(attrs={'type': 'color'}),
             'background_color': forms.TextInput(attrs={'type': 'color'}),
+            'android_icon': forms.FileInput(),
+            'ios_icon': forms.FileInput(),
         }
 
 
@@ -286,6 +295,7 @@ class GalleryImageForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'placeholder': 'e.g. Annual Prize Distribution 2026'}),
             'caption': forms.TextInput(attrs={'placeholder': 'A short line about this photo'}),
             'order': forms.NumberInput(attrs={'min': 0}),
+            'image': forms.FileInput(),
         }
         help_texts = {
             'order': 'Lower numbers show first.',
@@ -418,6 +428,7 @@ class ProductForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'What this product includes'}),
             'stock': forms.NumberInput(attrs={'min': 0}),
             'order': forms.NumberInput(attrs={'min': 0}),
+            'image': forms.FileInput(),
         }
         help_texts = {
             'image': 'Recommended size: 400×400px.',
@@ -519,6 +530,7 @@ class StaffMemberForm(forms.ModelForm):
             'salary': forms.NumberInput(attrs={'min': 0}),
             'date_of_joining': forms.DateInput(attrs={'type': 'date'}),
             'address': forms.Textarea(attrs={'rows': 3}),
+            'photo': forms.FileInput(),
         }
 
 
@@ -609,6 +621,7 @@ class HomepageContentForm(forms.ModelForm):
             'about_para1': forms.Textarea(attrs={'rows': 4}),
             'about_para2': forms.Textarea(attrs={'rows': 4}),
             'about_checklist': forms.Textarea(attrs={'rows': 6}),
+            'about_image': forms.FileInput(),
         }
         help_texts = {
             'about_checklist': 'One bullet point per line.',
@@ -622,6 +635,7 @@ class ResultHighlightForm(forms.ModelForm):
         widgets = {
             'caption': forms.TextInput(attrs={'placeholder': 'e.g. Health'}),
             'order': forms.NumberInput(attrs={'min': 0}),
+            'image': forms.FileInput(),
         }
         help_texts = {
             'order': 'Lower numbers show first.',
