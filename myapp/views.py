@@ -1837,6 +1837,11 @@ def panel_dropbox_settings(request):
             messages.success(request, f'Restore complete. {detail}') if ok else messages.error(request, f'Restore finished with errors. {detail}')
             return redirect('panel_dropbox_settings')
 
+        if request.POST.get('action') == 'delete_all_backups':
+            ok, detail = backup_utils.delete_all_backups()
+            messages.success(request, detail) if ok else messages.error(request, f'Delete failed: {detail}')
+            return redirect('panel_dropbox_settings')
+
     backups = []
     dropbox_error = None
     if settings_obj.is_configured:

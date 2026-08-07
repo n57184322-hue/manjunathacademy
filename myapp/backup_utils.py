@@ -160,6 +160,17 @@ def restore_media():
     return True, f'{restored} media file(s) restored from Dropbox.'
 
 
+def delete_all_backups():
+    """Permanently deletes every database backup (history + latest) from Dropbox. Does not touch media."""
+    if not dropbox_utils.is_configured():
+        return False, 'Dropbox is not configured.'
+    try:
+        dropbox_utils.delete_path(DB_BACKUP_ROOT)
+    except DropboxError as exc:
+        return False, str(exc)
+    return True, 'All database backups have been deleted from Dropbox.'
+
+
 def restore_everything(dropbox_settings, filename=None):
     """Restores the database (latest or a specific backup) and every media file, in one action."""
     db_ok, db_detail = restore_database(dropbox_settings, filename=filename)

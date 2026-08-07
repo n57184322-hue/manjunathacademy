@@ -11,6 +11,7 @@ UPLOAD_URL = 'https://content.dropboxapi.com/2/files/upload'
 DOWNLOAD_URL = 'https://content.dropboxapi.com/2/files/download'
 LIST_FOLDER_URL = 'https://api.dropboxapi.com/2/files/list_folder'
 LIST_FOLDER_CONTINUE_URL = 'https://api.dropboxapi.com/2/files/list_folder/continue'
+DELETE_URL = 'https://api.dropboxapi.com/2/files/delete_v2'
 ACCOUNT_URL = 'https://api.dropboxapi.com/2/users/get_current_account'
 
 _token_cache = {'token': None, 'expires_at': 0}
@@ -157,3 +158,16 @@ def list_folder(path, recursive=False):
         {'name': e['name'], 'path_display': e.get('path_display', e['name']), 'server_modified': e.get('server_modified', '')}
         for e in files
     ]
+
+
+def delete_path(path):
+    """Deletes a file or folder (and everything inside it) at `path`. No-ops if it doesn't exist."""
+    try:
+        _post_json(DELETE_URL, {'path': path})
+    except urllib.error.HTTPError as exc:
+        detail = _http_error_detail(exc)
+        if 'path_lookup/not_found' in detail:
+            return
+        raise DropboxError(f'Could not delete {path}: {detail}')
+    except Exception as exc:
+        raise DropboxError(f'Could not delete {path}: {exc}')
